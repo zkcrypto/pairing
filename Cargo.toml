@@ -1,0 +1,13 @@
+[package]
+name = "pairing"
+version = "0.9.0"
+authors = ["Sean Bowe <ewillbefull@gmail.com>"]
+license = "MIT/Apache-2.0"
+
+description = "Pairing-friendly elliptic curve library"
+documentation = "https://docs.rs/pairing/"
+homepage = "https://github.com/ebfull/pairing"
+repository = "https://github.com/ebfull/pairing"
+
+[dependencies]
+rand = "0.3"

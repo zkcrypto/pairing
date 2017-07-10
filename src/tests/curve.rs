@@ -58,6 +58,32 @@ pub fn curve_tests<G: CurveProjective>()
     random_doubling_tests::<G>();
     random_negation_tests::<G>();
     random_transformation_tests::<G>();
+    random_wnaf_tests::<G>();
+}
+
+fn random_wnaf_tests<G: CurveProjective>() {
+    use ::wnaf::*;
+    use ::PrimeField;
+
+    let mut rng = XorShiftRng::from_seed([0x5dbe6259, 0x8d313d76, 0x3237db17, 0xe5bc0654]);
+
+    let mut table = vec![];
+    let mut wnaf = vec![];
+
+    for w in 2..14 {
+        for _ in 0..100 {
+            let g = G::rand(&mut rng);
+            let s = G::Scalar::rand(&mut rng).into_repr();
+            let mut g1 = g;
+            g1.mul_assign(s);
+
+            wnaf_table(&mut table, g, w);
+            wnaf_form(&mut wnaf, s, w);
+            let g2 = wnaf_exp(&table, &wnaf);
+
+            assert_eq!(g1, g2);
+        }
+    }
 }
 
 fn random_negation_tests<G: CurveProjective>() {

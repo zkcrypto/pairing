@@ -496,6 +496,14 @@ macro_rules! curve_impl {
             fn to_affine(&self) -> $affine {
                 (*self).into()
             }
+
+            fn recommended_wnaf_for_scalar(scalar: <Self::Scalar as PrimeField>::Repr) -> Option<usize> {
+                Self::empirical_recommended_wnaf_for_scalar(scalar)
+            }
+
+            fn recommended_wnaf_for_num_scalars(num_scalars: usize) -> usize {
+                Self::empirical_recommended_wnaf_for_num_scalars(num_scalars)
+            }
         }
 
         // The affine point X, Y is represented in the jacobian
@@ -555,8 +563,8 @@ macro_rules! curve_impl {
 
 pub mod g1 {
     use rand::{Rand, Rng};
-    use super::super::{Fq, Fr};
-    use ::{CurveProjective, CurveAffine, PrimeField, Field, BitIterator};
+    use super::super::{Fq, Fr, FrRepr};
+    use ::{CurveProjective, CurveAffine, PrimeField, PrimeFieldRepr, Field, BitIterator};
 
     curve_impl!(G1, G1Affine, G1Prepared, Fq, Fr);
 
@@ -571,6 +579,40 @@ pub mod g1 {
 
         fn get_coeff_b() -> Fq {
             super::super::fq::B_COEFF
+        }
+    }
+
+    impl G1 {
+        fn empirical_recommended_wnaf_for_scalar(scalar: FrRepr) -> Option<usize>
+        {
+            const RECOMMENDATIONS: [usize; 3] = [12, 34, 130];
+
+            let mut ret = None;
+            let num_bits = scalar.num_bits() as usize;
+
+            for (i, r) in RECOMMENDATIONS.iter().enumerate() {
+                if *r >= num_bits {
+                    ret = Some(i + 2)
+                }
+            }
+
+            ret
+        }
+
+        fn empirical_recommended_wnaf_for_num_scalars(num_scalars: usize) -> usize
+        {
+            const RECOMMENDATIONS: [usize; 12] = [1, 3, 7, 20, 43, 120, 273, 563, 1630, 3128, 7933, 62569];
+
+            let mut ret = 4;
+            for r in RECOMMENDATIONS.iter() {
+                if num_scalars > *r {
+                    ret += 1;
+                } else {
+                    break
+                }
+            }
+
+            ret
         }
     }
 
@@ -838,8 +880,8 @@ pub mod g1 {
 
 pub mod g2 {
     use rand::{Rand, Rng};
-    use super::super::{Fq2, Fr};
-    use ::{CurveProjective, CurveAffine, PrimeField, Field, BitIterator};
+    use super::super::{Fq2, Fr, FrRepr};
+    use ::{CurveProjective, CurveAffine, PrimeField, PrimeFieldRepr, Field, BitIterator};
 
     curve_impl!(G2, G2Affine, G2Prepared, Fq2, Fr);
 
@@ -863,6 +905,40 @@ pub mod g2 {
                 c0: super::super::fq::B_COEFF,
                 c1: super::super::fq::B_COEFF
             }
+        }
+    }
+
+    impl G2 {
+        fn empirical_recommended_wnaf_for_scalar(scalar: FrRepr) -> Option<usize>
+        {
+            const RECOMMENDATIONS: [usize; 3] = [13, 37, 103];
+
+            let mut ret = None;
+            let num_bits = scalar.num_bits() as usize;
+
+            for (i, r) in RECOMMENDATIONS.iter().enumerate() {
+                if *r >= num_bits {
+                    ret = Some(i + 2)
+                }
+            }
+
+            ret
+        }
+
+        fn empirical_recommended_wnaf_for_num_scalars(num_scalars: usize) -> usize
+        {
+            const RECOMMENDATIONS: [usize; 11] = [1, 3, 8, 20, 47, 126, 260, 826, 1501, 4555, 84071];
+
+            let mut ret = 4;
+            for r in RECOMMENDATIONS.iter() {
+                if num_scalars > *r {
+                    ret += 1;
+                } else {
+                    break
+                }
+            }
+
+            ret
         }
     }
 

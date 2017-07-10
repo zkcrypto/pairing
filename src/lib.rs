@@ -10,6 +10,7 @@ extern crate rand;
 pub mod tests;
 
 pub mod bls12_381;
+pub mod wnaf;
 
 use std::fmt;
 
@@ -123,6 +124,15 @@ pub trait CurveProjective: PartialEq +
 
     /// Converts this element into its affine representation.
     fn to_affine(&self) -> Self::Affine;
+
+    /// Recommends a wNAF window table size given a scalar. Returns `None` if normal
+    /// scalar multiplication is encouraged. If `Some` is returned, it will be between
+    /// 2 and 22, inclusive.
+    fn recommended_wnaf_for_scalar(scalar: <Self::Scalar as PrimeField>::Repr) -> Option<usize>;
+
+    /// Recommends a wNAF window size given the number of scalars you intend to multiply
+    /// a base by. Always returns a number between 2 and 22, inclusive.
+    fn recommended_wnaf_for_num_scalars(num_scalars: usize) -> usize;
 }
 
 /// Affine representation of an elliptic curve point guaranteed to be

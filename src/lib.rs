@@ -219,8 +219,15 @@ pub trait Field: Sized +
     {
         let mut res = Self::one();
 
+        let mut found_one = false;
+
         for i in BitIterator::new(exp) {
-            res.square();
+            if found_one {
+                res.square();
+            } else {
+                found_one = i;
+            }
+
             if i {
                 res.mul_assign(self);
             }

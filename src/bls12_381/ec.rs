@@ -475,9 +475,15 @@ macro_rules! curve_impl {
             fn mul_assign<S: Into<<Self::Scalar as PrimeField>::Repr>>(&mut self, other: S) {
                 let mut res = Self::zero();
 
+                let mut found_one = false;
+
                 for i in BitIterator::new(other.into())
                 {
-                    res.double();
+                    if found_one {
+                        res.double();
+                    } else {
+                        found_one = i;
+                    }
 
                     if i {
                         res.add_assign(self);

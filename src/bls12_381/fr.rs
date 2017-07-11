@@ -146,7 +146,7 @@ impl PrimeFieldRepr for FrRepr {
     #[inline(always)]
     fn mul2(&mut self) {
         let mut last = 0;
-        for i in self.0.iter_mut() {
+        for i in &mut self.0 {
             let tmp = *i >> 63;
             *i <<= 1;
             *i |= last;

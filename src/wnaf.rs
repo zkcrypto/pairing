@@ -1,6 +1,6 @@
 use super::{CurveProjective, PrimeFieldRepr};
 
-/// Replaces the contents of `table` with a wNAF window table for the given window size.
+/// Replaces the contents of `table` with a w-NAF window table for the given window size.
 ///
 /// This function will panic if provided a window size below two, or above 22.
 pub fn wnaf_table<G: CurveProjective>(table: &mut Vec<G>, mut base: G, window: usize)
@@ -20,7 +20,7 @@ pub fn wnaf_table<G: CurveProjective>(table: &mut Vec<G>, mut base: G, window: u
     }
 }
 
-/// Replaces the contents of `wnaf` with the wNAF representation of a scalar.
+/// Replaces the contents of `wnaf` with the w-NAF representation of a scalar.
 ///
 /// This function will panic if provided a window size below two, or above 22.
 pub fn wnaf_form<S: PrimeFieldRepr>(wnaf: &mut Vec<i64>, mut c: S, window: usize)
@@ -54,7 +54,7 @@ pub fn wnaf_form<S: PrimeFieldRepr>(wnaf: &mut Vec<i64>, mut c: S, window: usize
     }
 }
 
-/// Performs wNAF exponentiation with the provided window table and wNAF-form scalar.
+/// Performs w-NAF exponentiation with the provided window table and w-NAF form scalar.
 ///
 /// This function must be provided a `table` and `wnaf` that were constructed with
 /// the same window size; otherwise, it may panic or produce invalid results.

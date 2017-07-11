@@ -4,7 +4,7 @@ use super::fq::{Fq, FROBENIUS_COEFF_FQ2_C1, NEGATIVE_ONE};
 
 use std::cmp::Ordering;
 
-/// An element of F_{q^2}, represented by c0 + c1 * u.
+/// An element of Fq2, represented by c0 + c1 * u.
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub struct Fq2 {
     pub c0: Fq,
@@ -141,7 +141,7 @@ impl SqrtField for Fq2 {
         // Algorithm 9, https://eprint.iacr.org/2012/685.pdf
 
         if self.is_zero() {
-            return Some(Self::zero());
+            Some(Self::zero())
         } else {
             // a1 = self^((q - 3) / 4)
             let mut a1 = self.pow([0xee7fbfffffffeaaa, 0x7aaffffac54ffff, 0xd9cc34a83dac3d89, 0xd91dd2e13ce144af, 0x92c6e9ed90d2eb35, 0x680447a8e5ff9a6]);

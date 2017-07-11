@@ -78,20 +78,12 @@ macro_rules! curve_impl {
                     x3b.mul_assign(&self.x);
                     x3b.add_assign(&Self::get_coeff_b());
 
-                    if y2 == x3b {
-                        true
-                    } else {
-                        false
-                    }
+                    y2 == x3b
                 }
             }
 
             fn is_in_correct_subgroup(&self) -> bool {
-                if self.mul($scalarfield::char()).is_zero() {
-                    true
-                } else {
-                    false
-                }
+                self.mul($scalarfield::char()).is_zero()
             }
         }
 
@@ -788,7 +780,7 @@ pub mod g1 {
             const RECOMMENDATIONS: [usize; 12] = [1, 3, 7, 20, 43, 120, 273, 563, 1630, 3128, 7933, 62569];
 
             let mut ret = 4;
-            for r in RECOMMENDATIONS.iter() {
+            for r in &RECOMMENDATIONS {
                 if num_scalars > *r {
                     ret += 1;
                 } else {
@@ -1327,7 +1319,7 @@ pub mod g2 {
             const RECOMMENDATIONS: [usize; 11] = [1, 3, 8, 20, 47, 126, 260, 826, 1501, 4555, 84071];
 
             let mut ret = 4;
-            for r in RECOMMENDATIONS.iter() {
+            for r in &RECOMMENDATIONS {
                 if num_scalars > *r {
                     ret += 1;
                 } else {

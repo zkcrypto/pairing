@@ -4,7 +4,9 @@ macro_rules! curve_impl {
         $affine:ident,
         $prepared:ident,
         $basefield:ident,
-        $scalarfield:ident
+        $scalarfield:ident,
+        $uncompressed:ident,
+        $compressed:ident
     ) => {
         #[derive(Copy, Clone, PartialEq, Eq, Debug)]
         pub struct $affine {
@@ -98,6 +100,8 @@ macro_rules! curve_impl {
             type Base = $basefield;
             type Prepared = $prepared;
             type Projective = $projective;
+            type Uncompressed = $uncompressed;
+            type Compressed = $compressed;
 
             fn zero() -> Self {
                 $affine {
@@ -563,10 +567,190 @@ macro_rules! curve_impl {
 
 pub mod g1 {
     use rand::{Rand, Rng};
-    use super::super::{Fq, Fr, FrRepr};
-    use ::{CurveProjective, CurveAffine, PrimeField, PrimeFieldRepr, Field, BitIterator};
+    use super::super::{Fq, Fr, FrRepr, FqRepr};
+    use ::{CurveProjective, CurveAffine, PrimeField, SqrtField, PrimeFieldRepr, Field, BitIterator, EncodedPoint};
 
-    curve_impl!(G1, G1Affine, G1Prepared, Fq, Fr);
+    curve_impl!(G1, G1Affine, G1Prepared, Fq, Fr, G1Uncompressed, G1Compressed);
+
+    pub struct G1Uncompressed([u8; 96]);
+
+    impl AsRef<[u8]> for G1Uncompressed {
+        fn as_ref(&self) -> &[u8] {
+            &self.0
+        }
+    }
+
+    impl AsMut<[u8]> for G1Uncompressed {
+        fn as_mut(&mut self) -> &mut [u8] {
+            &mut self.0
+        }
+    }
+
+    impl EncodedPoint for G1Uncompressed {
+        type Affine = G1Affine;
+
+        fn empty() -> Self { G1Uncompressed([0; 96]) }
+        fn size() -> usize { 96 }
+        fn into_affine_unchecked(&self) -> Result<G1Affine, ()> {
+            use byteorder::{ReadBytesExt, BigEndian};
+
+            let mut x = FqRepr([0; 6]);
+            let mut y = FqRepr([0; 6]);
+
+            {
+                let mut reader = &self.0[..];
+
+                for b in x.0.iter_mut().rev() {
+                    *b = reader.read_u64::<BigEndian>().unwrap();
+                }
+
+                for b in y.0.iter_mut().rev() {
+                    *b = reader.read_u64::<BigEndian>().unwrap();
+                }
+            }
+
+            Ok(G1Affine {
+                x: Fq::from_repr(x)?,
+                y: Fq::from_repr(y)?,
+                infinity: false
+            })
+        }
+        fn from_affine(affine: G1Affine) -> Result<Self, ()> {
+            use byteorder::{WriteBytesExt, BigEndian};
+
+            if affine.is_zero() {
+                return Err(())
+            }
+
+            let mut res = Self::empty();
+
+            {
+                let mut writer = &mut res.0[..];
+
+                for digit in affine.x.into_repr().as_ref().iter().rev() {
+                    writer.write_u64::<BigEndian>(*digit).unwrap();
+                }
+
+                for digit in affine.y.into_repr().as_ref().iter().rev() {
+                    writer.write_u64::<BigEndian>(*digit).unwrap();
+                }
+            }
+
+            Ok(res)
+        }
+    }
+
+    pub struct G1Compressed([u8; 48]);
+
+    impl AsRef<[u8]> for G1Compressed {
+        fn as_ref(&self) -> &[u8] {
+            &self.0
+        }
+    }
+
+    impl AsMut<[u8]> for G1Compressed {
+        fn as_mut(&mut self) -> &mut [u8] {
+            &mut self.0
+        }
+    }
+
+    impl EncodedPoint for G1Compressed {
+        type Affine = G1Affine;
+
+        fn empty() -> Self { G1Compressed([0; 48]) }
+        fn size() -> usize { 48 }
+        fn into_affine_unchecked(&self) -> Result<G1Affine, ()> {
+            use byteorder::{ReadBytesExt, BigEndian};
+
+            // Create a copy of this representation.
+            let mut copy = self.0;
+
+            if copy[0] & (1 << 7) == 0 {
+                // Distinguisher bit isn't set.
+                return Err(())
+            }
+
+            // Determine if the intended y coordinate must be greater
+            // lexicographically.
+            let greatest = copy[0] & (1 << 6) != 0;
+
+            // Unset the two most significant bits.
+            copy[0] &= 0x3f;
+
+            let mut x = FqRepr([0; 6]);
+
+            {
+                let mut reader = &copy[..];
+
+                for b in x.0.iter_mut().rev() {
+                    *b = reader.read_u64::<BigEndian>().unwrap();
+                }
+            }
+
+            // Interpret as Fq element.
+            let x = Fq::from_repr(x)?;
+
+            // Compute x^3 + b
+            let mut x3b = x;
+            x3b.square();
+            x3b.mul_assign(&x);
+            x3b.add_assign(&G1Affine::get_coeff_b());
+
+            // Attempt to compute y
+            match x3b.sqrt() {
+                Some(y) => {
+                    let mut negy = y;
+                    negy.negate();
+
+                    // Get the parity of the sqrt we found.
+                    let parity = y.into_repr() > negy.into_repr();
+
+                    Ok(G1Affine {
+                        x: x,
+                        y: if parity == greatest { y } else { negy },
+                        infinity: false
+                    })
+                },
+                None => {
+                    // Point must not be on the curve.
+                    Err(())
+                }
+            }
+        }
+        fn from_affine(affine: G1Affine) -> Result<Self, ()> {
+            use byteorder::{WriteBytesExt, BigEndian};
+
+            if affine.is_zero() {
+                return Err(())
+            }
+
+            let mut res = Self::empty();
+
+            {
+                let mut writer = &mut res.0[..];
+
+                for digit in affine.x.into_repr().as_ref().iter().rev() {
+                    writer.write_u64::<BigEndian>(*digit).unwrap();
+                }
+            }
+
+            // Distinguish this from an uncompressed element.
+            res.0[0] |= 1 << 7; // Set highest bit.
+
+            {
+                let mut negy = affine.y;
+                negy.negate();
+
+                // If the correct y coordinate is the largest (lexicographically),
+                // the bit should be set.
+                if affine.y.into_repr() > negy.into_repr() {
+                    res.0[0] |= 1 << 6; // Set second highest bit.
+                }
+            }
+
+            Ok(res)
+        }
+    }
 
     impl G1Affine {
         fn get_generator() -> Self {
@@ -628,9 +812,6 @@ pub mod g1 {
             G1Prepared(p)
         }
     }
-
-    #[cfg(test)]
-    use super::super::{FqRepr};
 
     #[test]
     fn g1_generator() {
@@ -880,10 +1061,226 @@ pub mod g1 {
 
 pub mod g2 {
     use rand::{Rand, Rng};
-    use super::super::{Fq2, Fr, FrRepr};
-    use ::{CurveProjective, CurveAffine, PrimeField, PrimeFieldRepr, Field, BitIterator};
+    use super::super::{Fq2, Fr, Fq, FrRepr, FqRepr};
+    use ::{CurveProjective, CurveAffine, PrimeField, SqrtField, PrimeFieldRepr, Field, BitIterator, EncodedPoint};
 
-    curve_impl!(G2, G2Affine, G2Prepared, Fq2, Fr);
+    curve_impl!(G2, G2Affine, G2Prepared, Fq2, Fr, G2Uncompressed, G2Compressed);
+
+    pub struct G2Uncompressed([u8; 192]);
+
+    impl AsRef<[u8]> for G2Uncompressed {
+        fn as_ref(&self) -> &[u8] {
+            &self.0
+        }
+    }
+
+    impl AsMut<[u8]> for G2Uncompressed {
+        fn as_mut(&mut self) -> &mut [u8] {
+            &mut self.0
+        }
+    }
+
+    impl EncodedPoint for G2Uncompressed {
+        type Affine = G2Affine;
+
+        fn empty() -> Self { G2Uncompressed([0; 192]) }
+        fn size() -> usize { 192 }
+        fn into_affine_unchecked(&self) -> Result<G2Affine, ()> {
+            use byteorder::{ReadBytesExt, BigEndian};
+
+            let mut x_c1 = FqRepr([0; 6]);
+            let mut x_c0 = FqRepr([0; 6]);
+            let mut y_c1 = FqRepr([0; 6]);
+            let mut y_c0 = FqRepr([0; 6]);
+
+            {
+                let mut reader = &self.0[..];
+
+                for b in x_c1.0.iter_mut().rev() {
+                    *b = reader.read_u64::<BigEndian>().unwrap();
+                }
+
+                for b in x_c0.0.iter_mut().rev() {
+                    *b = reader.read_u64::<BigEndian>().unwrap();
+                }
+
+                for b in y_c1.0.iter_mut().rev() {
+                    *b = reader.read_u64::<BigEndian>().unwrap();
+                }
+
+                for b in y_c0.0.iter_mut().rev() {
+                    *b = reader.read_u64::<BigEndian>().unwrap();
+                }
+            }
+
+            Ok(G2Affine {
+                x: Fq2 {
+                    c0: Fq::from_repr(x_c0)?,
+                    c1: Fq::from_repr(x_c1)?
+                },
+                y: Fq2 {
+                    c0: Fq::from_repr(y_c0)?,
+                    c1: Fq::from_repr(y_c1)?
+                },
+                infinity: false
+            })
+        }
+        fn from_affine(affine: G2Affine) -> Result<Self, ()> {
+            use byteorder::{WriteBytesExt, BigEndian};
+
+            if affine.is_zero() {
+                return Err(())
+            }
+
+            let mut res = Self::empty();
+
+            {
+                let mut writer = &mut res.0[..];
+
+                for digit in affine.x.c1.into_repr().as_ref().iter().rev() {
+                    writer.write_u64::<BigEndian>(*digit).unwrap();
+                }
+
+                for digit in affine.x.c0.into_repr().as_ref().iter().rev() {
+                    writer.write_u64::<BigEndian>(*digit).unwrap();
+                }
+
+                for digit in affine.y.c1.into_repr().as_ref().iter().rev() {
+                    writer.write_u64::<BigEndian>(*digit).unwrap();
+                }
+
+                for digit in affine.y.c0.into_repr().as_ref().iter().rev() {
+                    writer.write_u64::<BigEndian>(*digit).unwrap();
+                }
+            }
+
+            Ok(res)
+        }
+    }
+
+    pub struct G2Compressed([u8; 96]);
+
+    impl AsRef<[u8]> for G2Compressed {
+        fn as_ref(&self) -> &[u8] {
+            &self.0
+        }
+    }
+
+    impl AsMut<[u8]> for G2Compressed {
+        fn as_mut(&mut self) -> &mut [u8] {
+            &mut self.0
+        }
+    }
+
+    impl EncodedPoint for G2Compressed {
+        type Affine = G2Affine;
+
+        fn empty() -> Self { G2Compressed([0; 96]) }
+        fn size() -> usize { 96 }
+        fn into_affine_unchecked(&self) -> Result<G2Affine, ()> {
+            use byteorder::{ReadBytesExt, BigEndian};
+
+            // Create a copy of this representation.
+            let mut copy = self.0;
+
+            if copy[0] & (1 << 7) == 0 {
+                // Distinguisher bit isn't set.
+                return Err(())
+            }
+
+            // Determine if the intended y coordinate must be greater
+            // lexicographically.
+            let greatest = copy[0] & (1 << 6) != 0;
+
+            // Unset the two most significant bits.
+            copy[0] &= 0x3f;
+
+            let mut x_c1 = FqRepr([0; 6]);
+            let mut x_c0 = FqRepr([0; 6]);
+
+            {
+                let mut reader = &copy[..];
+
+                for b in x_c1.0.iter_mut().rev() {
+                    *b = reader.read_u64::<BigEndian>().unwrap();
+                }
+
+                for b in x_c0.0.iter_mut().rev() {
+                    *b = reader.read_u64::<BigEndian>().unwrap();
+                }
+            }
+
+            // Interpret as Fq element.
+            let x = Fq2 {
+                c0: Fq::from_repr(x_c0)?,
+                c1: Fq::from_repr(x_c1)?
+            };
+
+            // Compute x^3 + b
+            let mut x3b = x;
+            x3b.square();
+            x3b.mul_assign(&x);
+            x3b.add_assign(&G2Affine::get_coeff_b());
+
+            // Attempt to compute y
+            match x3b.sqrt() {
+                Some(y) => {
+                    let mut negy = y;
+                    negy.negate();
+
+                    // Get the parity of the sqrt we found.
+                    let parity = y > negy;
+
+                    Ok(G2Affine {
+                        x: x,
+                        y: if parity == greatest { y } else { negy },
+                        infinity: false
+                    })
+                },
+                None => {
+                    // Point must not be on the curve.
+                    Err(())
+                }
+            }
+        }
+        fn from_affine(affine: G2Affine) -> Result<Self, ()> {
+            use byteorder::{WriteBytesExt, BigEndian};
+
+            if affine.is_zero() {
+                return Err(())
+            }
+
+            let mut res = Self::empty();
+
+            {
+                let mut writer = &mut res.0[..];
+
+                for digit in affine.x.c1.into_repr().as_ref().iter().rev() {
+                    writer.write_u64::<BigEndian>(*digit).unwrap();
+                }
+
+                for digit in affine.x.c0.into_repr().as_ref().iter().rev() {
+                    writer.write_u64::<BigEndian>(*digit).unwrap();
+                }
+            }
+
+            // Distinguish this from an uncompressed element.
+            res.0[0] |= 1 << 7; // Set highest bit.
+
+            {
+                let mut negy = affine.y;
+                negy.negate();
+
+                // If the correct y coordinate is the largest (lexicographically),
+                // the bit should be set.
+                if affine.y > negy {
+                    res.0[0] |= 1 << 6; // Set second highest bit.
+                }
+            }
+
+            Ok(res)
+        }
+    }
 
     impl G2Affine {
         fn get_generator() -> Self {
@@ -948,9 +1345,6 @@ pub mod g2 {
         pub(crate) infinity: bool
     }
 
-    #[cfg(test)]
-    use super::super::{Fq, FqRepr};
-
     #[test]
     fn g2_generator() {
         use ::SqrtField;
@@ -965,14 +1359,12 @@ pub mod g2 {
             rhs.add_assign(&G2Affine::get_coeff_b());
 
             if let Some(y) = rhs.sqrt() {
-                let yrepr = y.c1.into_repr();
                 let mut negy = y;
                 negy.negate();
-                let negyrepr = negy.c1.into_repr();
-
+                
                 let p = G2Affine {
                     x: x,
-                    y: if yrepr < negyrepr { y } else { negy },
+                    y: if y < negy { y } else { negy },
                     infinity: false
                 };
 

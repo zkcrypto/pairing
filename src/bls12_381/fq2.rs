@@ -1,12 +1,32 @@
 use rand::{Rng, Rand};
-use ::{Field, SqrtField};
+use ::{Field, SqrtField, PrimeField};
 use super::fq::{Fq, FROBENIUS_COEFF_FQ2_C1, NEGATIVE_ONE};
+
+use std::cmp::Ordering;
 
 /// An element of F_{q^2}, represented by c0 + c1 * u.
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub struct Fq2 {
     pub c0: Fq,
     pub c1: Fq
+}
+
+impl Ord for Fq2 {
+    #[inline(always)]
+    fn cmp(&self, other: &Fq2) -> Ordering {
+        match self.c1.into_repr().cmp(&other.c1.into_repr()) {
+            Ordering::Greater => Ordering::Greater,
+            Ordering::Less => Ordering::Less,
+            Ordering::Equal => self.c0.into_repr().cmp(&other.c0.into_repr())
+        }
+    }
+}
+
+impl PartialOrd for Fq2 {
+    #[inline(always)]
+    fn partial_cmp(&self, other: &Fq2) -> Option<Ordering> {
+        Some(self.cmp(other))
+    }
 }
 
 impl Fq2 {
@@ -155,6 +175,30 @@ impl SqrtField for Fq2 {
             }
         }
     }
+}
+
+#[test]
+fn test_fq2_ordering() {
+    let mut a = Fq2 {
+        c0: Fq::zero(),
+        c1: Fq::zero()
+    };
+
+    let mut b = a.clone();
+
+    assert!(a.cmp(&b) == Ordering::Equal);
+    b.c0.add_assign(&Fq::one());
+    assert!(a.cmp(&b) == Ordering::Less);
+    a.c0.add_assign(&Fq::one());
+    assert!(a.cmp(&b) == Ordering::Equal);
+    b.c1.add_assign(&Fq::one());
+    assert!(a.cmp(&b) == Ordering::Less);
+    a.c0.add_assign(&Fq::one());
+    assert!(a.cmp(&b) == Ordering::Less);
+    a.c1.add_assign(&Fq::one());
+    assert!(a.cmp(&b) == Ordering::Greater);
+    b.c0.add_assign(&Fq::one());
+    assert!(a.cmp(&b) == Ordering::Equal);
 }
 
 #[test]

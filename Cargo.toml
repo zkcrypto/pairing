@@ -11,3 +11,4 @@ repository = "https://github.com/ebfull/pairing"
 
 [dependencies]
 rand = "0.3"
+byteorder = "1.1"

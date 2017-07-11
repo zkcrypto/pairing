@@ -5,6 +5,7 @@
 extern crate test;
 
 extern crate rand;
+extern crate byteorder;
 
 #[cfg(test)]
 pub mod tests;
@@ -151,6 +152,8 @@ pub trait CurveAffine: Copy +
     type Base: SqrtField;
     type Projective: CurveProjective<Affine=Self, Scalar=Self::Scalar>;
     type Prepared: Clone + Send + Sync + 'static;
+    type Uncompressed: EncodedPoint<Affine=Self>;
+    type Compressed: EncodedPoint<Affine=Self>;
 
     /// Returns the additive identity.
     fn zero() -> Self;
@@ -176,6 +179,56 @@ pub trait CurveAffine: Copy +
 
     /// Converts this element into its affine representation.
     fn to_projective(&self) -> Self::Projective;
+
+    /// Converts this element into its compressed encoding, so long as it's not
+    /// the point at infinity.
+    fn to_compressed(&self) -> Result<Self::Compressed, ()> {
+        <Self::Compressed as EncodedPoint>::from_affine(*self)
+    }
+
+    /// Converts this element into its uncompressed encoding, so long as it's not
+    /// the point at infinity.
+    fn to_uncompressed(&self) -> Result<Self::Uncompressed, ()> {
+        <Self::Uncompressed as EncodedPoint>::from_affine(*self)
+    }
+}
+
+/// An encoded elliptic curve point, which should essentially wrap a `[u8; N]`.
+pub trait EncodedPoint: Sized +
+                        Send +
+                        Sync +
+                        AsRef<[u8]> +
+                        AsMut<[u8]> +
+                        'static
+{
+    type Affine: CurveAffine;
+
+    /// Creates an empty representation.
+    fn empty() -> Self;
+
+    /// Returns the number of bytes consumed by this representation.
+    fn size() -> usize;
+
+    /// Converts an `EncodedPoint` into a `CurveAffine` element,
+    /// if the point is valid.
+    fn into_affine(&self) -> Result<Self::Affine, ()> {
+        let affine = self.into_affine_unchecked()?;
+
+        if affine.is_valid() {
+            Ok(affine)
+        } else {
+            Err(())
+        }
+    }
+
+    /// Converts an `EncodedPoint` into a `CurveAffine` element,
+    /// without checking if it's a valid point. Caller must be careful
+    /// when using this, as misuse can violate API invariants.
+    fn into_affine_unchecked(&self) -> Result<Self::Affine, ()>;
+
+    /// Creates an `EncodedPoint` from an affine point, as long as the
+    /// point is not the point at infinity.
+    fn from_affine(affine: Self::Affine) -> Result<Self, ()>;
 }
 
 /// This trait represents an element of a field.

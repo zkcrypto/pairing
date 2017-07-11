@@ -1,6 +1,6 @@
 use rand::{SeedableRng, XorShiftRng, Rand};
 
-use ::{CurveProjective, CurveAffine, Field};
+use ::{CurveProjective, CurveAffine, Field, EncodedPoint};
 
 pub fn curve_tests<G: CurveProjective>()
 {
@@ -59,6 +59,7 @@ pub fn curve_tests<G: CurveProjective>()
     random_negation_tests::<G>();
     random_transformation_tests::<G>();
     random_wnaf_tests::<G>();
+    random_encoding_tests::<G::Affine>();
 }
 
 fn random_wnaf_tests<G: CurveProjective>() {
@@ -289,5 +290,31 @@ fn random_transformation_tests<G: CurveProjective>() {
         }
 
         assert_eq!(v, expected_v);
+    }
+}
+
+fn random_encoding_tests<G: CurveAffine>()
+{
+    assert!(G::zero().to_compressed().is_err());
+    assert!(G::zero().to_uncompressed().is_err());
+
+    let mut rng = XorShiftRng::from_seed([0x5dbe6259, 0x8d313d76, 0x3237db17, 0xe5bc0654]);
+
+    for _ in 0..1000 {
+        let mut r = G::Projective::rand(&mut rng).to_affine();
+
+        let uncompressed = r.to_uncompressed().unwrap();
+        let de_uncompressed = uncompressed.into_affine().unwrap();
+        assert_eq!(de_uncompressed, r);
+
+        let compressed = r.to_compressed().unwrap();
+        let de_compressed = compressed.into_affine().unwrap();
+        assert_eq!(de_compressed, r);
+
+        r.negate();
+
+        let compressed = r.to_compressed().unwrap();
+        let de_compressed = compressed.into_affine().unwrap();
+        assert_eq!(de_compressed, r);
     }
 }

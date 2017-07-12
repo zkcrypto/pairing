@@ -426,29 +426,15 @@ impl Field for Fr {
         let mut carry = 0;
         let r5 = ::mac_with_carry(r5, (self.0).0[2], (self.0).0[3], &mut carry);
         let r6 = carry;
-        let tmp0 = r1 >> 63;
+
+        let r7 = r6 >> 63;
+        let r6 = (r6 << 1) | (r5 >> 63);
+        let r5 = (r5 << 1) | (r4 >> 63);
+        let r4 = (r4 << 1) | (r3 >> 63);
+        let r3 = (r3 << 1) | (r2 >> 63);
+        let r2 = (r2 << 1) | (r1 >> 63);
         let r1 = r1 << 1;
-        let tmp1 = r2 >> 63;
-        let r2 = r2 << 1;
-        let r2 = r2 | tmp0;
-        let tmp0 = tmp1;
-        let tmp1 = r3 >> 63;
-        let r3 = r3 << 1;
-        let r3 = r3 | tmp0;
-        let tmp0 = tmp1;
-        let tmp1 = r4 >> 63;
-        let r4 = r4 << 1;
-        let r4 = r4 | tmp0;
-        let tmp0 = tmp1;
-        let tmp1 = r5 >> 63;
-        let r5 = r5 << 1;
-        let r5 = r5 | tmp0;
-        let tmp0 = tmp1;
-        let tmp1 = r6 >> 63;
-        let r6 = r6 << 1;
-        let r6 = r6 | tmp0;
-        let tmp0 = tmp1;
-        let r7 = tmp0;
+
         let mut carry = 0;
         let r0 = ::mac_with_carry(0, (self.0).0[0], (self.0).0[0], &mut carry);
         let r1 = ::adc(r1, 0, &mut carry);

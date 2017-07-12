@@ -124,7 +124,7 @@ pub trait CurveProjective: PartialEq +
     fn mul_assign<S: Into<<Self::Scalar as PrimeField>::Repr>>(&mut self, other: S);
 
     /// Converts this element into its affine representation.
-    fn to_affine(&self) -> Self::Affine;
+    fn into_affine(&self) -> Self::Affine;
 
     /// Recommends a wNAF window table size given a scalar. Returns `None` if normal
     /// scalar multiplication is encouraged. If `Some` is returned, it will be between
@@ -178,17 +178,17 @@ pub trait CurveAffine: Copy +
     fn prepare(&self) -> Self::Prepared;
 
     /// Converts this element into its affine representation.
-    fn to_projective(&self) -> Self::Projective;
+    fn into_projective(&self) -> Self::Projective;
 
     /// Converts this element into its compressed encoding, so long as it's not
     /// the point at infinity.
-    fn to_compressed(&self) -> Result<Self::Compressed, ()> {
+    fn into_compressed(&self) -> Result<Self::Compressed, ()> {
         <Self::Compressed as EncodedPoint>::from_affine(*self)
     }
 
     /// Converts this element into its uncompressed encoding, so long as it's not
     /// the point at infinity.
-    fn to_uncompressed(&self) -> Result<Self::Uncompressed, ()> {
+    fn into_uncompressed(&self) -> Result<Self::Uncompressed, ()> {
         <Self::Uncompressed as EncodedPoint>::from_affine(*self)
     }
 }

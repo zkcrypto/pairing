@@ -9,7 +9,7 @@ fn test_vectors<G: CurveProjective, E: EncodedPoint<Affine=G::Affine>>(expected:
     {
         let mut expected = expected;
         for _ in 0..1000 {
-            let e_affine = e.to_affine();
+            let e_affine = e.into_affine();
             let encoded = E::from_affine(e_affine).unwrap();
             v.extend_from_slice(encoded.as_ref());
 

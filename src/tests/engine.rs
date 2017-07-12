@@ -10,10 +10,10 @@ pub fn engine_tests<E: Engine>()
         let z1 = E::G1Affine::zero().prepare();
         let z2 = E::G2Affine::zero().prepare();
 
-        let a = E::G1::rand(&mut rng).to_affine().prepare();
-        let b = E::G2::rand(&mut rng).to_affine().prepare();
-        let c = E::G1::rand(&mut rng).to_affine().prepare();
-        let d = E::G2::rand(&mut rng).to_affine().prepare();
+        let a = E::G1::rand(&mut rng).into_affine().prepare();
+        let b = E::G2::rand(&mut rng).into_affine().prepare();
+        let c = E::G1::rand(&mut rng).into_affine().prepare();
+        let d = E::G2::rand(&mut rng).into_affine().prepare();
 
         assert_eq!(
             E::Fqk::one(),
@@ -50,8 +50,8 @@ fn random_miller_loop_tests<E: Engine>() {
 
         let p2 = E::pairing(a, b);
 
-        let a = a.to_affine().prepare();
-        let b = b.to_affine().prepare();
+        let a = a.into_affine().prepare();
+        let b = b.into_affine().prepare();
 
         let p1 = E::final_exponentiation(&E::miller_loop(&[(&a, &b)])).unwrap();
 
@@ -71,10 +71,10 @@ fn random_miller_loop_tests<E: Engine>() {
         let mut abcd = ab;
         abcd.mul_assign(&cd);
 
-        let a = a.to_affine().prepare();
-        let b = b.to_affine().prepare();
-        let c = c.to_affine().prepare();
-        let d = d.to_affine().prepare();
+        let a = a.into_affine().prepare();
+        let b = b.into_affine().prepare();
+        let c = c.into_affine().prepare();
+        let d = d.into_affine().prepare();
 
         let abcd_with_double_loop = E::final_exponentiation(
             &E::miller_loop(&[(&a, &b), (&c, &d)])

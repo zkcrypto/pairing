@@ -140,7 +140,7 @@ macro_rules! curve_impl {
                 $prepared::from_affine(*self)
             }
 
-            fn to_projective(&self) -> $projective {
+            fn into_projective(&self) -> $projective {
                 (*self).into()
             }
         }
@@ -489,7 +489,7 @@ macro_rules! curve_impl {
                 *self = res;
             }
 
-            fn to_affine(&self) -> $affine {
+            fn into_affine(&self) -> $affine {
                 (*self).into()
             }
 
@@ -980,15 +980,15 @@ pub mod g1 {
         assert!(b.is_valid());
         assert!(c.is_valid());
 
-        let mut tmp1 = a.to_projective();
-        tmp1.add_assign(&b.to_projective());
-        assert_eq!(tmp1.to_affine(), c);
-        assert_eq!(tmp1, c.to_projective());
+        let mut tmp1 = a.into_projective();
+        tmp1.add_assign(&b.into_projective());
+        assert_eq!(tmp1.into_affine(), c);
+        assert_eq!(tmp1, c.into_projective());
 
-        let mut tmp2 = a.to_projective();
+        let mut tmp2 = a.into_projective();
         tmp2.add_assign_mixed(&b);
-        assert_eq!(tmp2.to_affine(), c);
-        assert_eq!(tmp2, c.to_projective());
+        assert_eq!(tmp2.into_affine(), c);
+        assert_eq!(tmp2, c.into_projective());
     }
 
     #[test]

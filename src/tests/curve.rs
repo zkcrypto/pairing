@@ -62,6 +62,10 @@ pub fn curve_tests<G: CurveProjective>()
     random_encoding_tests::<G::Affine>();
 }
 
+#[cfg(not(feature = "unstable-wnaf"))]
+fn random_wnaf_tests<G: CurveProjective>() { }
+
+#[cfg(feature = "unstable-wnaf")]
 fn random_wnaf_tests<G: CurveProjective>() {
     use ::wnaf::*;
     use ::PrimeField;

@@ -11,6 +11,8 @@ extern crate byteorder;
 pub mod tests;
 
 pub mod bls12_381;
+
+#[cfg(feature = "unstable-wnaf")]
 pub mod wnaf;
 
 use std::fmt;

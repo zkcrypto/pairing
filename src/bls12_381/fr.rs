@@ -8,7 +8,7 @@ const MODULUS_BITS: u32 = 255;
 
 // The number of bits that must be shaved from the beginning of
 // the representation when randomly sampling.
-const REPR_SHAVE_BITS: u32 = 1;
+const REPR_SHAVE_BITS: usize = 1;
 
 // R = 2**256 % r
 const R: FrRepr = FrRepr([0x1fffffffe, 0x5884b7fa00034802, 0x998c4fefecbc4ff5, 0x1824b159acc5056f]);
@@ -205,9 +205,7 @@ impl ::rand::Rand for Fr {
     fn rand<R: ::rand::Rng>(rng: &mut R) -> Self {
         loop {
             let mut tmp = Fr(FrRepr::rand(rng));
-            for _ in 0..REPR_SHAVE_BITS {
-                tmp.0.div2();
-            }
+            tmp.0.divn(REPR_SHAVE_BITS);
             if tmp.is_valid() {
                 return tmp
             }

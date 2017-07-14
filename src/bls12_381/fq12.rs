@@ -21,7 +21,7 @@ impl Rand for Fq12 {
 }
 
 impl Fq12 {
-    pub fn unitary_inverse(&mut self)
+    pub fn conjugate(&mut self)
     {
         self.c1.negate();
     }

@@ -96,7 +96,7 @@ impl Engine for Bls12 {
 
     fn final_exponentiation(r: &Fq12) -> Option<Fq12> {
         let mut f1 = *r;
-        f1.unitary_inverse();
+        f1.conjugate();
 
         match r.inverse() {
             Some(mut f2) => {
@@ -110,7 +110,7 @@ impl Engine for Bls12 {
                 {
                     *f = f.pow(&[x]);
                     if BLS_X_IS_NEGATIVE {
-                        f.unitary_inverse();
+                        f.conjugate();
                     }
                 }
 
@@ -124,17 +124,17 @@ impl Engine for Bls12 {
                 exp_by_x(&mut y2, x);
                 x <<= 1;
                 let mut y3 = r;
-                y3.unitary_inverse();
+                y3.conjugate();
                 y1.mul_assign(&y3);
-                y1.unitary_inverse();
+                y1.conjugate();
                 y1.mul_assign(&y2);
                 y2 = y1;
                 exp_by_x(&mut y2, x);
                 y3 = y2;
                 exp_by_x(&mut y3, x);
-                y1.unitary_inverse();
+                y1.conjugate();
                 y3.mul_assign(&y1);
-                y1.unitary_inverse();
+                y1.conjugate();
                 y1.frobenius_map(3);
                 y2.frobenius_map(2);
                 y1.mul_assign(&y2);

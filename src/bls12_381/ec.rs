@@ -695,7 +695,7 @@ pub mod g1 {
                     negy.negate();
 
                     // Get the parity of the sqrt we found.
-                    let parity = y.into_repr() > negy.into_repr();
+                    let parity = y > negy;
 
                     Ok(G1Affine {
                         x: x,
@@ -735,7 +735,7 @@ pub mod g1 {
 
                 // If the correct y coordinate is the largest (lexicographically),
                 // the bit should be set.
-                if affine.y.into_repr() > negy.into_repr() {
+                if affine.y > negy {
                     res.0[0] |= 1 << 6; // Set second highest bit.
                 }
             }

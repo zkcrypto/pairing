@@ -1,4 +1,5 @@
 use ::{Field, PrimeField, SqrtField, PrimeFieldRepr};
+use std::cmp::Ordering;
 use super::fq2::Fq2;
 
 // q = 4002409555221667393417789825735904156556882819939007885332058136124031650490837864442687629129015664037894272559787
@@ -233,22 +234,22 @@ impl From<u64> for FqRepr {
 
 impl Ord for FqRepr {
     #[inline(always)]
-    fn cmp(&self, other: &FqRepr) -> ::std::cmp::Ordering {
+    fn cmp(&self, other: &FqRepr) -> Ordering {
         for (a, b) in self.0.iter().rev().zip(other.0.iter().rev()) {
             if a < b {
-                return ::std::cmp::Ordering::Less
+                return Ordering::Less
             } else if a > b {
-                return ::std::cmp::Ordering::Greater
+                return Ordering::Greater
             }
         }
 
-        ::std::cmp::Ordering::Equal
+        Ordering::Equal
     }
 }
 
 impl PartialOrd for FqRepr {
     #[inline(always)]
-    fn partial_cmp(&self, other: &FqRepr) -> Option<::std::cmp::Ordering> {
+    fn partial_cmp(&self, other: &FqRepr) -> Option<Ordering> {
         Some(self.cmp(other))
     }
 }
@@ -356,6 +357,21 @@ impl PrimeFieldRepr for FqRepr {
 
 #[derive(Copy, Clone, PartialEq, Eq)]
 pub struct Fq(FqRepr);
+
+/// `Fq` elements are ordered lexicographically.
+impl Ord for Fq {
+    #[inline(always)]
+    fn cmp(&self, other: &Fq) -> Ordering {
+        self.into_repr().cmp(&other.into_repr())
+    }
+}
+
+impl PartialOrd for Fq {
+    #[inline(always)]
+    fn partial_cmp(&self, other: &Fq) -> Option<Ordering> {
+        Some(self.cmp(other))
+    }
+}
 
 impl ::std::fmt::Debug for Fq
 {
@@ -847,7 +863,7 @@ use rand::{SeedableRng, XorShiftRng, Rand};
 fn test_fq_repr_ordering() {
     fn assert_equality(a: FqRepr, b: FqRepr) {
         assert_eq!(a, b);
-        assert!(a.cmp(&b) == ::std::cmp::Ordering::Equal);
+        assert!(a.cmp(&b) == Ordering::Equal);
     }
 
     fn assert_lt(a: FqRepr, b: FqRepr) {
@@ -1717,4 +1733,13 @@ fn fq_field_tests() {
     ::tests::field::random_field_tests::<Fq>();
     ::tests::field::random_sqrt_tests::<Fq>();
     ::tests::field::random_frobenius_tests::<Fq, _>(Fq::char(), 13);
+}
+
+#[test]
+fn test_fq_ordering() {
+    // FqRepr's ordering is well-tested, but we still need to make sure the Fq
+    // elements aren't being compared in Montgomery form.
+    for i in 0..100 {
+        assert!(Fq::from_repr(FqRepr::from(i+1)) > Fq::from_repr(FqRepr::from(i)));
+    }
 }

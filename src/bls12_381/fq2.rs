@@ -1,5 +1,5 @@
 use rand::{Rng, Rand};
-use ::{Field, SqrtField, PrimeField};
+use ::{Field, SqrtField};
 use super::fq::{Fq, FROBENIUS_COEFF_FQ2_C1, NEGATIVE_ONE};
 
 use std::cmp::Ordering;
@@ -11,13 +11,14 @@ pub struct Fq2 {
     pub c1: Fq
 }
 
+/// `Fq2` elements are ordered lexicographically.
 impl Ord for Fq2 {
     #[inline(always)]
     fn cmp(&self, other: &Fq2) -> Ordering {
-        match self.c1.into_repr().cmp(&other.c1.into_repr()) {
+        match self.c1.cmp(&other.c1) {
             Ordering::Greater => Ordering::Greater,
             Ordering::Less => Ordering::Less,
-            Ordering::Equal => self.c0.into_repr().cmp(&other.c0.into_repr())
+            Ordering::Equal => self.c0.cmp(&other.c0)
         }
     }
 }

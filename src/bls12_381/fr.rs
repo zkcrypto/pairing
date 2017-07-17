@@ -229,7 +229,7 @@ impl PrimeField for Fr {
 
             Ok(r)
         } else {
-            Err(PrimeFieldDecodingError::NotInField)
+            Err(PrimeFieldDecodingError::NotInField(format!("{:?}", r.0)))
         }
     }
 

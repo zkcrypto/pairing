@@ -365,20 +365,24 @@ pub trait PrimeFieldRepr: Sized +
 #[derive(Debug)]
 pub enum PrimeFieldDecodingError {
     // The encoded value is not in the field
-    NotInField
+    NotInField(String)
 }
 
 impl Error for PrimeFieldDecodingError {
     fn description(&self) -> &str {
         match self {
-            &PrimeFieldDecodingError::NotInField => "not an element in the field"
+            &PrimeFieldDecodingError::NotInField(..) => "not an element of the field"
         }
     }
 }
 
 impl fmt::Display for PrimeFieldDecodingError {
     fn fmt(&self, f: &mut fmt::Formatter) -> Result<(), fmt::Error> {
-        write!(f, "{}", self.description())
+        match self {
+            &PrimeFieldDecodingError::NotInField(ref repr) => {
+                write!(f, "{} is not an element of the field", repr)
+            }
+        }
     }
 }
 

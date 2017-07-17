@@ -408,7 +408,7 @@ impl PrimeField for Fq {
 
             Ok(r)
         } else {
-            Err(PrimeFieldDecodingError::NotInField)
+            Err(PrimeFieldDecodingError::NotInField(format!("{:?}", r.0)))
         }
     }
 

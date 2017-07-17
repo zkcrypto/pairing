@@ -221,6 +221,13 @@ impl AsRef<[u64]> for FqRepr {
     }
 }
 
+impl AsMut<[u64]> for FqRepr {
+    #[inline(always)]
+    fn as_mut(&mut self) -> &mut [u64] {
+        &mut self.0
+    }
+}
+
 impl From<u64> for FqRepr {
     #[inline(always)]
     fn from(val: u64) -> FqRepr {

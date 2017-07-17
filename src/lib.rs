@@ -29,6 +29,7 @@ pub mod wnaf;
 
 use std::fmt;
 use std::error::Error;
+use std::io::{self, Read, Write};
 
 /// An "engine" is a collection of types (fields, elliptic curve groups, etc.)
 /// with well-defined relationships. In particular, the G1/G2 curve groups are
@@ -336,6 +337,7 @@ pub trait PrimeFieldRepr: Sized +
                           'static +
                           rand::Rand +
                           AsRef<[u64]> +
+                          AsMut<[u64]> +
                           From<u64>
 {
     /// Subtract another reprensetation from this one, returning the borrow bit.
@@ -366,6 +368,30 @@ pub trait PrimeFieldRepr: Sized +
     /// Performs a leftwise bitshift of this number, effectively multiplying
     /// it by 2. Overflow is ignored.
     fn mul2(&mut self);
+
+    /// Writes this `PrimeFieldRepr` as a big endian integer. Always writes
+    /// `(num_bits` / 8) bytes.
+    fn write_be<W: Write>(&self, mut writer: W) -> io::Result<()> {
+        use byteorder::{WriteBytesExt, BigEndian};
+
+        for digit in self.as_ref().iter().rev() {
+            writer.write_u64::<BigEndian>(*digit)?;
+        }
+
+        Ok(())
+    }
+
+    /// Reads a big endian integer occupying (`num_bits` / 8) bytes into this
+    /// representation.
+    fn read_be<R: Read>(&mut self, mut reader: R) -> io::Result<()> {
+        use byteorder::{ReadBytesExt, BigEndian};
+
+        for digit in self.as_mut().iter_mut().rev() {
+            *digit = reader.read_u64::<BigEndian>()?;
+        }
+
+        Ok(())
+    }
 }
 
 /// An error that may occur when trying to interpret a `PrimeFieldRepr` as a

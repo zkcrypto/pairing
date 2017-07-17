@@ -617,8 +617,6 @@ pub mod g1 {
             }
         }
         fn into_affine_unchecked(&self) -> Result<G1Affine, GroupDecodingError> {
-            use byteorder::{ReadBytesExt, BigEndian};
-
             // Create a copy of this representation.
             let mut copy = self.0;
 
@@ -654,13 +652,8 @@ pub mod g1 {
                 {
                     let mut reader = &copy[..];
 
-                    for b in x.0.iter_mut().rev() {
-                        *b = reader.read_u64::<BigEndian>().unwrap();
-                    }
-
-                    for b in y.0.iter_mut().rev() {
-                        *b = reader.read_u64::<BigEndian>().unwrap();
-                    }
+                    x.read_be(&mut reader).unwrap();
+                    y.read_be(&mut reader).unwrap();
                 }
 
                 Ok(G1Affine {
@@ -671,8 +664,6 @@ pub mod g1 {
             }
         }
         fn from_affine(affine: G1Affine) -> Self {
-            use byteorder::{WriteBytesExt, BigEndian};
-
             let mut res = Self::empty();
 
             if affine.is_zero() {
@@ -682,13 +673,8 @@ pub mod g1 {
             } else {
                 let mut writer = &mut res.0[..];
 
-                for digit in affine.x.into_repr().as_ref().iter().rev() {
-                    writer.write_u64::<BigEndian>(*digit).unwrap();
-                }
-
-                for digit in affine.y.into_repr().as_ref().iter().rev() {
-                    writer.write_u64::<BigEndian>(*digit).unwrap();
-                }
+                affine.x.into_repr().write_be(&mut writer).unwrap();
+                affine.y.into_repr().write_be(&mut writer).unwrap();
             }
 
             res
@@ -733,8 +719,6 @@ pub mod g1 {
             }
         }
         fn into_affine_unchecked(&self) -> Result<G1Affine, GroupDecodingError> {
-            use byteorder::{ReadBytesExt, BigEndian};
-
             // Create a copy of this representation.
             let mut copy = self.0;
 
@@ -767,9 +751,7 @@ pub mod g1 {
                 {
                     let mut reader = &copy[..];
 
-                    for b in x.0.iter_mut().rev() {
-                        *b = reader.read_u64::<BigEndian>().unwrap();
-                    }
+                    x.read_be(&mut reader).unwrap();
                 }
 
                 // Interpret as Fq element.
@@ -804,8 +786,6 @@ pub mod g1 {
             }
         }
         fn from_affine(affine: G1Affine) -> Self {
-            use byteorder::{WriteBytesExt, BigEndian};
-
             let mut res = Self::empty();
 
             if affine.is_zero() {
@@ -816,9 +796,7 @@ pub mod g1 {
                 {
                     let mut writer = &mut res.0[..];
 
-                    for digit in affine.x.into_repr().as_ref().iter().rev() {
-                        writer.write_u64::<BigEndian>(*digit).unwrap();
-                    }
+                    affine.x.into_repr().write_be(&mut writer).unwrap();
                 }
 
                 let mut negy = affine.y;
@@ -1187,8 +1165,6 @@ pub mod g2 {
             }
         }
         fn into_affine_unchecked(&self) -> Result<G2Affine, GroupDecodingError> {
-            use byteorder::{ReadBytesExt, BigEndian};
-
             // Create a copy of this representation.
             let mut copy = self.0;
 
@@ -1226,21 +1202,10 @@ pub mod g2 {
                 {
                     let mut reader = &copy[..];
 
-                    for b in x_c1.0.iter_mut().rev() {
-                        *b = reader.read_u64::<BigEndian>().unwrap();
-                    }
-
-                    for b in x_c0.0.iter_mut().rev() {
-                        *b = reader.read_u64::<BigEndian>().unwrap();
-                    }
-
-                    for b in y_c1.0.iter_mut().rev() {
-                        *b = reader.read_u64::<BigEndian>().unwrap();
-                    }
-
-                    for b in y_c0.0.iter_mut().rev() {
-                        *b = reader.read_u64::<BigEndian>().unwrap();
-                    }
+                    x_c1.read_be(&mut reader).unwrap();
+                    x_c0.read_be(&mut reader).unwrap();
+                    y_c1.read_be(&mut reader).unwrap();
+                    y_c0.read_be(&mut reader).unwrap();
                 }
 
                 Ok(G2Affine {
@@ -1257,8 +1222,6 @@ pub mod g2 {
             }
         }
         fn from_affine(affine: G2Affine) -> Self {
-            use byteorder::{WriteBytesExt, BigEndian};
-
             let mut res = Self::empty();
 
             if affine.is_zero() {
@@ -1268,21 +1231,10 @@ pub mod g2 {
             } else {
                 let mut writer = &mut res.0[..];
 
-                for digit in affine.x.c1.into_repr().as_ref().iter().rev() {
-                    writer.write_u64::<BigEndian>(*digit).unwrap();
-                }
-
-                for digit in affine.x.c0.into_repr().as_ref().iter().rev() {
-                    writer.write_u64::<BigEndian>(*digit).unwrap();
-                }
-
-                for digit in affine.y.c1.into_repr().as_ref().iter().rev() {
-                    writer.write_u64::<BigEndian>(*digit).unwrap();
-                }
-
-                for digit in affine.y.c0.into_repr().as_ref().iter().rev() {
-                    writer.write_u64::<BigEndian>(*digit).unwrap();
-                }
+                affine.x.c1.into_repr().write_be(&mut writer).unwrap();
+                affine.x.c0.into_repr().write_be(&mut writer).unwrap();
+                affine.y.c1.into_repr().write_be(&mut writer).unwrap();
+                affine.y.c0.into_repr().write_be(&mut writer).unwrap();
             }
 
             res
@@ -1327,8 +1279,6 @@ pub mod g2 {
             }
         }
         fn into_affine_unchecked(&self) -> Result<G2Affine, GroupDecodingError> {
-            use byteorder::{ReadBytesExt, BigEndian};
-
             // Create a copy of this representation.
             let mut copy = self.0;
 
@@ -1362,13 +1312,8 @@ pub mod g2 {
                 {
                     let mut reader = &copy[..];
 
-                    for b in x_c1.0.iter_mut().rev() {
-                        *b = reader.read_u64::<BigEndian>().unwrap();
-                    }
-
-                    for b in x_c0.0.iter_mut().rev() {
-                        *b = reader.read_u64::<BigEndian>().unwrap();
-                    }
+                    x_c1.read_be(&mut reader).unwrap();
+                    x_c0.read_be(&mut reader).unwrap();
                 }
 
                 // Interpret as Fq element.
@@ -1406,8 +1351,6 @@ pub mod g2 {
             }
         }
         fn from_affine(affine: G2Affine) -> Self {
-            use byteorder::{WriteBytesExt, BigEndian};
-
             let mut res = Self::empty();
 
             if affine.is_zero() {
@@ -1418,13 +1361,8 @@ pub mod g2 {
                 {
                     let mut writer = &mut res.0[..];
 
-                    for digit in affine.x.c1.into_repr().as_ref().iter().rev() {
-                        writer.write_u64::<BigEndian>(*digit).unwrap();
-                    }
-
-                    for digit in affine.x.c0.into_repr().as_ref().iter().rev() {
-                        writer.write_u64::<BigEndian>(*digit).unwrap();
-                    }
+                    affine.x.c1.into_repr().write_be(&mut writer).unwrap();
+                    affine.x.c0.into_repr().write_be(&mut writer).unwrap();
                 }
 
                 let mut negy = affine.y;

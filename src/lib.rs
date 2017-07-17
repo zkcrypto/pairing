@@ -213,6 +213,8 @@ pub trait EncodedPoint: Sized +
                         Sync +
                         AsRef<[u8]> +
                         AsMut<[u8]> +
+                        Clone +
+                        Copy +
                         'static
 {
     type Affine: CurveAffine;

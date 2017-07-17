@@ -579,7 +579,14 @@ pub mod g1 {
 
     curve_impl!("E", G1, G1Affine, G1Prepared, Fq, Fr, G1Uncompressed, G1Compressed);
 
+    #[derive(Copy)]
     pub struct G1Uncompressed([u8; 96]);
+
+    impl Clone for G1Uncompressed {
+        fn clone(&self) -> G1Uncompressed {
+            G1Uncompressed(self.0)
+        }
+    }
 
     impl AsRef<[u8]> for G1Uncompressed {
         fn as_ref(&self) -> &[u8] {
@@ -688,7 +695,14 @@ pub mod g1 {
         }
     }
 
+    #[derive(Copy)]
     pub struct G1Compressed([u8; 48]);
+
+    impl Clone for G1Compressed {
+        fn clone(&self) -> G1Compressed {
+            G1Compressed(self.0)
+        }
+    }
 
     impl AsRef<[u8]> for G1Compressed {
         fn as_ref(&self) -> &[u8] {
@@ -1135,7 +1149,14 @@ pub mod g2 {
 
     curve_impl!("E'", G2, G2Affine, G2Prepared, Fq2, Fr, G2Uncompressed, G2Compressed);
 
+    #[derive(Copy)]
     pub struct G2Uncompressed([u8; 192]);
+
+    impl Clone for G2Uncompressed {
+        fn clone(&self) -> G2Uncompressed {
+            G2Uncompressed(self.0)
+        }
+    }
 
     impl AsRef<[u8]> for G2Uncompressed {
         fn as_ref(&self) -> &[u8] {
@@ -1268,7 +1289,14 @@ pub mod g2 {
         }
     }
 
+    #[derive(Copy)]
     pub struct G2Compressed([u8; 96]);
+
+    impl Clone for G2Compressed {
+        fn clone(&self) -> G2Compressed {
+            G2Compressed(self.0)
+        }
+    }
 
     impl AsRef<[u8]> for G2Compressed {
         fn as_ref(&self) -> &[u8] {

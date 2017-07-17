@@ -184,13 +184,13 @@ pub trait CurveAffine: Copy +
 
     /// Converts this element into its compressed encoding, so long as it's not
     /// the point at infinity.
-    fn into_compressed(&self) -> Result<Self::Compressed, ()> {
+    fn into_compressed(&self) -> Self::Compressed {
         <Self::Compressed as EncodedPoint>::from_affine(*self)
     }
 
     /// Converts this element into its uncompressed encoding, so long as it's not
     /// the point at infinity.
-    fn into_uncompressed(&self) -> Result<Self::Uncompressed, ()> {
+    fn into_uncompressed(&self) -> Self::Uncompressed {
         <Self::Uncompressed as EncodedPoint>::from_affine(*self)
     }
 }
@@ -230,7 +230,7 @@ pub trait EncodedPoint: Sized +
 
     /// Creates an `EncodedPoint` from an affine point, as long as the
     /// point is not the point at infinity.
-    fn from_affine(affine: Self::Affine) -> Result<Self, ()>;
+    fn from_affine(affine: Self::Affine) -> Self;
 }
 
 /// This trait represents an element of a field.

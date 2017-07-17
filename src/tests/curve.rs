@@ -299,25 +299,32 @@ fn random_transformation_tests<G: CurveProjective>() {
 
 fn random_encoding_tests<G: CurveAffine>()
 {
-    assert!(G::zero().into_compressed().is_err());
-    assert!(G::zero().into_uncompressed().is_err());
-
     let mut rng = XorShiftRng::from_seed([0x5dbe6259, 0x8d313d76, 0x3237db17, 0xe5bc0654]);
+
+    assert_eq!(
+        G::zero().into_uncompressed().into_affine().unwrap(),
+        G::zero()
+    );
+
+    assert_eq!(
+        G::zero().into_compressed().into_affine().unwrap(),
+        G::zero()
+    );
 
     for _ in 0..1000 {
         let mut r = G::Projective::rand(&mut rng).into_affine();
 
-        let uncompressed = r.into_uncompressed().unwrap();
+        let uncompressed = r.into_uncompressed();
         let de_uncompressed = uncompressed.into_affine().unwrap();
         assert_eq!(de_uncompressed, r);
 
-        let compressed = r.into_compressed().unwrap();
+        let compressed = r.into_compressed();
         let de_compressed = compressed.into_affine().unwrap();
         assert_eq!(de_compressed, r);
 
         r.negate();
 
-        let compressed = r.into_compressed().unwrap();
+        let compressed = r.into_compressed();
         let de_compressed = compressed.into_affine().unwrap();
         assert_eq!(de_compressed, r);
     }

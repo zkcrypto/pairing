@@ -586,37 +586,67 @@ pub mod g1 {
         fn into_affine_unchecked(&self) -> Result<G1Affine, ()> {
             use byteorder::{ReadBytesExt, BigEndian};
 
-            let mut x = FqRepr([0; 6]);
-            let mut y = FqRepr([0; 6]);
+            // Create a copy of this representation.
+            let mut copy = self.0;
 
-            {
-                let mut reader = &self.0[..];
-
-                for b in x.0.iter_mut().rev() {
-                    *b = reader.read_u64::<BigEndian>().unwrap();
-                }
-
-                for b in y.0.iter_mut().rev() {
-                    *b = reader.read_u64::<BigEndian>().unwrap();
-                }
-            }
-
-            Ok(G1Affine {
-                x: Fq::from_repr(x)?,
-                y: Fq::from_repr(y)?,
-                infinity: false
-            })
-        }
-        fn from_affine(affine: G1Affine) -> Result<Self, ()> {
-            use byteorder::{WriteBytesExt, BigEndian};
-
-            if affine.is_zero() {
+            if copy[0] & (1 << 7) != 0 {
+                // Distinguisher bit is set, but this should be uncompressed!
                 return Err(())
             }
 
+            if copy[0] & (1 << 6) != 0 {
+                // This is the point at infinity, which means that if we mask away
+                // the first two bits, the entire representation should consist
+                // of zeroes.
+                copy[0] &= 0x3f;
+
+                if copy.iter().all(|b| *b == 0) {
+                    Ok(G1Affine::zero())
+                } else {
+                    Err(())
+                }
+            } else {
+                if copy[0] & (1 << 5) != 0 {
+                    // The bit indicating the y-coordinate should be lexicographically
+                    // largest is set, but this is an uncompressed element.
+                    return Err(())
+                }
+
+                // Unset the three most significant bits.
+                copy[0] &= 0x1f;
+
+                let mut x = FqRepr([0; 6]);
+                let mut y = FqRepr([0; 6]);
+
+                {
+                    let mut reader = &copy[..];
+
+                    for b in x.0.iter_mut().rev() {
+                        *b = reader.read_u64::<BigEndian>().unwrap();
+                    }
+
+                    for b in y.0.iter_mut().rev() {
+                        *b = reader.read_u64::<BigEndian>().unwrap();
+                    }
+                }
+
+                Ok(G1Affine {
+                    x: Fq::from_repr(x)?,
+                    y: Fq::from_repr(y)?,
+                    infinity: false
+                })
+            }
+        }
+        fn from_affine(affine: G1Affine) -> Self {
+            use byteorder::{WriteBytesExt, BigEndian};
+
             let mut res = Self::empty();
 
-            {
+            if affine.is_zero() {
+                // Set the second-most significant bit to indicate this point
+                // is at infinity.
+                res.0[0] |= 1 << 6;
+            } else {
                 let mut writer = &mut res.0[..];
 
                 for digit in affine.x.into_repr().as_ref().iter().rev() {
@@ -628,7 +658,7 @@ pub mod g1 {
                 }
             }
 
-            Ok(res)
+            res
         }
     }
 
@@ -662,85 +692,98 @@ pub mod g1 {
                 return Err(())
             }
 
-            // Determine if the intended y coordinate must be greater
-            // lexicographically.
-            let greatest = copy[0] & (1 << 6) != 0;
+            if copy[0] & (1 << 6) != 0 {
+                // This is the point at infinity, which means that if we mask away
+                // the first two bits, the entire representation should consist
+                // of zeroes.
+                copy[0] &= 0x3f;
 
-            // Unset the two most significant bits.
-            copy[0] &= 0x3f;
-
-            let mut x = FqRepr([0; 6]);
-
-            {
-                let mut reader = &copy[..];
-
-                for b in x.0.iter_mut().rev() {
-                    *b = reader.read_u64::<BigEndian>().unwrap();
-                }
-            }
-
-            // Interpret as Fq element.
-            let x = Fq::from_repr(x)?;
-
-            // Compute x^3 + b
-            let mut x3b = x;
-            x3b.square();
-            x3b.mul_assign(&x);
-            x3b.add_assign(&G1Affine::get_coeff_b());
-
-            // Attempt to compute y
-            match x3b.sqrt() {
-                Some(y) => {
-                    let mut negy = y;
-                    negy.negate();
-
-                    // Get the parity of the sqrt we found.
-                    let parity = y > negy;
-
-                    Ok(G1Affine {
-                        x: x,
-                        y: if parity == greatest { y } else { negy },
-                        infinity: false
-                    })
-                },
-                None => {
-                    // Point must not be on the curve.
+                if copy.iter().all(|b| *b == 0) {
+                    Ok(G1Affine::zero())
+                } else {
                     Err(())
+                }
+            } else {
+                // Determine if the intended y coordinate must be greater
+                // lexicographically.
+                let greatest = copy[0] & (1 << 5) != 0;
+
+                // Unset the three most significant bits.
+                copy[0] &= 0x1f;
+
+                let mut x = FqRepr([0; 6]);
+
+                {
+                    let mut reader = &copy[..];
+
+                    for b in x.0.iter_mut().rev() {
+                        *b = reader.read_u64::<BigEndian>().unwrap();
+                    }
+                }
+
+                // Interpret as Fq element.
+                let x = Fq::from_repr(x)?;
+
+                // Compute x^3 + b
+                let mut x3b = x;
+                x3b.square();
+                x3b.mul_assign(&x);
+                x3b.add_assign(&G1Affine::get_coeff_b());
+
+                // Attempt to compute y
+                match x3b.sqrt() {
+                    Some(y) => {
+                        let mut negy = y;
+                        negy.negate();
+
+                        // Get the parity of the sqrt we found.
+                        let parity = y > negy;
+
+                        Ok(G1Affine {
+                            x: x,
+                            y: if parity == greatest { y } else { negy },
+                            infinity: false
+                        })
+                    },
+                    None => {
+                        // Point must not be on the curve.
+                        Err(())
+                    }
                 }
             }
         }
-        fn from_affine(affine: G1Affine) -> Result<Self, ()> {
+        fn from_affine(affine: G1Affine) -> Self {
             use byteorder::{WriteBytesExt, BigEndian};
-
-            if affine.is_zero() {
-                return Err(())
-            }
 
             let mut res = Self::empty();
 
-            {
-                let mut writer = &mut res.0[..];
+            if affine.is_zero() {
+                // Set the second-most significant bit to indicate this point
+                // is at infinity.
+                res.0[0] |= 1 << 6;
+            } else {
+                {
+                    let mut writer = &mut res.0[..];
 
-                for digit in affine.x.into_repr().as_ref().iter().rev() {
-                    writer.write_u64::<BigEndian>(*digit).unwrap();
+                    for digit in affine.x.into_repr().as_ref().iter().rev() {
+                        writer.write_u64::<BigEndian>(*digit).unwrap();
+                    }
                 }
-            }
 
-            // Distinguish this from an uncompressed element.
-            res.0[0] |= 1 << 7; // Set highest bit.
-
-            {
                 let mut negy = affine.y;
                 negy.negate();
 
-                // If the correct y coordinate is the largest (lexicographically),
-                // the bit should be set.
+                // Set the third most significant bit if the correct y-coordinate
+                // is lexicographically largest.
                 if affine.y > negy {
-                    res.0[0] |= 1 << 6; // Set second highest bit.
+                    res.0[0] |= 1 << 5;
                 }
             }
 
-            Ok(res)
+            // Set highest bit to distinguish this as a compressed element.
+            res.0[0] |= 1 << 7;
+
+            res
         }
     }
 
@@ -1080,53 +1123,83 @@ pub mod g2 {
         fn into_affine_unchecked(&self) -> Result<G2Affine, ()> {
             use byteorder::{ReadBytesExt, BigEndian};
 
-            let mut x_c1 = FqRepr([0; 6]);
-            let mut x_c0 = FqRepr([0; 6]);
-            let mut y_c1 = FqRepr([0; 6]);
-            let mut y_c0 = FqRepr([0; 6]);
+            // Create a copy of this representation.
+            let mut copy = self.0;
 
-            {
-                let mut reader = &self.0[..];
-
-                for b in x_c1.0.iter_mut().rev() {
-                    *b = reader.read_u64::<BigEndian>().unwrap();
-                }
-
-                for b in x_c0.0.iter_mut().rev() {
-                    *b = reader.read_u64::<BigEndian>().unwrap();
-                }
-
-                for b in y_c1.0.iter_mut().rev() {
-                    *b = reader.read_u64::<BigEndian>().unwrap();
-                }
-
-                for b in y_c0.0.iter_mut().rev() {
-                    *b = reader.read_u64::<BigEndian>().unwrap();
-                }
-            }
-
-            Ok(G2Affine {
-                x: Fq2 {
-                    c0: Fq::from_repr(x_c0)?,
-                    c1: Fq::from_repr(x_c1)?
-                },
-                y: Fq2 {
-                    c0: Fq::from_repr(y_c0)?,
-                    c1: Fq::from_repr(y_c1)?
-                },
-                infinity: false
-            })
-        }
-        fn from_affine(affine: G2Affine) -> Result<Self, ()> {
-            use byteorder::{WriteBytesExt, BigEndian};
-
-            if affine.is_zero() {
+            if copy[0] & (1 << 7) != 0 {
+                // Distinguisher bit is set, but this should be uncompressed!
                 return Err(())
             }
 
+            if copy[0] & (1 << 6) != 0 {
+                // This is the point at infinity, which means that if we mask away
+                // the first two bits, the entire representation should consist
+                // of zeroes.
+                copy[0] &= 0x3f;
+
+                if copy.iter().all(|b| *b == 0) {
+                    Ok(G2Affine::zero())
+                } else {
+                    Err(())
+                }
+            } else {
+                if copy[0] & (1 << 5) != 0 {
+                    // The bit indicating the y-coordinate should be lexicographically
+                    // largest is set, but this is an uncompressed element.
+                    return Err(())
+                }
+
+                // Unset the three most significant bits.
+                copy[0] &= 0x1f;
+
+                let mut x_c0 = FqRepr([0; 6]);
+                let mut x_c1 = FqRepr([0; 6]);
+                let mut y_c0 = FqRepr([0; 6]);
+                let mut y_c1 = FqRepr([0; 6]);
+
+                {
+                    let mut reader = &copy[..];
+
+                    for b in x_c1.0.iter_mut().rev() {
+                        *b = reader.read_u64::<BigEndian>().unwrap();
+                    }
+
+                    for b in x_c0.0.iter_mut().rev() {
+                        *b = reader.read_u64::<BigEndian>().unwrap();
+                    }
+
+                    for b in y_c1.0.iter_mut().rev() {
+                        *b = reader.read_u64::<BigEndian>().unwrap();
+                    }
+
+                    for b in y_c0.0.iter_mut().rev() {
+                        *b = reader.read_u64::<BigEndian>().unwrap();
+                    }
+                }
+
+                Ok(G2Affine {
+                    x: Fq2 {
+                        c0: Fq::from_repr(x_c0)?,
+                        c1: Fq::from_repr(x_c1)?
+                    },
+                    y: Fq2 {
+                        c0: Fq::from_repr(y_c0)?,
+                        c1: Fq::from_repr(y_c1)?
+                    },
+                    infinity: false
+                })
+            }
+        }
+        fn from_affine(affine: G2Affine) -> Self {
+            use byteorder::{WriteBytesExt, BigEndian};
+
             let mut res = Self::empty();
 
-            {
+            if affine.is_zero() {
+                // Set the second-most significant bit to indicate this point
+                // is at infinity.
+                res.0[0] |= 1 << 6;
+            } else {
                 let mut writer = &mut res.0[..];
 
                 for digit in affine.x.c1.into_repr().as_ref().iter().rev() {
@@ -1146,7 +1219,7 @@ pub mod g2 {
                 }
             }
 
-            Ok(res)
+            res
         }
     }
 
@@ -1180,97 +1253,110 @@ pub mod g2 {
                 return Err(())
             }
 
-            // Determine if the intended y coordinate must be greater
-            // lexicographically.
-            let greatest = copy[0] & (1 << 6) != 0;
+            if copy[0] & (1 << 6) != 0 {
+                // This is the point at infinity, which means that if we mask away
+                // the first two bits, the entire representation should consist
+                // of zeroes.
+                copy[0] &= 0x3f;
 
-            // Unset the two most significant bits.
-            copy[0] &= 0x3f;
-
-            let mut x_c1 = FqRepr([0; 6]);
-            let mut x_c0 = FqRepr([0; 6]);
-
-            {
-                let mut reader = &copy[..];
-
-                for b in x_c1.0.iter_mut().rev() {
-                    *b = reader.read_u64::<BigEndian>().unwrap();
-                }
-
-                for b in x_c0.0.iter_mut().rev() {
-                    *b = reader.read_u64::<BigEndian>().unwrap();
-                }
-            }
-
-            // Interpret as Fq element.
-            let x = Fq2 {
-                c0: Fq::from_repr(x_c0)?,
-                c1: Fq::from_repr(x_c1)?
-            };
-
-            // Compute x^3 + b
-            let mut x3b = x;
-            x3b.square();
-            x3b.mul_assign(&x);
-            x3b.add_assign(&G2Affine::get_coeff_b());
-
-            // Attempt to compute y
-            match x3b.sqrt() {
-                Some(y) => {
-                    let mut negy = y;
-                    negy.negate();
-
-                    // Get the parity of the sqrt we found.
-                    let parity = y > negy;
-
-                    Ok(G2Affine {
-                        x: x,
-                        y: if parity == greatest { y } else { negy },
-                        infinity: false
-                    })
-                },
-                None => {
-                    // Point must not be on the curve.
+                if copy.iter().all(|b| *b == 0) {
+                    Ok(G2Affine::zero())
+                } else {
                     Err(())
+                }
+            } else {
+                // Determine if the intended y coordinate must be greater
+                // lexicographically.
+                let greatest = copy[0] & (1 << 5) != 0;
+
+                // Unset the three most significant bits.
+                copy[0] &= 0x1f;
+
+                let mut x_c1 = FqRepr([0; 6]);
+                let mut x_c0 = FqRepr([0; 6]);
+
+                {
+                    let mut reader = &copy[..];
+
+                    for b in x_c1.0.iter_mut().rev() {
+                        *b = reader.read_u64::<BigEndian>().unwrap();
+                    }
+
+                    for b in x_c0.0.iter_mut().rev() {
+                        *b = reader.read_u64::<BigEndian>().unwrap();
+                    }
+                }
+
+                // Interpret as Fq element.
+                let x = Fq2 {
+                    c0: Fq::from_repr(x_c0)?,
+                    c1: Fq::from_repr(x_c1)?
+                };
+
+                // Compute x^3 + b
+                let mut x3b = x;
+                x3b.square();
+                x3b.mul_assign(&x);
+                x3b.add_assign(&G2Affine::get_coeff_b());
+
+                // Attempt to compute y
+                match x3b.sqrt() {
+                    Some(y) => {
+                        let mut negy = y;
+                        negy.negate();
+
+                        // Get the parity of the sqrt we found.
+                        let parity = y > negy;
+
+                        Ok(G2Affine {
+                            x: x,
+                            y: if parity == greatest { y } else { negy },
+                            infinity: false
+                        })
+                    },
+                    None => {
+                        // Point must not be on the curve.
+                        Err(())
+                    }
                 }
             }
         }
-        fn from_affine(affine: G2Affine) -> Result<Self, ()> {
+        fn from_affine(affine: G2Affine) -> Self {
             use byteorder::{WriteBytesExt, BigEndian};
-
-            if affine.is_zero() {
-                return Err(())
-            }
 
             let mut res = Self::empty();
 
-            {
-                let mut writer = &mut res.0[..];
+            if affine.is_zero() {
+                // Set the second-most significant bit to indicate this point
+                // is at infinity.
+                res.0[0] |= 1 << 6;
+            } else {
+                {
+                    let mut writer = &mut res.0[..];
 
-                for digit in affine.x.c1.into_repr().as_ref().iter().rev() {
-                    writer.write_u64::<BigEndian>(*digit).unwrap();
+                    for digit in affine.x.c1.into_repr().as_ref().iter().rev() {
+                        writer.write_u64::<BigEndian>(*digit).unwrap();
+                    }
+
+                    for digit in affine.x.c0.into_repr().as_ref().iter().rev() {
+                        writer.write_u64::<BigEndian>(*digit).unwrap();
+                    }
                 }
 
-                for digit in affine.x.c0.into_repr().as_ref().iter().rev() {
-                    writer.write_u64::<BigEndian>(*digit).unwrap();
-                }
-            }
-
-            // Distinguish this from an uncompressed element.
-            res.0[0] |= 1 << 7; // Set highest bit.
-
-            {
                 let mut negy = affine.y;
                 negy.negate();
 
-                // If the correct y coordinate is the largest (lexicographically),
-                // the bit should be set.
+                // Set the third most significant bit if the correct y-coordinate
+                // is lexicographically largest.
                 if affine.y > negy {
-                    res.0[0] |= 1 << 6; // Set second highest bit.
+                    res.0[0] |= 1 << 5;
                 }
             }
 
-            Ok(res)
+            // Set highest bit to distinguish this as a compressed element.
+            res.0[0] |= 1 << 7;
+
+            res
         }
     }
 

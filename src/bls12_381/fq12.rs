@@ -5,10 +5,17 @@ use super::fq2::Fq2;
 use super::fq::{FROBENIUS_COEFF_FQ12_C1};
 
 /// An element of Fq12, represented by c0 + c1 * w.
-#[derive(Copy, Clone, Debug, Eq, PartialEq)]
+#[derive(Copy, Clone, Eq, PartialEq, Debug)]
 pub struct Fq12 {
     pub c0: Fq6,
     pub c1: Fq6
+}
+
+impl ::std::fmt::Display for Fq12
+{
+    fn fmt(&self, f: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
+        write!(f, "Fq12({} + {} * w)", self.c0, self.c1)
+    }
 }
 
 impl Rand for Fq12 {

@@ -5,10 +5,17 @@ use super::fq::{Fq, FROBENIUS_COEFF_FQ2_C1, NEGATIVE_ONE};
 use std::cmp::Ordering;
 
 /// An element of Fq2, represented by c0 + c1 * u.
-#[derive(Copy, Clone, Debug, Eq, PartialEq)]
+#[derive(Copy, Clone, Eq, PartialEq, Debug)]
 pub struct Fq2 {
     pub c0: Fq,
     pub c1: Fq
+}
+
+impl ::std::fmt::Display for Fq2
+{
+    fn fmt(&self, f: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
+        write!(f, "Fq2({} + {} * u)", self.c0, self.c1)
+    }
 }
 
 /// `Fq2` elements are ordered lexicographically.

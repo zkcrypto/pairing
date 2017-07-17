@@ -92,6 +92,7 @@ pub trait CurveProjective: PartialEq +
                            Send +
                            Sync +
                            fmt::Debug +
+                           fmt::Display +
                            rand::Rand +
                            'static
 {
@@ -159,6 +160,7 @@ pub trait CurveAffine: Copy +
                        Send +
                        Sync +
                        fmt::Debug +
+                       fmt::Display +
                        PartialEq +
                        Eq +
                        'static
@@ -247,6 +249,7 @@ pub trait Field: Sized +
                  Send +
                  Sync +
                  fmt::Debug +
+                 fmt::Display +
                  'static +
                  rand::Rand
 {
@@ -327,6 +330,7 @@ pub trait PrimeFieldRepr: Sized +
                           Send +
                           Sync +
                           fmt::Debug +
+                          fmt::Display +
                           'static +
                           rand::Rand +
                           AsRef<[u64]> +

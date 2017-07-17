@@ -1,5 +1,6 @@
 macro_rules! curve_impl {
     (
+        $name:expr,
         $projective:ident,
         $affine:ident,
         $prepared:ident,
@@ -15,11 +16,29 @@ macro_rules! curve_impl {
             pub(crate) infinity: bool
         }
 
-        #[derive(Copy, Clone, Debug, Eq)]
+        impl ::std::fmt::Display for $affine
+        {
+            fn fmt(&self, f: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
+                if self.infinity {
+                    write!(f, "{}(Infinity)", $name)
+                } else {
+                    write!(f, "{}(x={}, y={})", $name, self.x, self.y)
+                }
+            }
+        }
+
+        #[derive(Copy, Clone, Eq, Debug)]
         pub struct $projective {
            pub(crate) x: $basefield,
            pub(crate) y: $basefield,
            pub(crate) z: $basefield
+        }
+
+        impl ::std::fmt::Display for $projective
+        {
+            fn fmt(&self, f: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
+                write!(f, "{}", self.into_affine())
+            }
         }
 
         impl PartialEq for $projective {
@@ -558,7 +577,7 @@ pub mod g1 {
     use super::super::{Fq, Fr, FrRepr, FqRepr};
     use ::{CurveProjective, CurveAffine, PrimeField, SqrtField, PrimeFieldRepr, Field, BitIterator, EncodedPoint, GroupDecodingError};
 
-    curve_impl!(G1, G1Affine, G1Prepared, Fq, Fr, G1Uncompressed, G1Compressed);
+    curve_impl!("E", G1, G1Affine, G1Prepared, Fq, Fr, G1Uncompressed, G1Compressed);
 
     pub struct G1Uncompressed([u8; 96]);
 
@@ -1114,7 +1133,7 @@ pub mod g2 {
     use super::super::{Fq2, Fr, Fq, FrRepr, FqRepr};
     use ::{CurveProjective, CurveAffine, PrimeField, SqrtField, PrimeFieldRepr, Field, BitIterator, EncodedPoint, GroupDecodingError};
 
-    curve_impl!(G2, G2Affine, G2Prepared, Fq2, Fr, G2Uncompressed, G2Compressed);
+    curve_impl!("E'", G2, G2Affine, G2Prepared, Fq2, Fr, G2Uncompressed, G2Compressed);
 
     pub struct G2Uncompressed([u8; 192]);
 

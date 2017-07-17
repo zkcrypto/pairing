@@ -1,4 +1,4 @@
-use ::{Field, PrimeField, SqrtField, PrimeFieldRepr};
+use ::{Field, PrimeField, SqrtField, PrimeFieldRepr, PrimeFieldDecodingError};
 
 // r = 52435875175126190479447740508185965837690552500527637822603658699938581184513
 const MODULUS: FrRepr = FrRepr([0xffffffff00000001, 0x53bda402fffe5bfe, 0x3339d80809a1d805, 0x73eda753299d7d48]);
@@ -222,14 +222,14 @@ impl From<Fr> for FrRepr {
 impl PrimeField for Fr {
     type Repr = FrRepr;
 
-    fn from_repr(r: FrRepr) -> Result<Fr, ()> {
+    fn from_repr(r: FrRepr) -> Result<Fr, PrimeFieldDecodingError> {
         let mut r = Fr(r);
         if r.is_valid() {
             r.mul_assign(&Fr(R2));
 
             Ok(r)
         } else {
-            Err(())
+            Err(PrimeFieldDecodingError::NotInField)
         }
     }
 

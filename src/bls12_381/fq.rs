@@ -1,4 +1,4 @@
-use ::{Field, PrimeField, SqrtField, PrimeFieldRepr};
+use ::{Field, PrimeField, SqrtField, PrimeFieldRepr, PrimeFieldDecodingError};
 use std::cmp::Ordering;
 use super::fq2::Fq2;
 
@@ -401,14 +401,14 @@ impl From<Fq> for FqRepr {
 impl PrimeField for Fq {
     type Repr = FqRepr;
 
-    fn from_repr(r: FqRepr) -> Result<Fq, ()> {
+    fn from_repr(r: FqRepr) -> Result<Fq, PrimeFieldDecodingError> {
         let mut r = Fq(r);
         if r.is_valid() {
             r.mul_assign(&Fq(R2));
 
             Ok(r)
         } else {
-            Err(())
+            Err(PrimeFieldDecodingError::NotInField)
         }
     }
 
@@ -1740,6 +1740,6 @@ fn test_fq_ordering() {
     // FqRepr's ordering is well-tested, but we still need to make sure the Fq
     // elements aren't being compared in Montgomery form.
     for i in 0..100 {
-        assert!(Fq::from_repr(FqRepr::from(i+1)) > Fq::from_repr(FqRepr::from(i)));
+        assert!(Fq::from_repr(FqRepr::from(i+1)).unwrap() > Fq::from_repr(FqRepr::from(i)).unwrap());
     }
 }

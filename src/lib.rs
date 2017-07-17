@@ -28,6 +28,7 @@ pub mod bls12_381;
 pub mod wnaf;
 
 use std::fmt;
+use std::error::Error;
 
 /// An "engine" is a collection of types (fields, elliptic curve groups, etc.)
 /// with well-defined relationships. In particular, the G1/G2 curve groups are
@@ -179,9 +180,6 @@ pub trait CurveAffine: Copy +
     /// additive identity.
     fn is_zero(&self) -> bool;
 
-    /// Determines if this point is on the curve and in the correct subgroup.
-    fn is_valid(&self) -> bool;
-
     /// Negates this element.
     fn negate(&mut self);
 
@@ -224,21 +222,17 @@ pub trait EncodedPoint: Sized +
     fn size() -> usize;
 
     /// Converts an `EncodedPoint` into a `CurveAffine` element,
-    /// if the point is valid.
-    fn into_affine(&self) -> Result<Self::Affine, ()> {
-        let affine = self.into_affine_unchecked()?;
-
-        if affine.is_valid() {
-            Ok(affine)
-        } else {
-            Err(())
-        }
-    }
+    /// if the encoding represents a valid element.
+    fn into_affine(&self) -> Result<Self::Affine, GroupDecodingError>;
 
     /// Converts an `EncodedPoint` into a `CurveAffine` element,
-    /// without checking if it's a valid point. Caller must be careful
-    /// when using this, as misuse can violate API invariants.
-    fn into_affine_unchecked(&self) -> Result<Self::Affine, ()>;
+    /// without guaranteeing that the encoding represents a valid
+    /// element. This is useful when the caller knows the encoding is
+    /// valid already.
+    ///
+    /// If the encoding is invalid, this can break API invariants,
+    /// so caution is strongly encouraged.
+    fn into_affine_unchecked(&self) -> Result<Self::Affine, GroupDecodingError>;
 
     /// Creates an `EncodedPoint` from an affine point, as long as the
     /// point is not the point at infinity.
@@ -368,6 +362,65 @@ pub trait PrimeFieldRepr: Sized +
     fn mul2(&mut self);
 }
 
+#[derive(Debug)]
+pub enum PrimeFieldDecodingError {
+    // The encoded value is not in the field
+    NotInField
+}
+
+impl Error for PrimeFieldDecodingError {
+    fn description(&self) -> &str {
+        match self {
+            &PrimeFieldDecodingError::NotInField => "not an element in the field"
+        }
+    }
+}
+
+impl fmt::Display for PrimeFieldDecodingError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> Result<(), fmt::Error> {
+        write!(f, "{}", self.description())
+    }
+}
+
+#[derive(Debug)]
+pub enum GroupDecodingError {
+    /// The coordinate(s) do not lie on the curve.
+    NotOnCurve,
+    /// The element is not part of the r-order subgroup.
+    NotInSubgroup,
+    /// One of the coordinates could not be decoded
+    CoordinateDecodingError(&'static str, PrimeFieldDecodingError),
+    /// The compression mode of the encoded elemnet was not as expected
+    UnexpectedCompressionMode,
+    /// The encoding contained bits that should not have been set
+    UnexpectedInformation
+}
+
+impl Error for GroupDecodingError {
+    fn description(&self) -> &str {
+        match self {
+            &GroupDecodingError::NotOnCurve => "coordinate(s) do not lie on the curve",
+            &GroupDecodingError::NotInSubgroup => "the element is not part of an r-order subgroup",
+            &GroupDecodingError::CoordinateDecodingError(..) => "coordinate(s) could not be decoded",
+            &GroupDecodingError::UnexpectedCompressionMode => "encoding has unexpected compression mode",
+            &GroupDecodingError::UnexpectedInformation => "encoding has unexpected information"
+        }
+    }
+}
+
+impl fmt::Display for GroupDecodingError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> Result<(), fmt::Error> {
+        match self {
+            &GroupDecodingError::CoordinateDecodingError(description, ref err) => {
+                write!(f, "{} decoding error: {}", description, err)
+            },
+            _ => {
+                write!(f, "{}", self.description())
+            }
+        }
+    }
+}
+
 /// This represents an element of a prime field.
 pub trait PrimeField: Field
 {
@@ -376,7 +429,7 @@ pub trait PrimeField: Field
     type Repr: PrimeFieldRepr + From<Self>;
 
     /// Convert this prime field element into a biginteger representation.
-    fn from_repr(Self::Repr) -> Result<Self, ()>;
+    fn from_repr(Self::Repr) -> Result<Self, PrimeFieldDecodingError>;
 
     /// Convert a biginteger reprensentation into a prime field element, if
     /// the number is an element of the field.

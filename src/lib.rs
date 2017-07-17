@@ -366,9 +366,11 @@ pub trait PrimeFieldRepr: Sized +
     fn mul2(&mut self);
 }
 
+/// An error that may occur when trying to interpret a `PrimeFieldRepr` as a
+/// `PrimeField` element.
 #[derive(Debug)]
 pub enum PrimeFieldDecodingError {
-    // The encoded value is not in the field
+    /// The encoded value is not in the field
     NotInField(String)
 }
 
@@ -390,6 +392,7 @@ impl fmt::Display for PrimeFieldDecodingError {
     }
 }
 
+/// An error that may occur when trying to decode an `EncodedPoint`.
 #[derive(Debug)]
 pub enum GroupDecodingError {
     /// The coordinate(s) do not lie on the curve.

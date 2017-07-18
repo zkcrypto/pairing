@@ -5,7 +5,7 @@ use super::fq2::Fq2;
 use super::fq::{FROBENIUS_COEFF_FQ12_C1};
 
 /// An element of Fq12, represented by c0 + c1 * w.
-#[derive(Copy, Clone, Eq, PartialEq, Debug)]
+#[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub struct Fq12 {
     pub c0: Fq6,
     pub c1: Fq6

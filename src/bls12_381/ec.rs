@@ -27,7 +27,7 @@ macro_rules! curve_impl {
             }
         }
 
-        #[derive(Copy, Clone, Eq, Debug)]
+        #[derive(Copy, Clone, Debug, Eq)]
         pub struct $projective {
            pub(crate) x: $basefield,
            pub(crate) y: $basefield,
@@ -577,7 +577,7 @@ pub mod g1 {
     use super::super::{Fq, Fr, FrRepr, FqRepr};
     use ::{CurveProjective, CurveAffine, PrimeField, SqrtField, PrimeFieldRepr, Field, BitIterator, EncodedPoint, GroupDecodingError};
 
-    curve_impl!("E", G1, G1Affine, G1Prepared, Fq, Fr, G1Uncompressed, G1Compressed);
+    curve_impl!("G1", G1, G1Affine, G1Prepared, Fq, Fr, G1Uncompressed, G1Compressed);
 
     #[derive(Copy)]
     pub struct G1Uncompressed([u8; 96]);
@@ -1125,7 +1125,7 @@ pub mod g2 {
     use super::super::{Fq2, Fr, Fq, FrRepr, FqRepr};
     use ::{CurveProjective, CurveAffine, PrimeField, SqrtField, PrimeFieldRepr, Field, BitIterator, EncodedPoint, GroupDecodingError};
 
-    curve_impl!("E'", G2, G2Affine, G2Prepared, Fq2, Fr, G2Uncompressed, G2Compressed);
+    curve_impl!("G2", G2, G2Affine, G2Prepared, Fq2, Fr, G2Uncompressed, G2Compressed);
 
     #[derive(Copy)]
     pub struct G2Uncompressed([u8; 192]);

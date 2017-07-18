@@ -5,7 +5,7 @@ use super::fq::{Fq, FROBENIUS_COEFF_FQ2_C1, NEGATIVE_ONE};
 use std::cmp::Ordering;
 
 /// An element of Fq2, represented by c0 + c1 * u.
-#[derive(Copy, Clone, Eq, PartialEq, Debug)]
+#[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub struct Fq2 {
     pub c0: Fq,
     pub c1: Fq

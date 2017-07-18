@@ -1,4 +1,4 @@
-use ::{Field, PrimeField, SqrtField, PrimeFieldRepr};
+use ::{Field, PrimeField, SqrtField, PrimeFieldRepr, PrimeFieldDecodingError};
 use std::cmp::Ordering;
 use super::fq2::Fq2;
 
@@ -192,7 +192,7 @@ pub const FROBENIUS_COEFF_FQ12_C1: [Fq2; 12] = [
 // -((2**384) mod q) mod q
 pub const NEGATIVE_ONE: Fq = Fq(FqRepr([0x43f5fffffffcaaae, 0x32b7fff2ed47fffd, 0x7e83a49a2e99d69, 0xeca8f3318332bb7a, 0xef148d1ea0f4c069, 0x40ab3263eff0206]));
 
-#[derive(Copy, Clone, PartialEq, Eq, Default)]
+#[derive(Copy, Clone, PartialEq, Eq, Default, Debug)]
 pub struct FqRepr(pub [u64; 6]);
 
 impl ::rand::Rand for FqRepr {
@@ -202,7 +202,7 @@ impl ::rand::Rand for FqRepr {
     }
 }
 
-impl ::std::fmt::Debug for FqRepr
+impl ::std::fmt::Display for FqRepr
 {
     fn fmt(&self, f: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
         try!(write!(f, "0x"));
@@ -218,6 +218,13 @@ impl AsRef<[u64]> for FqRepr {
     #[inline(always)]
     fn as_ref(&self) -> &[u64] {
         &self.0
+    }
+}
+
+impl AsMut<[u64]> for FqRepr {
+    #[inline(always)]
+    fn as_mut(&mut self) -> &mut [u64] {
+        &mut self.0
     }
 }
 
@@ -355,7 +362,7 @@ impl PrimeFieldRepr for FqRepr {
     }
 }
 
-#[derive(Copy, Clone, PartialEq, Eq)]
+#[derive(Copy, Clone, PartialEq, Eq, Debug)]
 pub struct Fq(FqRepr);
 
 /// `Fq` elements are ordered lexicographically.
@@ -373,10 +380,10 @@ impl PartialOrd for Fq {
     }
 }
 
-impl ::std::fmt::Debug for Fq
+impl ::std::fmt::Display for Fq
 {
     fn fmt(&self, f: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
-        write!(f, "Fq({:?})", self.into_repr())
+        write!(f, "Fq({})", self.into_repr())
     }
 }
 
@@ -401,14 +408,14 @@ impl From<Fq> for FqRepr {
 impl PrimeField for Fq {
     type Repr = FqRepr;
 
-    fn from_repr(r: FqRepr) -> Result<Fq, ()> {
+    fn from_repr(r: FqRepr) -> Result<Fq, PrimeFieldDecodingError> {
         let mut r = Fq(r);
         if r.is_valid() {
             r.mul_assign(&Fq(R2));
 
             Ok(r)
         } else {
-            Err(())
+            Err(PrimeFieldDecodingError::NotInField(format!("{}", r.0)))
         }
     }
 
@@ -1676,33 +1683,33 @@ fn bench_fq_from_repr(b: &mut ::test::Bencher) {
 }
 
 #[test]
-fn test_fq_repr_debug() {
+fn test_fq_repr_display() {
     assert_eq!(
-        format!("{:?}", FqRepr([0xa956babf9301ea24, 0x39a8f184f3535c7b, 0xb38d35b3f6779585, 0x676cc4eef4c46f2c, 0xb1d4aad87651e694, 0x1947f0d5f4fe325a])),
+        format!("{}", FqRepr([0xa956babf9301ea24, 0x39a8f184f3535c7b, 0xb38d35b3f6779585, 0x676cc4eef4c46f2c, 0xb1d4aad87651e694, 0x1947f0d5f4fe325a])),
         "0x1947f0d5f4fe325ab1d4aad87651e694676cc4eef4c46f2cb38d35b3f677958539a8f184f3535c7ba956babf9301ea24".to_string()
     );
     assert_eq!(
-        format!("{:?}", FqRepr([0xb4171485fd8622dd, 0x864229a6edec7ec5, 0xc57f7bdcf8dfb707, 0x6db7ff0ecea4584a, 0xf8d8578c4a57132d, 0x6eb66d42d9fcaaa])),
+        format!("{}", FqRepr([0xb4171485fd8622dd, 0x864229a6edec7ec5, 0xc57f7bdcf8dfb707, 0x6db7ff0ecea4584a, 0xf8d8578c4a57132d, 0x6eb66d42d9fcaaa])),
         "0x06eb66d42d9fcaaaf8d8578c4a57132d6db7ff0ecea4584ac57f7bdcf8dfb707864229a6edec7ec5b4171485fd8622dd".to_string()
     );
     assert_eq!(
-        format!("{:?}", FqRepr([0xffffffffffffffff, 0xffffffffffffffff, 0xffffffffffffffff, 0xffffffffffffffff, 0xffffffffffffffff, 0xffffffffffffffff])),
+        format!("{}", FqRepr([0xffffffffffffffff, 0xffffffffffffffff, 0xffffffffffffffff, 0xffffffffffffffff, 0xffffffffffffffff, 0xffffffffffffffff])),
         "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff".to_string()
     );
     assert_eq!(
-        format!("{:?}", FqRepr([0, 0, 0, 0, 0, 0])),
+        format!("{}", FqRepr([0, 0, 0, 0, 0, 0])),
         "0x000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000".to_string()
     );
 }
 
 #[test]
-fn test_fq_debug() {
+fn test_fq_display() {
     assert_eq!(
-        format!("{:?}", Fq::from_repr(FqRepr([0xa956babf9301ea24, 0x39a8f184f3535c7b, 0xb38d35b3f6779585, 0x676cc4eef4c46f2c, 0xb1d4aad87651e694, 0x1947f0d5f4fe325a])).unwrap()),
+        format!("{}", Fq::from_repr(FqRepr([0xa956babf9301ea24, 0x39a8f184f3535c7b, 0xb38d35b3f6779585, 0x676cc4eef4c46f2c, 0xb1d4aad87651e694, 0x1947f0d5f4fe325a])).unwrap()),
         "Fq(0x1947f0d5f4fe325ab1d4aad87651e694676cc4eef4c46f2cb38d35b3f677958539a8f184f3535c7ba956babf9301ea24)".to_string()
     );
     assert_eq!(
-        format!("{:?}", Fq::from_repr(FqRepr([0xe28e79396ac2bbf8, 0x413f6f7f06ea87eb, 0xa4b62af4a792a689, 0xb7f89f88f59c1dc5, 0x9a551859b1e43a9a, 0x6c9f5a1060de974])).unwrap()),
+        format!("{}", Fq::from_repr(FqRepr([0xe28e79396ac2bbf8, 0x413f6f7f06ea87eb, 0xa4b62af4a792a689, 0xb7f89f88f59c1dc5, 0x9a551859b1e43a9a, 0x6c9f5a1060de974])).unwrap()),
         "Fq(0x06c9f5a1060de9749a551859b1e43a9ab7f89f88f59c1dc5a4b62af4a792a689413f6f7f06ea87ebe28e79396ac2bbf8)".to_string()
     );
 }
@@ -1740,6 +1747,6 @@ fn test_fq_ordering() {
     // FqRepr's ordering is well-tested, but we still need to make sure the Fq
     // elements aren't being compared in Montgomery form.
     for i in 0..100 {
-        assert!(Fq::from_repr(FqRepr::from(i+1)) > Fq::from_repr(FqRepr::from(i)));
+        assert!(Fq::from_repr(FqRepr::from(i+1)).unwrap() > Fq::from_repr(FqRepr::from(i)).unwrap());
     }
 }

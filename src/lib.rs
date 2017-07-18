@@ -28,6 +28,8 @@ pub mod bls12_381;
 pub mod wnaf;
 
 use std::fmt;
+use std::error::Error;
+use std::io::{self, Read, Write};
 
 /// An "engine" is a collection of types (fields, elliptic curve groups, etc.)
 /// with well-defined relationships. In particular, the G1/G2 curve groups are
@@ -91,6 +93,7 @@ pub trait CurveProjective: PartialEq +
                            Send +
                            Sync +
                            fmt::Debug +
+                           fmt::Display +
                            rand::Rand +
                            'static
 {
@@ -158,6 +161,7 @@ pub trait CurveAffine: Copy +
                        Send +
                        Sync +
                        fmt::Debug +
+                       fmt::Display +
                        PartialEq +
                        Eq +
                        'static
@@ -178,9 +182,6 @@ pub trait CurveAffine: Copy +
     /// Determines if this point represents the point at infinity; the
     /// additive identity.
     fn is_zero(&self) -> bool;
-
-    /// Determines if this point is on the curve and in the correct subgroup.
-    fn is_valid(&self) -> bool;
 
     /// Negates this element.
     fn negate(&mut self);
@@ -213,6 +214,8 @@ pub trait EncodedPoint: Sized +
                         Sync +
                         AsRef<[u8]> +
                         AsMut<[u8]> +
+                        Clone +
+                        Copy +
                         'static
 {
     type Affine: CurveAffine;
@@ -224,21 +227,17 @@ pub trait EncodedPoint: Sized +
     fn size() -> usize;
 
     /// Converts an `EncodedPoint` into a `CurveAffine` element,
-    /// if the point is valid.
-    fn into_affine(&self) -> Result<Self::Affine, ()> {
-        let affine = self.into_affine_unchecked()?;
-
-        if affine.is_valid() {
-            Ok(affine)
-        } else {
-            Err(())
-        }
-    }
+    /// if the encoding represents a valid element.
+    fn into_affine(&self) -> Result<Self::Affine, GroupDecodingError>;
 
     /// Converts an `EncodedPoint` into a `CurveAffine` element,
-    /// without checking if it's a valid point. Caller must be careful
-    /// when using this, as misuse can violate API invariants.
-    fn into_affine_unchecked(&self) -> Result<Self::Affine, ()>;
+    /// without guaranteeing that the encoding represents a valid
+    /// element. This is useful when the caller knows the encoding is
+    /// valid already.
+    ///
+    /// If the encoding is invalid, this can break API invariants,
+    /// so caution is strongly encouraged.
+    fn into_affine_unchecked(&self) -> Result<Self::Affine, GroupDecodingError>;
 
     /// Creates an `EncodedPoint` from an affine point, as long as the
     /// point is not the point at infinity.
@@ -253,6 +252,7 @@ pub trait Field: Sized +
                  Send +
                  Sync +
                  fmt::Debug +
+                 fmt::Display +
                  'static +
                  rand::Rand
 {
@@ -333,9 +333,11 @@ pub trait PrimeFieldRepr: Sized +
                           Send +
                           Sync +
                           fmt::Debug +
+                          fmt::Display +
                           'static +
                           rand::Rand +
                           AsRef<[u64]> +
+                          AsMut<[u64]> +
                           From<u64>
 {
     /// Subtract another reprensetation from this one, returning the borrow bit.
@@ -366,6 +368,96 @@ pub trait PrimeFieldRepr: Sized +
     /// Performs a leftwise bitshift of this number, effectively multiplying
     /// it by 2. Overflow is ignored.
     fn mul2(&mut self);
+
+    /// Writes this `PrimeFieldRepr` as a big endian integer. Always writes
+    /// `(num_bits` / 8) bytes.
+    fn write_be<W: Write>(&self, mut writer: W) -> io::Result<()> {
+        use byteorder::{WriteBytesExt, BigEndian};
+
+        for digit in self.as_ref().iter().rev() {
+            writer.write_u64::<BigEndian>(*digit)?;
+        }
+
+        Ok(())
+    }
+
+    /// Reads a big endian integer occupying (`num_bits` / 8) bytes into this
+    /// representation.
+    fn read_be<R: Read>(&mut self, mut reader: R) -> io::Result<()> {
+        use byteorder::{ReadBytesExt, BigEndian};
+
+        for digit in self.as_mut().iter_mut().rev() {
+            *digit = reader.read_u64::<BigEndian>()?;
+        }
+
+        Ok(())
+    }
+}
+
+/// An error that may occur when trying to interpret a `PrimeFieldRepr` as a
+/// `PrimeField` element.
+#[derive(Debug)]
+pub enum PrimeFieldDecodingError {
+    /// The encoded value is not in the field
+    NotInField(String)
+}
+
+impl Error for PrimeFieldDecodingError {
+    fn description(&self) -> &str {
+        match *self {
+            PrimeFieldDecodingError::NotInField(..) => "not an element of the field"
+        }
+    }
+}
+
+impl fmt::Display for PrimeFieldDecodingError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> Result<(), fmt::Error> {
+        match *self {
+            PrimeFieldDecodingError::NotInField(ref repr) => {
+                write!(f, "{} is not an element of the field", repr)
+            }
+        }
+    }
+}
+
+/// An error that may occur when trying to decode an `EncodedPoint`.
+#[derive(Debug)]
+pub enum GroupDecodingError {
+    /// The coordinate(s) do not lie on the curve.
+    NotOnCurve,
+    /// The element is not part of the r-order subgroup.
+    NotInSubgroup,
+    /// One of the coordinates could not be decoded
+    CoordinateDecodingError(&'static str, PrimeFieldDecodingError),
+    /// The compression mode of the encoded elemnet was not as expected
+    UnexpectedCompressionMode,
+    /// The encoding contained bits that should not have been set
+    UnexpectedInformation
+}
+
+impl Error for GroupDecodingError {
+    fn description(&self) -> &str {
+        match *self {
+            GroupDecodingError::NotOnCurve => "coordinate(s) do not lie on the curve",
+            GroupDecodingError::NotInSubgroup => "the element is not part of an r-order subgroup",
+            GroupDecodingError::CoordinateDecodingError(..) => "coordinate(s) could not be decoded",
+            GroupDecodingError::UnexpectedCompressionMode => "encoding has unexpected compression mode",
+            GroupDecodingError::UnexpectedInformation => "encoding has unexpected information"
+        }
+    }
+}
+
+impl fmt::Display for GroupDecodingError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> Result<(), fmt::Error> {
+        match *self {
+            GroupDecodingError::CoordinateDecodingError(description, ref err) => {
+                write!(f, "{} decoding error: {}", description, err)
+            },
+            _ => {
+                write!(f, "{}", self.description())
+            }
+        }
+    }
 }
 
 /// This represents an element of a prime field.
@@ -376,7 +468,7 @@ pub trait PrimeField: Field
     type Repr: PrimeFieldRepr + From<Self>;
 
     /// Convert this prime field element into a biginteger representation.
-    fn from_repr(Self::Repr) -> Result<Self, ()>;
+    fn from_repr(Self::Repr) -> Result<Self, PrimeFieldDecodingError>;
 
     /// Convert a biginteger reprensentation into a prime field element, if
     /// the number is an element of the field.

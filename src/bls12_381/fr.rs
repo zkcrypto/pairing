@@ -1,4 +1,4 @@
-use ::{Field, PrimeField, SqrtField, PrimeFieldRepr};
+use ::{Field, PrimeField, SqrtField, PrimeFieldRepr, PrimeFieldDecodingError};
 
 // r = 52435875175126190479447740508185965837690552500527637822603658699938581184513
 const MODULUS: FrRepr = FrRepr([0xffffffff00000001, 0x53bda402fffe5bfe, 0x3339d80809a1d805, 0x73eda753299d7d48]);
@@ -28,7 +28,7 @@ const S: usize = 32;
 // 2^s root of unity computed by GENERATOR^t
 const ROOT_OF_UNITY: FrRepr = FrRepr([0xb9b58d8c5f0e466a, 0x5b1b4c801819d7ec, 0xaf53ae352a31e64, 0x5bf3adda19e9b27b]);
 
-#[derive(Copy, Clone, PartialEq, Eq, Default)]
+#[derive(Copy, Clone, PartialEq, Eq, Default, Debug)]
 pub struct FrRepr(pub [u64; 4]);
 
 impl ::rand::Rand for FrRepr {
@@ -38,7 +38,7 @@ impl ::rand::Rand for FrRepr {
     }
 }
 
-impl ::std::fmt::Debug for FrRepr
+impl ::std::fmt::Display for FrRepr
 {
     fn fmt(&self, f: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
         try!(write!(f, "0x"));
@@ -54,6 +54,13 @@ impl AsRef<[u64]> for FrRepr {
     #[inline(always)]
     fn as_ref(&self) -> &[u64] {
         &self.0
+    }
+}
+
+impl AsMut<[u64]> for FrRepr {
+    #[inline(always)]
+    fn as_mut(&mut self) -> &mut [u64] {
+        &mut self.0
     }
 }
 
@@ -191,13 +198,13 @@ impl PrimeFieldRepr for FrRepr {
     }
 }
 
-#[derive(Copy, Clone, PartialEq, Eq)]
+#[derive(Copy, Clone, PartialEq, Eq, Debug)]
 pub struct Fr(FrRepr);
 
-impl ::std::fmt::Debug for Fr
+impl ::std::fmt::Display for Fr
 {
     fn fmt(&self, f: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
-        write!(f, "Fr({:?})", self.into_repr())
+        write!(f, "Fr({})", self.into_repr())
     }
 }
 
@@ -222,14 +229,14 @@ impl From<Fr> for FrRepr {
 impl PrimeField for Fr {
     type Repr = FrRepr;
 
-    fn from_repr(r: FrRepr) -> Result<Fr, ()> {
+    fn from_repr(r: FrRepr) -> Result<Fr, PrimeFieldDecodingError> {
         let mut r = Fr(r);
         if r.is_valid() {
             r.mul_assign(&Fr(R2));
 
             Ok(r)
         } else {
-            Err(())
+            Err(PrimeFieldDecodingError::NotInField(format!("{}", r.0)))
         }
     }
 
@@ -1388,33 +1395,33 @@ fn bench_fr_from_repr(b: &mut ::test::Bencher) {
 }
 
 #[test]
-fn test_fr_repr_debug() {
+fn test_fr_repr_display() {
     assert_eq!(
-        format!("{:?}", FrRepr([0x2829c242fa826143, 0x1f32cf4dd4330917, 0x932e4e479d168cd9, 0x513c77587f563f64])),
+        format!("{}", FrRepr([0x2829c242fa826143, 0x1f32cf4dd4330917, 0x932e4e479d168cd9, 0x513c77587f563f64])),
         "0x513c77587f563f64932e4e479d168cd91f32cf4dd43309172829c242fa826143".to_string()
     );
     assert_eq!(
-        format!("{:?}", FrRepr([0x25ebe3a3ad3c0c6a, 0x6990e39d092e817c, 0x941f900d42f5658e, 0x44f8a103b38a71e0])),
+        format!("{}", FrRepr([0x25ebe3a3ad3c0c6a, 0x6990e39d092e817c, 0x941f900d42f5658e, 0x44f8a103b38a71e0])),
         "0x44f8a103b38a71e0941f900d42f5658e6990e39d092e817c25ebe3a3ad3c0c6a".to_string()
     );
     assert_eq!(
-        format!("{:?}", FrRepr([0xffffffffffffffff, 0xffffffffffffffff, 0xffffffffffffffff, 0xffffffffffffffff])),
+        format!("{}", FrRepr([0xffffffffffffffff, 0xffffffffffffffff, 0xffffffffffffffff, 0xffffffffffffffff])),
         "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff".to_string()
     );
     assert_eq!(
-        format!("{:?}", FrRepr([0, 0, 0, 0])),
+        format!("{}", FrRepr([0, 0, 0, 0])),
         "0x0000000000000000000000000000000000000000000000000000000000000000".to_string()
     );
 }
 
 #[test]
-fn test_fr_debug() {
+fn test_fr_display() {
     assert_eq!(
-        format!("{:?}", Fr::from_repr(FrRepr([0xc3cae746a3b5ecc7, 0x185ec8eb3f5b5aee, 0x684499ffe4b9dd99, 0x7c9bba7afb68faa])).unwrap()),
+        format!("{}", Fr::from_repr(FrRepr([0xc3cae746a3b5ecc7, 0x185ec8eb3f5b5aee, 0x684499ffe4b9dd99, 0x7c9bba7afb68faa])).unwrap()),
         "Fr(0x07c9bba7afb68faa684499ffe4b9dd99185ec8eb3f5b5aeec3cae746a3b5ecc7)".to_string()
     );
     assert_eq!(
-        format!("{:?}", Fr::from_repr(FrRepr([0x44c71298ff198106, 0xb0ad10817df79b6a, 0xd034a80a2b74132b, 0x41cf9a1336f50719])).unwrap()),
+        format!("{}", Fr::from_repr(FrRepr([0x44c71298ff198106, 0xb0ad10817df79b6a, 0xd034a80a2b74132b, 0x41cf9a1336f50719])).unwrap()),
         "Fr(0x41cf9a1336f50719d034a80a2b74132bb0ad10817df79b6a44c71298ff198106)".to_string()
     );
 }

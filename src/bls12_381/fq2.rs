@@ -11,6 +11,13 @@ pub struct Fq2 {
     pub c1: Fq
 }
 
+impl ::std::fmt::Display for Fq2
+{
+    fn fmt(&self, f: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
+        write!(f, "Fq2({} + {} * u)", self.c0, self.c1)
+    }
+}
+
 /// `Fq2` elements are ordered lexicographically.
 impl Ord for Fq2 {
     #[inline(always)]

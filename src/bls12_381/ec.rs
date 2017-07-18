@@ -1,5 +1,6 @@
 macro_rules! curve_impl {
     (
+        $name:expr,
         $projective:ident,
         $affine:ident,
         $prepared:ident,
@@ -15,11 +16,29 @@ macro_rules! curve_impl {
             pub(crate) infinity: bool
         }
 
+        impl ::std::fmt::Display for $affine
+        {
+            fn fmt(&self, f: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
+                if self.infinity {
+                    write!(f, "{}(Infinity)", $name)
+                } else {
+                    write!(f, "{}(x={}, y={})", $name, self.x, self.y)
+                }
+            }
+        }
+
         #[derive(Copy, Clone, Debug, Eq)]
         pub struct $projective {
            pub(crate) x: $basefield,
            pub(crate) y: $basefield,
            pub(crate) z: $basefield
+        }
+
+        impl ::std::fmt::Display for $projective
+        {
+            fn fmt(&self, f: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
+                write!(f, "{}", self.into_affine())
+            }
         }
 
         impl PartialEq for $projective {
@@ -109,10 +128,6 @@ macro_rules! curve_impl {
 
             fn is_zero(&self) -> bool {
                 self.infinity
-            }
-
-            fn is_valid(&self) -> bool {
-                self.is_on_curve() && self.is_in_correct_subgroup()
             }
 
             fn mul<S: Into<<Self::Scalar as PrimeField>::Repr>>(&self, by: S) -> $projective {
@@ -560,11 +575,18 @@ macro_rules! curve_impl {
 pub mod g1 {
     use rand::{Rand, Rng};
     use super::super::{Fq, Fr, FrRepr, FqRepr};
-    use ::{CurveProjective, CurveAffine, PrimeField, SqrtField, PrimeFieldRepr, Field, BitIterator, EncodedPoint};
+    use ::{CurveProjective, CurveAffine, PrimeField, SqrtField, PrimeFieldRepr, Field, BitIterator, EncodedPoint, GroupDecodingError};
 
-    curve_impl!(G1, G1Affine, G1Prepared, Fq, Fr, G1Uncompressed, G1Compressed);
+    curve_impl!("G1", G1, G1Affine, G1Prepared, Fq, Fr, G1Uncompressed, G1Compressed);
 
+    #[derive(Copy)]
     pub struct G1Uncompressed([u8; 96]);
+
+    impl Clone for G1Uncompressed {
+        fn clone(&self) -> G1Uncompressed {
+            G1Uncompressed(self.0)
+        }
+    }
 
     impl AsRef<[u8]> for G1Uncompressed {
         fn as_ref(&self) -> &[u8] {
@@ -583,15 +605,24 @@ pub mod g1 {
 
         fn empty() -> Self { G1Uncompressed([0; 96]) }
         fn size() -> usize { 96 }
-        fn into_affine_unchecked(&self) -> Result<G1Affine, ()> {
-            use byteorder::{ReadBytesExt, BigEndian};
+        fn into_affine(&self) -> Result<G1Affine, GroupDecodingError> {
+            let affine = self.into_affine_unchecked()?;
 
+            if !affine.is_on_curve() {
+                Err(GroupDecodingError::NotOnCurve)
+            } else if !affine.is_in_correct_subgroup() {
+                Err(GroupDecodingError::NotInSubgroup)
+            } else {
+                Ok(affine)
+            }
+        }
+        fn into_affine_unchecked(&self) -> Result<G1Affine, GroupDecodingError> {
             // Create a copy of this representation.
             let mut copy = self.0;
 
             if copy[0] & (1 << 7) != 0 {
                 // Distinguisher bit is set, but this should be uncompressed!
-                return Err(())
+                return Err(GroupDecodingError::UnexpectedCompressionMode)
             }
 
             if copy[0] & (1 << 6) != 0 {
@@ -603,13 +634,13 @@ pub mod g1 {
                 if copy.iter().all(|b| *b == 0) {
                     Ok(G1Affine::zero())
                 } else {
-                    Err(())
+                    Err(GroupDecodingError::UnexpectedInformation)
                 }
             } else {
                 if copy[0] & (1 << 5) != 0 {
                     // The bit indicating the y-coordinate should be lexicographically
                     // largest is set, but this is an uncompressed element.
-                    return Err(())
+                    return Err(GroupDecodingError::UnexpectedInformation)
                 }
 
                 // Unset the three most significant bits.
@@ -621,25 +652,18 @@ pub mod g1 {
                 {
                     let mut reader = &copy[..];
 
-                    for b in x.0.iter_mut().rev() {
-                        *b = reader.read_u64::<BigEndian>().unwrap();
-                    }
-
-                    for b in y.0.iter_mut().rev() {
-                        *b = reader.read_u64::<BigEndian>().unwrap();
-                    }
+                    x.read_be(&mut reader).unwrap();
+                    y.read_be(&mut reader).unwrap();
                 }
 
                 Ok(G1Affine {
-                    x: Fq::from_repr(x)?,
-                    y: Fq::from_repr(y)?,
+                    x: Fq::from_repr(x).map_err(|e| GroupDecodingError::CoordinateDecodingError("x coordinate", e))?,
+                    y: Fq::from_repr(y).map_err(|e| GroupDecodingError::CoordinateDecodingError("y coordinate", e))?,
                     infinity: false
                 })
             }
         }
         fn from_affine(affine: G1Affine) -> Self {
-            use byteorder::{WriteBytesExt, BigEndian};
-
             let mut res = Self::empty();
 
             if affine.is_zero() {
@@ -649,20 +673,22 @@ pub mod g1 {
             } else {
                 let mut writer = &mut res.0[..];
 
-                for digit in affine.x.into_repr().as_ref().iter().rev() {
-                    writer.write_u64::<BigEndian>(*digit).unwrap();
-                }
-
-                for digit in affine.y.into_repr().as_ref().iter().rev() {
-                    writer.write_u64::<BigEndian>(*digit).unwrap();
-                }
+                affine.x.into_repr().write_be(&mut writer).unwrap();
+                affine.y.into_repr().write_be(&mut writer).unwrap();
             }
 
             res
         }
     }
 
+    #[derive(Copy)]
     pub struct G1Compressed([u8; 48]);
+
+    impl Clone for G1Compressed {
+        fn clone(&self) -> G1Compressed {
+            G1Compressed(self.0)
+        }
+    }
 
     impl AsRef<[u8]> for G1Compressed {
         fn as_ref(&self) -> &[u8] {
@@ -681,15 +707,24 @@ pub mod g1 {
 
         fn empty() -> Self { G1Compressed([0; 48]) }
         fn size() -> usize { 48 }
-        fn into_affine_unchecked(&self) -> Result<G1Affine, ()> {
-            use byteorder::{ReadBytesExt, BigEndian};
+        fn into_affine(&self) -> Result<G1Affine, GroupDecodingError> {
+            let affine = self.into_affine_unchecked()?;
 
+            // NB: Decompression guarantees that it is on the curve already.
+
+            if !affine.is_in_correct_subgroup() {
+                Err(GroupDecodingError::NotInSubgroup)
+            } else {
+                Ok(affine)
+            }
+        }
+        fn into_affine_unchecked(&self) -> Result<G1Affine, GroupDecodingError> {
             // Create a copy of this representation.
             let mut copy = self.0;
 
             if copy[0] & (1 << 7) == 0 {
                 // Distinguisher bit isn't set.
-                return Err(())
+                return Err(GroupDecodingError::UnexpectedCompressionMode)
             }
 
             if copy[0] & (1 << 6) != 0 {
@@ -701,7 +736,7 @@ pub mod g1 {
                 if copy.iter().all(|b| *b == 0) {
                     Ok(G1Affine::zero())
                 } else {
-                    Err(())
+                    Err(GroupDecodingError::UnexpectedInformation)
                 }
             } else {
                 // Determine if the intended y coordinate must be greater
@@ -716,13 +751,11 @@ pub mod g1 {
                 {
                     let mut reader = &copy[..];
 
-                    for b in x.0.iter_mut().rev() {
-                        *b = reader.read_u64::<BigEndian>().unwrap();
-                    }
+                    x.read_be(&mut reader).unwrap();
                 }
 
                 // Interpret as Fq element.
-                let x = Fq::from_repr(x)?;
+                let x = Fq::from_repr(x).map_err(|e| GroupDecodingError::CoordinateDecodingError("x coordinate", e))?;
 
                 // Compute x^3 + b
                 let mut x3b = x;
@@ -747,14 +780,12 @@ pub mod g1 {
                     },
                     None => {
                         // Point must not be on the curve.
-                        Err(())
+                        Err(GroupDecodingError::NotOnCurve)
                     }
                 }
             }
         }
         fn from_affine(affine: G1Affine) -> Self {
-            use byteorder::{WriteBytesExt, BigEndian};
-
             let mut res = Self::empty();
 
             if affine.is_zero() {
@@ -765,9 +796,7 @@ pub mod g1 {
                 {
                     let mut writer = &mut res.0[..];
 
-                    for digit in affine.x.into_repr().as_ref().iter().rev() {
-                        writer.write_u64::<BigEndian>(*digit).unwrap();
-                    }
+                    affine.x.into_repr().write_be(&mut writer).unwrap();
                 }
 
                 let mut negy = affine.y;
@@ -873,7 +902,7 @@ pub mod g1 {
                     infinity: false
                 };
 
-                assert!(!p.is_valid());
+                assert!(!p.is_in_correct_subgroup());
 
                 let mut g1 = G1::zero();
 
@@ -895,7 +924,7 @@ pub mod g1 {
                     assert_eq!(i, 4);
                     let g1 = G1Affine::from(g1);
 
-                    assert!(g1.is_valid());
+                    assert!(g1.is_in_correct_subgroup());
 
                     assert_eq!(g1, G1Affine::one());
                     break;
@@ -918,7 +947,6 @@ pub mod g1 {
             };
             assert!(!p.is_on_curve());
             assert!(p.is_in_correct_subgroup());
-            assert!(!p.is_valid());
         }
 
         // Reject point on a twist (b = 3)
@@ -930,7 +958,6 @@ pub mod g1 {
             };
             assert!(!p.is_on_curve());
             assert!(!p.is_in_correct_subgroup());
-            assert!(!p.is_valid());
         }
 
         // Reject point in an invalid subgroup
@@ -943,7 +970,6 @@ pub mod g1 {
             };
             assert!(p.is_on_curve());
             assert!(!p.is_in_correct_subgroup());
-            assert!(!p.is_valid());
         }
     }
 
@@ -1019,9 +1045,9 @@ pub mod g1 {
             infinity: false
         };
 
-        assert!(a.is_valid());
-        assert!(b.is_valid());
-        assert!(c.is_valid());
+        assert!(a.is_on_curve() && a.is_in_correct_subgroup());
+        assert!(b.is_on_curve() && b.is_in_correct_subgroup());
+        assert!(c.is_on_curve() && c.is_in_correct_subgroup());
 
         let mut tmp1 = a.into_projective();
         tmp1.add_assign(&b.into_projective());
@@ -1097,11 +1123,18 @@ pub mod g1 {
 pub mod g2 {
     use rand::{Rand, Rng};
     use super::super::{Fq2, Fr, Fq, FrRepr, FqRepr};
-    use ::{CurveProjective, CurveAffine, PrimeField, SqrtField, PrimeFieldRepr, Field, BitIterator, EncodedPoint};
+    use ::{CurveProjective, CurveAffine, PrimeField, SqrtField, PrimeFieldRepr, Field, BitIterator, EncodedPoint, GroupDecodingError};
 
-    curve_impl!(G2, G2Affine, G2Prepared, Fq2, Fr, G2Uncompressed, G2Compressed);
+    curve_impl!("G2", G2, G2Affine, G2Prepared, Fq2, Fr, G2Uncompressed, G2Compressed);
 
+    #[derive(Copy)]
     pub struct G2Uncompressed([u8; 192]);
+
+    impl Clone for G2Uncompressed {
+        fn clone(&self) -> G2Uncompressed {
+            G2Uncompressed(self.0)
+        }
+    }
 
     impl AsRef<[u8]> for G2Uncompressed {
         fn as_ref(&self) -> &[u8] {
@@ -1120,15 +1153,24 @@ pub mod g2 {
 
         fn empty() -> Self { G2Uncompressed([0; 192]) }
         fn size() -> usize { 192 }
-        fn into_affine_unchecked(&self) -> Result<G2Affine, ()> {
-            use byteorder::{ReadBytesExt, BigEndian};
+        fn into_affine(&self) -> Result<G2Affine, GroupDecodingError> {
+            let affine = self.into_affine_unchecked()?;
 
+            if !affine.is_on_curve() {
+                Err(GroupDecodingError::NotOnCurve)
+            } else if !affine.is_in_correct_subgroup() {
+                Err(GroupDecodingError::NotInSubgroup)
+            } else {
+                Ok(affine)
+            }
+        }
+        fn into_affine_unchecked(&self) -> Result<G2Affine, GroupDecodingError> {
             // Create a copy of this representation.
             let mut copy = self.0;
 
             if copy[0] & (1 << 7) != 0 {
                 // Distinguisher bit is set, but this should be uncompressed!
-                return Err(())
+                return Err(GroupDecodingError::UnexpectedCompressionMode)
             }
 
             if copy[0] & (1 << 6) != 0 {
@@ -1140,13 +1182,13 @@ pub mod g2 {
                 if copy.iter().all(|b| *b == 0) {
                     Ok(G2Affine::zero())
                 } else {
-                    Err(())
+                    Err(GroupDecodingError::UnexpectedInformation)
                 }
             } else {
                 if copy[0] & (1 << 5) != 0 {
                     // The bit indicating the y-coordinate should be lexicographically
                     // largest is set, but this is an uncompressed element.
-                    return Err(())
+                    return Err(GroupDecodingError::UnexpectedInformation)
                 }
 
                 // Unset the three most significant bits.
@@ -1160,39 +1202,26 @@ pub mod g2 {
                 {
                     let mut reader = &copy[..];
 
-                    for b in x_c1.0.iter_mut().rev() {
-                        *b = reader.read_u64::<BigEndian>().unwrap();
-                    }
-
-                    for b in x_c0.0.iter_mut().rev() {
-                        *b = reader.read_u64::<BigEndian>().unwrap();
-                    }
-
-                    for b in y_c1.0.iter_mut().rev() {
-                        *b = reader.read_u64::<BigEndian>().unwrap();
-                    }
-
-                    for b in y_c0.0.iter_mut().rev() {
-                        *b = reader.read_u64::<BigEndian>().unwrap();
-                    }
+                    x_c1.read_be(&mut reader).unwrap();
+                    x_c0.read_be(&mut reader).unwrap();
+                    y_c1.read_be(&mut reader).unwrap();
+                    y_c0.read_be(&mut reader).unwrap();
                 }
 
                 Ok(G2Affine {
                     x: Fq2 {
-                        c0: Fq::from_repr(x_c0)?,
-                        c1: Fq::from_repr(x_c1)?
+                        c0: Fq::from_repr(x_c0).map_err(|e| GroupDecodingError::CoordinateDecodingError("x coordinate (c0)", e))?,
+                        c1: Fq::from_repr(x_c1).map_err(|e| GroupDecodingError::CoordinateDecodingError("x coordinate (c1)", e))?,
                     },
                     y: Fq2 {
-                        c0: Fq::from_repr(y_c0)?,
-                        c1: Fq::from_repr(y_c1)?
+                        c0: Fq::from_repr(y_c0).map_err(|e| GroupDecodingError::CoordinateDecodingError("y coordinate (c0)", e))?,
+                        c1: Fq::from_repr(y_c1).map_err(|e| GroupDecodingError::CoordinateDecodingError("y coordinate (c1)", e))?,
                     },
                     infinity: false
                 })
             }
         }
         fn from_affine(affine: G2Affine) -> Self {
-            use byteorder::{WriteBytesExt, BigEndian};
-
             let mut res = Self::empty();
 
             if affine.is_zero() {
@@ -1202,28 +1231,24 @@ pub mod g2 {
             } else {
                 let mut writer = &mut res.0[..];
 
-                for digit in affine.x.c1.into_repr().as_ref().iter().rev() {
-                    writer.write_u64::<BigEndian>(*digit).unwrap();
-                }
-
-                for digit in affine.x.c0.into_repr().as_ref().iter().rev() {
-                    writer.write_u64::<BigEndian>(*digit).unwrap();
-                }
-
-                for digit in affine.y.c1.into_repr().as_ref().iter().rev() {
-                    writer.write_u64::<BigEndian>(*digit).unwrap();
-                }
-
-                for digit in affine.y.c0.into_repr().as_ref().iter().rev() {
-                    writer.write_u64::<BigEndian>(*digit).unwrap();
-                }
+                affine.x.c1.into_repr().write_be(&mut writer).unwrap();
+                affine.x.c0.into_repr().write_be(&mut writer).unwrap();
+                affine.y.c1.into_repr().write_be(&mut writer).unwrap();
+                affine.y.c0.into_repr().write_be(&mut writer).unwrap();
             }
 
             res
         }
     }
 
+    #[derive(Copy)]
     pub struct G2Compressed([u8; 96]);
+
+    impl Clone for G2Compressed {
+        fn clone(&self) -> G2Compressed {
+            G2Compressed(self.0)
+        }
+    }
 
     impl AsRef<[u8]> for G2Compressed {
         fn as_ref(&self) -> &[u8] {
@@ -1242,15 +1267,24 @@ pub mod g2 {
 
         fn empty() -> Self { G2Compressed([0; 96]) }
         fn size() -> usize { 96 }
-        fn into_affine_unchecked(&self) -> Result<G2Affine, ()> {
-            use byteorder::{ReadBytesExt, BigEndian};
+        fn into_affine(&self) -> Result<G2Affine, GroupDecodingError> {
+            let affine = self.into_affine_unchecked()?;
 
+            // NB: Decompression guarantees that it is on the curve already.
+
+            if !affine.is_in_correct_subgroup() {
+                Err(GroupDecodingError::NotInSubgroup)
+            } else {
+                Ok(affine)
+            }
+        }
+        fn into_affine_unchecked(&self) -> Result<G2Affine, GroupDecodingError> {
             // Create a copy of this representation.
             let mut copy = self.0;
 
             if copy[0] & (1 << 7) == 0 {
                 // Distinguisher bit isn't set.
-                return Err(())
+                return Err(GroupDecodingError::UnexpectedCompressionMode)
             }
 
             if copy[0] & (1 << 6) != 0 {
@@ -1262,7 +1296,7 @@ pub mod g2 {
                 if copy.iter().all(|b| *b == 0) {
                     Ok(G2Affine::zero())
                 } else {
-                    Err(())
+                    Err(GroupDecodingError::UnexpectedInformation)
                 }
             } else {
                 // Determine if the intended y coordinate must be greater
@@ -1278,19 +1312,14 @@ pub mod g2 {
                 {
                     let mut reader = &copy[..];
 
-                    for b in x_c1.0.iter_mut().rev() {
-                        *b = reader.read_u64::<BigEndian>().unwrap();
-                    }
-
-                    for b in x_c0.0.iter_mut().rev() {
-                        *b = reader.read_u64::<BigEndian>().unwrap();
-                    }
+                    x_c1.read_be(&mut reader).unwrap();
+                    x_c0.read_be(&mut reader).unwrap();
                 }
 
                 // Interpret as Fq element.
                 let x = Fq2 {
-                    c0: Fq::from_repr(x_c0)?,
-                    c1: Fq::from_repr(x_c1)?
+                    c0: Fq::from_repr(x_c0).map_err(|e| GroupDecodingError::CoordinateDecodingError("x coordinate (c0)", e))?,
+                    c1: Fq::from_repr(x_c1).map_err(|e| GroupDecodingError::CoordinateDecodingError("x coordinate (c1)", e))?
                 };
 
                 // Compute x^3 + b
@@ -1316,14 +1345,12 @@ pub mod g2 {
                     },
                     None => {
                         // Point must not be on the curve.
-                        Err(())
+                        Err(GroupDecodingError::NotOnCurve)
                     }
                 }
             }
         }
         fn from_affine(affine: G2Affine) -> Self {
-            use byteorder::{WriteBytesExt, BigEndian};
-
             let mut res = Self::empty();
 
             if affine.is_zero() {
@@ -1334,13 +1361,8 @@ pub mod g2 {
                 {
                     let mut writer = &mut res.0[..];
 
-                    for digit in affine.x.c1.into_repr().as_ref().iter().rev() {
-                        writer.write_u64::<BigEndian>(*digit).unwrap();
-                    }
-
-                    for digit in affine.x.c0.into_repr().as_ref().iter().rev() {
-                        writer.write_u64::<BigEndian>(*digit).unwrap();
-                    }
+                    affine.x.c1.into_repr().write_be(&mut writer).unwrap();
+                    affine.x.c0.into_repr().write_be(&mut writer).unwrap();
                 }
 
                 let mut negy = affine.y;
@@ -1446,7 +1468,7 @@ pub mod g2 {
                     infinity: false
                 };
 
-                assert!(!p.is_valid());
+                assert!(!p.is_in_correct_subgroup());
 
                 let mut g2 = G2::zero();
 
@@ -1468,7 +1490,7 @@ pub mod g2 {
                     assert_eq!(i, 2);
                     let g2 = G2Affine::from(g2);
 
-                    assert!(g2.is_valid());
+                    assert!(g2.is_in_correct_subgroup());
 
                     assert_eq!(g2, G2Affine::one());
                     break;
@@ -1497,7 +1519,6 @@ pub mod g2 {
             };
             assert!(!p.is_on_curve());
             assert!(p.is_in_correct_subgroup());
-            assert!(!p.is_valid());
         }
 
         // Reject point on a twist (b = 2 * (u + 1))
@@ -1515,7 +1536,6 @@ pub mod g2 {
             };
             assert!(!p.is_on_curve());
             assert!(!p.is_in_correct_subgroup());
-            assert!(!p.is_valid());
         }
 
         // Reject point in an invalid subgroup
@@ -1534,7 +1554,6 @@ pub mod g2 {
             };
             assert!(p.is_on_curve());
             assert!(!p.is_in_correct_subgroup());
-            assert!(!p.is_valid());
         }
     }
 

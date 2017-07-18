@@ -11,6 +11,13 @@ pub struct Fq6 {
     pub c2: Fq2
 }
 
+impl ::std::fmt::Display for Fq6
+{
+    fn fmt(&self, f: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
+        write!(f, "Fq6({} + {} * v, {} * v^2)", self.c0, self.c1, self.c2)
+    }
+}
+
 impl Rand for Fq6 {
     fn rand<R: Rng>(rng: &mut R) -> Self {
         Fq6 {

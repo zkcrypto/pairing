@@ -1750,3 +1750,8 @@ fn test_fq_ordering() {
         assert!(Fq::from_repr(FqRepr::from(i+1)).unwrap() > Fq::from_repr(FqRepr::from(i)).unwrap());
     }
 }
+
+#[test]
+fn fq_repr_tests() {
+    ::tests::repr::random_repr_tests::<FqRepr>();
+}

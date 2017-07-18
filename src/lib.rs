@@ -332,6 +332,7 @@ pub trait PrimeFieldRepr: Sized +
                           Ord +
                           Send +
                           Sync +
+                          Default +
                           fmt::Debug +
                           fmt::Display +
                           'static +

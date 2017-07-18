@@ -404,16 +404,16 @@ pub enum PrimeFieldDecodingError {
 
 impl Error for PrimeFieldDecodingError {
     fn description(&self) -> &str {
-        match self {
-            &PrimeFieldDecodingError::NotInField(..) => "not an element of the field"
+        match *self {
+            PrimeFieldDecodingError::NotInField(..) => "not an element of the field"
         }
     }
 }
 
 impl fmt::Display for PrimeFieldDecodingError {
     fn fmt(&self, f: &mut fmt::Formatter) -> Result<(), fmt::Error> {
-        match self {
-            &PrimeFieldDecodingError::NotInField(ref repr) => {
+        match *self {
+            PrimeFieldDecodingError::NotInField(ref repr) => {
                 write!(f, "{} is not an element of the field", repr)
             }
         }
@@ -437,20 +437,20 @@ pub enum GroupDecodingError {
 
 impl Error for GroupDecodingError {
     fn description(&self) -> &str {
-        match self {
-            &GroupDecodingError::NotOnCurve => "coordinate(s) do not lie on the curve",
-            &GroupDecodingError::NotInSubgroup => "the element is not part of an r-order subgroup",
-            &GroupDecodingError::CoordinateDecodingError(..) => "coordinate(s) could not be decoded",
-            &GroupDecodingError::UnexpectedCompressionMode => "encoding has unexpected compression mode",
-            &GroupDecodingError::UnexpectedInformation => "encoding has unexpected information"
+        match *self {
+            GroupDecodingError::NotOnCurve => "coordinate(s) do not lie on the curve",
+            GroupDecodingError::NotInSubgroup => "the element is not part of an r-order subgroup",
+            GroupDecodingError::CoordinateDecodingError(..) => "coordinate(s) could not be decoded",
+            GroupDecodingError::UnexpectedCompressionMode => "encoding has unexpected compression mode",
+            GroupDecodingError::UnexpectedInformation => "encoding has unexpected information"
         }
     }
 }
 
 impl fmt::Display for GroupDecodingError {
     fn fmt(&self, f: &mut fmt::Formatter) -> Result<(), fmt::Error> {
-        match self {
-            &GroupDecodingError::CoordinateDecodingError(description, ref err) => {
+        match *self {
+            GroupDecodingError::CoordinateDecodingError(description, ref err) => {
                 write!(f, "{} decoding error: {}", description, err)
             },
             _ => {

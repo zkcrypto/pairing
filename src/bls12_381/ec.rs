@@ -7,7 +7,8 @@ macro_rules! curve_impl {
         $basefield:ident,
         $scalarfield:ident,
         $uncompressed:ident,
-        $compressed:ident
+        $compressed:ident,
+        $pairing:ident
     ) => {
         #[derive(Copy, Clone, PartialEq, Eq, Debug)]
         pub struct $affine {
@@ -113,6 +114,8 @@ macro_rules! curve_impl {
             type Projective = $projective;
             type Uncompressed = $uncompressed;
             type Compressed = $compressed;
+            type Pair = $pairing;
+            type PairingResult = Fq12;
 
             fn zero() -> Self {
                 $affine {
@@ -153,6 +156,10 @@ macro_rules! curve_impl {
 
             fn prepare(&self) -> Self::Prepared {
                 $prepared::from_affine(*self)
+            }
+
+            fn pairing_with(&self, other: &Self::Pair) -> Self::PairingResult {
+                self.perform_pairing(other)
             }
 
             fn into_projective(&self) -> $projective {
@@ -574,10 +581,11 @@ macro_rules! curve_impl {
 
 pub mod g1 {
     use rand::{Rand, Rng};
-    use super::super::{Fq, Fr, FrRepr, FqRepr};
-    use ::{CurveProjective, CurveAffine, PrimeField, SqrtField, PrimeFieldRepr, Field, BitIterator, EncodedPoint, GroupDecodingError};
+    use super::g2::G2Affine;
+    use super::super::{Fq, Fr, FrRepr, FqRepr, Fq12};
+    use ::{CurveProjective, CurveAffine, PrimeField, SqrtField, PrimeFieldRepr, Field, BitIterator, EncodedPoint, GroupDecodingError, Engine};
 
-    curve_impl!("G1", G1, G1Affine, G1Prepared, Fq, Fr, G1Uncompressed, G1Compressed);
+    curve_impl!("G1", G1, G1Affine, G1Prepared, Fq, Fr, G1Uncompressed, G1Compressed, G2Affine);
 
     #[derive(Copy)]
     pub struct G1Uncompressed([u8; 96]);
@@ -827,6 +835,10 @@ pub mod g1 {
 
         fn get_coeff_b() -> Fq {
             super::super::fq::B_COEFF
+        }
+
+        fn perform_pairing(&self, other: &G2Affine) -> Fq12 {
+            super::super::Bls12::pairing(*self, *other)
         }
     }
 
@@ -1122,10 +1134,11 @@ pub mod g1 {
 
 pub mod g2 {
     use rand::{Rand, Rng};
-    use super::super::{Fq2, Fr, Fq, FrRepr, FqRepr};
-    use ::{CurveProjective, CurveAffine, PrimeField, SqrtField, PrimeFieldRepr, Field, BitIterator, EncodedPoint, GroupDecodingError};
+    use super::super::{Fq2, Fr, Fq, FrRepr, FqRepr, Fq12};
+    use super::g1::G1Affine;
+    use ::{CurveProjective, CurveAffine, PrimeField, SqrtField, PrimeFieldRepr, Field, BitIterator, EncodedPoint, GroupDecodingError, Engine};
 
-    curve_impl!("G2", G2, G2Affine, G2Prepared, Fq2, Fr, G2Uncompressed, G2Compressed);
+    curve_impl!("G2", G2, G2Affine, G2Prepared, Fq2, Fr, G2Uncompressed, G2Compressed, G1Affine);
 
     #[derive(Copy)]
     pub struct G2Uncompressed([u8; 192]);
@@ -1402,6 +1415,10 @@ pub mod g2 {
                 c0: super::super::fq::B_COEFF,
                 c1: super::super::fq::B_COEFF
             }
+        }
+
+        fn perform_pairing(&self, other: &G1Affine) -> Fq12 {
+            super::super::Bls12::pairing(*other, *self)
         }
     }
 

@@ -42,13 +42,13 @@ pub trait Engine {
     type G1: CurveProjective<Base=Self::Fq, Scalar=Self::Fr, Affine=Self::G1Affine> + From<Self::G1Affine>;
 
     /// The affine representation of an element in G1.
-    type G1Affine: CurveAffine<Base=Self::Fq, Scalar=Self::Fr, Projective=Self::G1> + From<Self::G1>;
+    type G1Affine: CurveAffine<Base=Self::Fq, Scalar=Self::Fr, Projective=Self::G1, Pair=Self::G2Affine, PairingResult=Self::Fqk> + From<Self::G1>;
 
     /// The projective representation of an element in G2.
     type G2: CurveProjective<Base=Self::Fqe, Scalar=Self::Fr, Affine=Self::G2Affine> + From<Self::G2Affine>;
 
     /// The affine representation of an element in G2.
-    type G2Affine: CurveAffine<Base=Self::Fqe, Scalar=Self::Fr, Projective=Self::G2> + From<Self::G2>;
+    type G2Affine: CurveAffine<Base=Self::Fqe, Scalar=Self::Fr, Projective=Self::G2, Pair=Self::G1Affine, PairingResult=Self::Fqk> + From<Self::G2>;
 
     /// The base field that hosts G1.
     type Fq: PrimeField + SqrtField;
@@ -172,6 +172,8 @@ pub trait CurveAffine: Copy +
     type Prepared: Clone + Send + Sync + 'static;
     type Uncompressed: EncodedPoint<Affine=Self>;
     type Compressed: EncodedPoint<Affine=Self>;
+    type Pair: CurveAffine<Pair=Self>;
+    type PairingResult: Field;
 
     /// Returns the additive identity.
     fn zero() -> Self;
@@ -191,6 +193,9 @@ pub trait CurveAffine: Copy +
 
     /// Prepares this element for pairing purposes.
     fn prepare(&self) -> Self::Prepared;
+
+    /// Perform a pairing
+    fn pairing_with(&self, other: &Self::Pair) -> Self::PairingResult;
 
     /// Converts this element into its affine representation.
     fn into_projective(&self) -> Self::Projective;

@@ -496,7 +496,7 @@ pub trait PrimeField: Field
     fn multiplicative_generator() -> Self;
 
     /// Returns s such that 2^s * t = `char()` - 1 with t odd.
-    fn s() -> usize;
+    fn s() -> u32;
 
     /// Returns the 2^s root of unity computed by exponentiating the `multiplicative_generator()`
     /// by t.

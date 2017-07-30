@@ -25,7 +25,7 @@ const INV: u64 = 0x89f3fffcfffcfffd;
 const GENERATOR: FqRepr = FqRepr([0x321300000006554f, 0xb93c0018d6c40005, 0x57605e0db0ddbb51, 0x8b256521ed1f9bcb, 0x6cf28d7901622c03, 0x11ebab9dbb81e28c]);
 
 // 2^s * t = MODULUS - 1 with t odd
-const S: usize = 1;
+const S: u32 = 1;
 
 // 2^s root of unity computed by GENERATOR^t
 const ROOT_OF_UNITY: FqRepr = FqRepr([0x43f5fffffffcaaae, 0x32b7fff2ed47fffd, 0x7e83a49a2e99d69, 0xeca8f3318332bb7a, 0xef148d1ea0f4c069, 0x40ab3263eff0206]);
@@ -444,7 +444,7 @@ impl PrimeField for Fq {
         Fq(GENERATOR)
     }
 
-    fn s() -> usize {
+    fn s() -> u32 {
         S
     }
 

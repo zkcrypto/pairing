@@ -1478,6 +1478,7 @@ fn fr_field_tests() {
     ::tests::field::random_field_tests::<Fr>();
     ::tests::field::random_sqrt_tests::<Fr>();
     ::tests::field::random_frobenius_tests::<Fr, _>(Fr::char(), 13);
+    ::tests::field::from_str_tests::<Fr>();
 }
 
 #[test]

@@ -1766,6 +1766,7 @@ fn fq_field_tests() {
     ::tests::field::random_field_tests::<Fq>();
     ::tests::field::random_sqrt_tests::<Fq>();
     ::tests::field::random_frobenius_tests::<Fq, _>(Fq::char(), 13);
+    ::tests::field::from_str_tests::<Fq>();
 }
 
 #[test]

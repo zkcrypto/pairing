@@ -477,6 +477,46 @@ pub trait PrimeField: Field
     /// representation.
     type Repr: PrimeFieldRepr + From<Self>;
 
+    /// Interpret a string of numbers as a (congruent) prime field element.
+    /// Does not accept unnecessary leading zeroes or a blank string.
+    fn from_str(s: &str) -> Option<Self> {
+        if s.len() == 0 {
+            return None;
+        }
+
+        if s == "0" {
+            return Some(Self::zero());
+        }
+
+        let mut res = Self::zero();
+
+        let ten = Self::from_repr(Self::Repr::from(10)).unwrap();
+
+        let mut first_digit = true;
+
+        for c in s.chars() {
+            match c.to_digit(10) {
+                Some(c) => {
+                    if first_digit {
+                        if c == 0 {
+                            return None;
+                        }
+
+                        first_digit = false;
+                    }
+
+                    res.mul_assign(&ten);
+                    res.add_assign(&Self::from_repr(Self::Repr::from(c as u64)).unwrap());
+                },
+                None => {
+                    return None;
+                }
+            }
+        }
+
+        Some(res)
+    }
+
     /// Convert this prime field element into a biginteger representation.
     fn from_repr(Self::Repr) -> Result<Self, PrimeFieldDecodingError>;
 

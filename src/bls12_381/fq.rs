@@ -10,7 +10,7 @@ const MODULUS_BITS: u32 = 381;
 
 // The number of bits that must be shaved from the beginning of
 // the representation when randomly sampling.
-const REPR_SHAVE_BITS: usize = 3;
+const REPR_SHAVE_BITS: u32 = 3;
 
 // R = 2**384 % q
 const R: FqRepr = FqRepr([0x760900000002fffd, 0xebf4000bc40c0002, 0x5f48985753c758ba, 0x77ce585370525745, 0x5c071a97a256ec6d, 0x15f65ec3fa80e493]);
@@ -278,7 +278,7 @@ impl PrimeFieldRepr for FqRepr {
     }
 
     #[inline(always)]
-    fn divn(&mut self, mut n: usize) {
+    fn divn(&mut self, mut n: u32) {
         if n >= 64 * 6 {
             *self = Self::from(0);
             return;

@@ -369,7 +369,7 @@ pub trait PrimeFieldRepr: Sized +
     fn div2(&mut self);
 
     /// Performs a rightwise bitshift of this number by some amount.
-    fn divn(&mut self, amt: usize);
+    fn divn(&mut self, amt: u32);
 
     /// Performs a leftwise bitshift of this number, effectively multiplying
     /// it by 2. Overflow is ignored.

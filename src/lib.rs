@@ -34,21 +34,21 @@ use std::io::{self, Read, Write};
 /// An "engine" is a collection of types (fields, elliptic curve groups, etc.)
 /// with well-defined relationships. In particular, the G1/G2 curve groups are
 /// of prime order `r`, and are equipped with a bilinear pairing function.
-pub trait Engine {
+pub trait Engine: Sized {
     /// This is the scalar field of the G1/G2 groups.
     type Fr: PrimeField;
 
     /// The projective representation of an element in G1.
-    type G1: CurveProjective<Base=Self::Fq, Scalar=Self::Fr, Affine=Self::G1Affine> + From<Self::G1Affine>;
+    type G1: CurveProjective<Engine=Self, Base=Self::Fq, Scalar=Self::Fr, Affine=Self::G1Affine> + From<Self::G1Affine>;
 
     /// The affine representation of an element in G1.
-    type G1Affine: CurveAffine<Base=Self::Fq, Scalar=Self::Fr, Projective=Self::G1, Pair=Self::G2Affine, PairingResult=Self::Fqk> + From<Self::G1>;
+    type G1Affine: CurveAffine<Engine=Self, Base=Self::Fq, Scalar=Self::Fr, Projective=Self::G1, Pair=Self::G2Affine, PairingResult=Self::Fqk> + From<Self::G1>;
 
     /// The projective representation of an element in G2.
-    type G2: CurveProjective<Base=Self::Fqe, Scalar=Self::Fr, Affine=Self::G2Affine> + From<Self::G2Affine>;
+    type G2: CurveProjective<Engine=Self, Base=Self::Fqe, Scalar=Self::Fr, Affine=Self::G2Affine> + From<Self::G2Affine>;
 
     /// The affine representation of an element in G2.
-    type G2Affine: CurveAffine<Base=Self::Fqe, Scalar=Self::Fr, Projective=Self::G2, Pair=Self::G1Affine, PairingResult=Self::Fqk> + From<Self::G2>;
+    type G2Affine: CurveAffine<Engine=Self, Base=Self::Fqe, Scalar=Self::Fr, Projective=Self::G2, Pair=Self::G1Affine, PairingResult=Self::Fqk> + From<Self::G2>;
 
     /// The base field that hosts G1.
     type Fq: PrimeField + SqrtField;
@@ -97,6 +97,7 @@ pub trait CurveProjective: PartialEq +
                            rand::Rand +
                            'static
 {
+    type Engine: Engine;
     type Scalar: PrimeField;
     type Base: SqrtField;
     type Affine: CurveAffine<Projective=Self, Scalar=Self::Scalar>;
@@ -166,6 +167,7 @@ pub trait CurveAffine: Copy +
                        Eq +
                        'static
 {
+    type Engine: Engine;
     type Scalar: PrimeField;
     type Base: SqrtField;
     type Projective: CurveProjective<Affine=Self, Scalar=Self::Scalar>;

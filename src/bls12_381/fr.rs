@@ -162,6 +162,32 @@ impl PrimeFieldRepr for FrRepr {
     }
 
     #[inline(always)]
+    fn muln(&mut self, mut n: u32) {
+        if n >= 64 * 4 {
+            *self = Self::from(0);
+            return;
+        }
+
+        while n >= 64 {
+            let mut t = 0;
+            for i in self.0.iter_mut() {
+                ::std::mem::swap(&mut t, i);
+            }
+            n -= 64;
+        }
+
+        if n > 0 {
+            let mut t = 0;
+            for i in &mut self.0 {
+                let t2 = *i >> (64 - n);
+                *i <<= n;
+                *i |= t;
+                t = t2;
+            }
+        }
+    }
+
+    #[inline(always)]
     fn num_bits(&self) -> u32 {
         let mut ret = (4 as u32) * 64;
         for i in self.0.iter().rev() {

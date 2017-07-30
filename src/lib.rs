@@ -352,7 +352,8 @@ pub trait PrimeFieldRepr: Sized +
     /// Add another representation to this one, returning the carry bit.
     fn add_nocarry(&mut self, other: &Self) -> bool;
 
-    /// Compute the number of bits needed to encode this number.
+    /// Compute the number of bits needed to encode this number. Always a
+    /// multiple of 64.
     fn num_bits(&self) -> u32;
 
     /// Returns true iff this number is zero.
@@ -374,6 +375,9 @@ pub trait PrimeFieldRepr: Sized +
     /// Performs a leftwise bitshift of this number, effectively multiplying
     /// it by 2. Overflow is ignored.
     fn mul2(&mut self);
+
+    /// Performs a leftwise bitshift of this number by some amount.
+    fn muln(&mut self, amt: u32);
 
     /// Writes this `PrimeFieldRepr` as a big endian integer. Always writes
     /// `(num_bits` / 8) bytes.

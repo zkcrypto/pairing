@@ -334,7 +334,7 @@ impl PrimeFieldRepr for FqRepr {
 
         while n >= 64 {
             let mut t = 0;
-            for i in self.0.iter_mut() {
+            for i in &mut self.0 {
                 ::std::mem::swap(&mut t, i);
             }
             n -= 64;

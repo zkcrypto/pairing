@@ -482,7 +482,7 @@ pub trait PrimeField: Field
     /// Interpret a string of numbers as a (congruent) prime field element.
     /// Does not accept unnecessary leading zeroes or a blank string.
     fn from_str(s: &str) -> Option<Self> {
-        if s.len() == 0 {
+        if s.is_empty() {
             return None;
         }
 

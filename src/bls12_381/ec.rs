@@ -108,6 +108,7 @@ macro_rules! curve_impl {
         }
 
         impl CurveAffine for $affine {
+            type Engine = Bls12;
             type Scalar = $scalarfield;
             type Base = $basefield;
             type Prepared = $prepared;
@@ -174,6 +175,7 @@ macro_rules! curve_impl {
         }
 
         impl CurveProjective for $projective {
+            type Engine = Bls12;
             type Scalar = $scalarfield;
             type Base = $basefield;
             type Affine = $affine;
@@ -582,7 +584,7 @@ macro_rules! curve_impl {
 pub mod g1 {
     use rand::{Rand, Rng};
     use super::g2::G2Affine;
-    use super::super::{Fq, Fr, FrRepr, FqRepr, Fq12};
+    use super::super::{Bls12, Fq, Fr, FrRepr, FqRepr, Fq12};
     use ::{CurveProjective, CurveAffine, PrimeField, SqrtField, PrimeFieldRepr, Field, BitIterator, EncodedPoint, GroupDecodingError, Engine};
 
     curve_impl!("G1", G1, G1Affine, G1Prepared, Fq, Fr, G1Uncompressed, G1Compressed, G2Affine);
@@ -1134,7 +1136,7 @@ pub mod g1 {
 
 pub mod g2 {
     use rand::{Rand, Rng};
-    use super::super::{Fq2, Fr, Fq, FrRepr, FqRepr, Fq12};
+    use super::super::{Bls12, Fq2, Fr, Fq, FrRepr, FqRepr, Fq12};
     use super::g1::G1Affine;
     use ::{CurveProjective, CurveAffine, PrimeField, SqrtField, PrimeFieldRepr, Field, BitIterator, EncodedPoint, GroupDecodingError, Engine};
 

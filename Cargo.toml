@@ -1,6 +1,6 @@
 [package]
 name = "pairing"
-version = "0.10.1"
+version = "0.10.2"
 authors = ["Sean Bowe <ewillbefull@gmail.com>"]
 license = "MIT/Apache-2.0"
 
@@ -12,7 +12,7 @@ repository = "https://github.com/ebfull/pairing"
 [dependencies]
 rand = "0.3"
 byteorder = "1.1.0"
-clippy = { version = "0.0.145", optional = true }
+clippy = { version = "0.0.148", optional = true }
 
 [features]
 unstable-wnaf = []

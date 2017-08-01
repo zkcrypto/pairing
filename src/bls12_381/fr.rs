@@ -8,7 +8,7 @@ const MODULUS_BITS: u32 = 255;
 
 // The number of bits that must be shaved from the beginning of
 // the representation when randomly sampling.
-const REPR_SHAVE_BITS: usize = 1;
+const REPR_SHAVE_BITS: u32 = 1;
 
 // R = 2**256 % r
 const R: FrRepr = FrRepr([0x1fffffffe, 0x5884b7fa00034802, 0x998c4fefecbc4ff5, 0x1824b159acc5056f]);
@@ -23,7 +23,7 @@ const INV: u64 = 0xfffffffeffffffff;
 const GENERATOR: FrRepr = FrRepr([0xefffffff1, 0x17e363d300189c0f, 0xff9c57876f8457b0, 0x351332208fc5a8c4]);
 
 // 2^s * t = MODULUS - 1 with t odd
-const S: usize = 32;
+const S: u32 = 32;
 
 // 2^s root of unity computed by GENERATOR^t
 const ROOT_OF_UNITY: FrRepr = FrRepr([0xb9b58d8c5f0e466a, 0x5b1b4c801819d7ec, 0xaf53ae352a31e64, 0x5bf3adda19e9b27b]);
@@ -114,7 +114,7 @@ impl PrimeFieldRepr for FrRepr {
     }
 
     #[inline(always)]
-    fn divn(&mut self, mut n: usize) {
+    fn divn(&mut self, mut n: u32) {
         if n >= 64 * 4 {
             *self = Self::from(0);
             return;
@@ -158,6 +158,32 @@ impl PrimeFieldRepr for FrRepr {
             *i <<= 1;
             *i |= last;
             last = tmp;
+        }
+    }
+
+    #[inline(always)]
+    fn muln(&mut self, mut n: u32) {
+        if n >= 64 * 4 {
+            *self = Self::from(0);
+            return;
+        }
+
+        while n >= 64 {
+            let mut t = 0;
+            for i in &mut self.0 {
+                ::std::mem::swap(&mut t, i);
+            }
+            n -= 64;
+        }
+
+        if n > 0 {
+            let mut t = 0;
+            for i in &mut self.0 {
+                let t2 = *i >> (64 - n);
+                *i <<= n;
+                *i |= t;
+                t = t2;
+            }
         }
     }
 
@@ -264,7 +290,7 @@ impl PrimeField for Fr {
         Fr(GENERATOR)
     }
 
-    fn s() -> usize {
+    fn s() -> u32 {
         S
     }
 
@@ -1452,6 +1478,7 @@ fn fr_field_tests() {
     ::tests::field::random_field_tests::<Fr>();
     ::tests::field::random_sqrt_tests::<Fr>();
     ::tests::field::random_frobenius_tests::<Fr, _>(Fr::char(), 13);
+    ::tests::field::from_str_tests::<Fr>();
 }
 
 #[test]

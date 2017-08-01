@@ -9,6 +9,7 @@
 #![cfg_attr(feature = "clippy", plugin(clippy))]
 #![cfg_attr(feature = "clippy", allow(inline_always))]
 #![cfg_attr(feature = "clippy", allow(too_many_arguments))]
+#![cfg_attr(feature = "clippy", allow(unreadable_literal))]
 
 // The compiler provides `test` (on nightly) for benchmarking tools, but
 // it's hidden behind a feature flag. Enable it if we're testing.
@@ -34,21 +35,21 @@ use std::io::{self, Read, Write};
 /// An "engine" is a collection of types (fields, elliptic curve groups, etc.)
 /// with well-defined relationships. In particular, the G1/G2 curve groups are
 /// of prime order `r`, and are equipped with a bilinear pairing function.
-pub trait Engine {
+pub trait Engine: Sized {
     /// This is the scalar field of the G1/G2 groups.
     type Fr: PrimeField;
 
     /// The projective representation of an element in G1.
-    type G1: CurveProjective<Base=Self::Fq, Scalar=Self::Fr, Affine=Self::G1Affine> + From<Self::G1Affine>;
+    type G1: CurveProjective<Engine=Self, Base=Self::Fq, Scalar=Self::Fr, Affine=Self::G1Affine> + From<Self::G1Affine>;
 
     /// The affine representation of an element in G1.
-    type G1Affine: CurveAffine<Base=Self::Fq, Scalar=Self::Fr, Projective=Self::G1, Pair=Self::G2Affine, PairingResult=Self::Fqk> + From<Self::G1>;
+    type G1Affine: CurveAffine<Engine=Self, Base=Self::Fq, Scalar=Self::Fr, Projective=Self::G1, Pair=Self::G2Affine, PairingResult=Self::Fqk> + From<Self::G1>;
 
     /// The projective representation of an element in G2.
-    type G2: CurveProjective<Base=Self::Fqe, Scalar=Self::Fr, Affine=Self::G2Affine> + From<Self::G2Affine>;
+    type G2: CurveProjective<Engine=Self, Base=Self::Fqe, Scalar=Self::Fr, Affine=Self::G2Affine> + From<Self::G2Affine>;
 
     /// The affine representation of an element in G2.
-    type G2Affine: CurveAffine<Base=Self::Fqe, Scalar=Self::Fr, Projective=Self::G2, Pair=Self::G1Affine, PairingResult=Self::Fqk> + From<Self::G2>;
+    type G2Affine: CurveAffine<Engine=Self, Base=Self::Fqe, Scalar=Self::Fr, Projective=Self::G2, Pair=Self::G1Affine, PairingResult=Self::Fqk> + From<Self::G2>;
 
     /// The base field that hosts G1.
     type Fq: PrimeField + SqrtField;
@@ -97,6 +98,7 @@ pub trait CurveProjective: PartialEq +
                            rand::Rand +
                            'static
 {
+    type Engine: Engine;
     type Scalar: PrimeField;
     type Base: SqrtField;
     type Affine: CurveAffine<Projective=Self, Scalar=Self::Scalar>;
@@ -166,6 +168,7 @@ pub trait CurveAffine: Copy +
                        Eq +
                        'static
 {
+    type Engine: Engine;
     type Scalar: PrimeField;
     type Base: SqrtField;
     type Projective: CurveProjective<Affine=Self, Scalar=Self::Scalar>;
@@ -352,7 +355,8 @@ pub trait PrimeFieldRepr: Sized +
     /// Add another representation to this one, returning the carry bit.
     fn add_nocarry(&mut self, other: &Self) -> bool;
 
-    /// Compute the number of bits needed to encode this number.
+    /// Compute the number of bits needed to encode this number. Always a
+    /// multiple of 64.
     fn num_bits(&self) -> u32;
 
     /// Returns true iff this number is zero.
@@ -369,11 +373,14 @@ pub trait PrimeFieldRepr: Sized +
     fn div2(&mut self);
 
     /// Performs a rightwise bitshift of this number by some amount.
-    fn divn(&mut self, amt: usize);
+    fn divn(&mut self, amt: u32);
 
     /// Performs a leftwise bitshift of this number, effectively multiplying
     /// it by 2. Overflow is ignored.
     fn mul2(&mut self);
+
+    /// Performs a leftwise bitshift of this number by some amount.
+    fn muln(&mut self, amt: u32);
 
     /// Writes this `PrimeFieldRepr` as a big endian integer. Always writes
     /// `(num_bits` / 8) bytes.
@@ -473,6 +480,46 @@ pub trait PrimeField: Field
     /// representation.
     type Repr: PrimeFieldRepr + From<Self>;
 
+    /// Interpret a string of numbers as a (congruent) prime field element.
+    /// Does not accept unnecessary leading zeroes or a blank string.
+    fn from_str(s: &str) -> Option<Self> {
+        if s.is_empty() {
+            return None;
+        }
+
+        if s == "0" {
+            return Some(Self::zero());
+        }
+
+        let mut res = Self::zero();
+
+        let ten = Self::from_repr(Self::Repr::from(10)).unwrap();
+
+        let mut first_digit = true;
+
+        for c in s.chars() {
+            match c.to_digit(10) {
+                Some(c) => {
+                    if first_digit {
+                        if c == 0 {
+                            return None;
+                        }
+
+                        first_digit = false;
+                    }
+
+                    res.mul_assign(&ten);
+                    res.add_assign(&Self::from_repr(Self::Repr::from(c as u64)).unwrap());
+                },
+                None => {
+                    return None;
+                }
+            }
+        }
+
+        Some(res)
+    }
+
     /// Convert this prime field element into a biginteger representation.
     fn from_repr(Self::Repr) -> Result<Self, PrimeFieldDecodingError>;
 
@@ -496,7 +543,7 @@ pub trait PrimeField: Field
     fn multiplicative_generator() -> Self;
 
     /// Returns s such that 2^s * t = `char()` - 1 with t odd.
-    fn s() -> usize;
+    fn s() -> u32;
 
     /// Returns the 2^s root of unity computed by exponentiating the `multiplicative_generator()`
     /// by t.

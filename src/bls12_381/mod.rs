@@ -11,6 +11,7 @@ mod tests;
 pub use self::fr::{Fr, FrRepr};
 pub use self::fq::{Fq, FqRepr};
 pub use self::fq2::Fq2;
+pub use self::fq6::Fq6;
 pub use self::fq12::Fq12;
 pub use self::ec::{G1, G2, G1Affine, G2Affine, G1Prepared, G2Prepared, G1Uncompressed, G2Uncompressed, G1Compressed, G2Compressed};
 

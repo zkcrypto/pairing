@@ -10,7 +10,7 @@ const MODULUS_BITS: u32 = 381;
 
 // The number of bits that must be shaved from the beginning of
 // the representation when randomly sampling.
-const REPR_SHAVE_BITS: usize = 3;
+const REPR_SHAVE_BITS: u32 = 3;
 
 // R = 2**384 % q
 const R: FqRepr = FqRepr([0x760900000002fffd, 0xebf4000bc40c0002, 0x5f48985753c758ba, 0x77ce585370525745, 0x5c071a97a256ec6d, 0x15f65ec3fa80e493]);
@@ -25,7 +25,7 @@ const INV: u64 = 0x89f3fffcfffcfffd;
 const GENERATOR: FqRepr = FqRepr([0x321300000006554f, 0xb93c0018d6c40005, 0x57605e0db0ddbb51, 0x8b256521ed1f9bcb, 0x6cf28d7901622c03, 0x11ebab9dbb81e28c]);
 
 // 2^s * t = MODULUS - 1 with t odd
-const S: usize = 1;
+const S: u32 = 1;
 
 // 2^s root of unity computed by GENERATOR^t
 const ROOT_OF_UNITY: FqRepr = FqRepr([0x43f5fffffffcaaae, 0x32b7fff2ed47fffd, 0x7e83a49a2e99d69, 0xeca8f3318332bb7a, 0xef148d1ea0f4c069, 0x40ab3263eff0206]);
@@ -278,7 +278,7 @@ impl PrimeFieldRepr for FqRepr {
     }
 
     #[inline(always)]
-    fn divn(&mut self, mut n: usize) {
+    fn divn(&mut self, mut n: u32) {
         if n >= 64 * 6 {
             *self = Self::from(0);
             return;
@@ -322,6 +322,32 @@ impl PrimeFieldRepr for FqRepr {
             *i <<= 1;
             *i |= last;
             last = tmp;
+        }
+    }
+
+    #[inline(always)]
+    fn muln(&mut self, mut n: u32) {
+        if n >= 64 * 6 {
+            *self = Self::from(0);
+            return;
+        }
+
+        while n >= 64 {
+            let mut t = 0;
+            for i in &mut self.0 {
+                ::std::mem::swap(&mut t, i);
+            }
+            n -= 64;
+        }
+
+        if n > 0 {
+            let mut t = 0;
+            for i in &mut self.0 {
+                let t2 = *i >> (64 - n);
+                *i <<= n;
+                *i |= t;
+                t = t2;
+            }
         }
     }
 
@@ -444,7 +470,7 @@ impl PrimeField for Fq {
         Fq(GENERATOR)
     }
 
-    fn s() -> usize {
+    fn s() -> u32 {
         S
     }
 
@@ -1740,6 +1766,7 @@ fn fq_field_tests() {
     ::tests::field::random_field_tests::<Fq>();
     ::tests::field::random_sqrt_tests::<Fq>();
     ::tests::field::random_frobenius_tests::<Fq, _>(Fq::char(), 13);
+    ::tests::field::from_str_tests::<Fq>();
 }
 
 #[test]

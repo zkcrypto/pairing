@@ -332,6 +332,14 @@ pub trait SqrtField: Field
     fn sqrt(&self) -> Option<Self>;
 }
 
+/// This trait represents an element of a field that has a Legendre symbol described for it.
+pub trait LegendreField: Field
+{
+    /// Returns the legendre symbol of the field element.
+    fn legendre(&self) -> i32;
+}
+
+
 /// This trait represents a wrapper around a biginteger which can encode any element of a particular
 /// prime field. It is a smart wrapper around a sequence of `u64` limbs, least-significant digit
 /// first.

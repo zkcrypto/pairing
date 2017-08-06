@@ -1,5 +1,5 @@
 use rand::{Rng, Rand};
-use ::{Field, SqrtField};
+use ::{Field, LegendreField, SqrtField};
 use super::fq::{Fq, FROBENIUS_COEFF_FQ2_C1, NEGATIVE_ONE};
 
 use std::cmp::Ordering;
@@ -43,6 +43,17 @@ impl Fq2 {
         let t0 = self.c0;
         self.c0.sub_assign(&self.c1);
         self.c1.add_assign(&t0);
+    }
+
+    /// Norm of Fq2 as extension field in i over Fq
+    pub fn norm(&self) -> Fq {
+        let mut t0 = self.c0;
+        let mut t1 = self.c1;
+        t0.square();
+        t1.square();
+        t1.add_assign(&t0);
+
+        t1
     }
 }
 
@@ -182,6 +193,12 @@ impl SqrtField for Fq2 {
                 Some(a1)
             }
         }
+    }
+}
+
+impl LegendreField for Fq2 {
+    fn legendre(&self) -> i32 {
+        Fq2::norm(&self).legendre()
     }
 }
 
@@ -410,6 +427,17 @@ fn test_fq2_sqrt() {
             c1: Fq::from_repr(FqRepr([0xb9fefffffd4357a3, 0x1eabfffeb153ffff, 0x6730d2a0f6b0f624, 0x64774b84f38512bf, 0x4b1ba7b6434bacd7, 0x1a0111ea397fe69a])).unwrap()
         }
     );
+}
+
+#[test]
+fn test_fq2_legendre() {
+    // i^2 = -1
+    let mut m1 = Fq2::one();
+    m1.negate();
+    assert_eq!(1, m1.legendre());
+
+    m1.mul_by_nonresidue();
+    assert_eq!(-1, m1.legendre());
 }
 
 #[cfg(test)]

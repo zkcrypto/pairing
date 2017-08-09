@@ -336,7 +336,7 @@ pub trait SqrtField: Field
 pub trait LegendreField: Field
 {
     /// Returns the legendre symbol of the field element.
-    fn legendre(&self) -> i32;
+    fn legendre(&self) -> LegendreSymbol;
 }
 
 
@@ -415,6 +415,13 @@ pub trait PrimeFieldRepr: Sized +
 
         Ok(())
     }
+}
+
+#[derive(Debug, PartialEq)]
+pub enum LegendreSymbol {
+    Zero = 0,
+    QResidue = 1,
+    QNonResidue = -1
 }
 
 /// An error that may occur when trying to interpret a `PrimeFieldRepr` as a

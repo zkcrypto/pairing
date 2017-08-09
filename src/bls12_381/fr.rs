@@ -1,4 +1,5 @@
 use ::{Field, LegendreField, PrimeField, SqrtField, PrimeFieldRepr, PrimeFieldDecodingError};
+use ::LegendreSymbol::*;
 
 // r = 52435875175126190479447740508185965837690552500527637822603658699938581184513
 const MODULUS: FrRepr = FrRepr([0xffffffff00000001, 0x53bda402fffe5bfe, 0x3339d80809a1d805, 0x73eda753299d7d48]);
@@ -559,7 +560,7 @@ impl SqrtField for Fr {
             return Some(*self);
         }
 
-        if self.legendre() != 1 {
+        if let QNonResidue = self.legendre() {
             None
         } else {
             let mut c = Fr(ROOT_OF_UNITY);
@@ -598,16 +599,11 @@ impl SqrtField for Fr {
 }
 
 impl LegendreField for Fr {
-        fn legendre(&self) -> i32 {
-        // (q - 1) / 2 = 26217937587563095239723870254092982918845276250263818911301829349969290592256
-        let x = self.pow([0x7fffffff80000000, 0xa9ded2017fff2dff, 0x199cec0404d0ec02, 0x39f6d3a994cebea4]);
-        if x == Self::one() {
-            1
-        } else if x == Self::zero() {
-            0
-        } else {
-            -1
-        }
+    fn legendre(&self) -> ::LegendreSymbol {
+        let s = self.pow([0x7fffffff80000000, 0xa9ded2017fff2dff, 0x199cec0404d0ec02, 0x39f6d3a994cebea4]);
+        if s == Self::zero() { Zero }
+        else if s == Self::one() { QResidue }
+        else { QNonResidue }
     }
 }
 #[cfg(test)]
@@ -792,13 +788,13 @@ fn test_fr_repr_sub_noborrow() {
 
 #[test]
 fn test_fr_legendre() {
-    assert_eq!(1, Fr::one().legendre());
-    assert_eq!(0, Fr::zero().legendre());
+    assert_eq!(QResidue, Fr::one().legendre());
+    assert_eq!(Zero, Fr::zero().legendre());
 
-    let e = Fr(FrRepr([0x0dbc5349cd5664da, 0x8ac5b6296e3ae29d, 0x127cb819feceaa3b, 0x3a6b21fb03867191]));
-    assert_eq!(1, e.legendre());
-    let e = Fr(FrRepr([0x96341aefd047c045, 0x9b5f4254500a4d65, 0x1ee08223b68ac240, 0x31d9cd545c0ec7c6]));
-    assert_eq!(-1, e.legendre());
+    let e = FrRepr([0x0dbc5349cd5664da, 0x8ac5b6296e3ae29d, 0x127cb819feceaa3b, 0x3a6b21fb03867191]);
+    assert_eq!(QResidue, Fr::from_repr(e).unwrap().legendre());
+    let e = FrRepr([0x96341aefd047c045, 0x9b5f4254500a4d65, 0x1ee08223b68ac240, 0x31d9cd545c0ec7c6]);
+    assert_eq!(QNonResidue, Fr::from_repr(e).unwrap().legendre());
 }
 
 #[test]
@@ -1038,12 +1034,12 @@ fn test_fr_sub_assign() {
         let mut tmp = Fr(FrRepr([0x6a68c64b6f735a2b, 0xd5f4d143fe0a1972, 0x37c17f3829267c62, 0xa2f37391f30915c]));
         tmp.sub_assign(&Fr(FrRepr([0xade5adacdccb6190, 0xaa21ee0f27db3ccd, 0x2550f4704ae39086, 0x591d1902e7c5ba27])));
         assert_eq!(tmp, Fr(FrRepr([0xbc83189d92a7f89c, 0x7f908737d62d38a3, 0x45aa62cfe7e4c3e1, 0x24ffc5896108547d])));
-        
+
         // Test the opposite subtraction which doesn't test reduction.
         tmp = Fr(FrRepr([0xade5adacdccb6190, 0xaa21ee0f27db3ccd, 0x2550f4704ae39086, 0x591d1902e7c5ba27]));
         tmp.sub_assign(&Fr(FrRepr([0x6a68c64b6f735a2b, 0xd5f4d143fe0a1972, 0x37c17f3829267c62, 0xa2f37391f30915c])));
         assert_eq!(tmp, Fr(FrRepr([0x437ce7616d580765, 0xd42d1ccb29d1235b, 0xed8f753821bd1423, 0x4eede1c9c89528ca])));
-        
+
         // Test for sensible results with zero
         tmp = Fr(FrRepr::from(0));
         tmp.sub_assign(&Fr(FrRepr::from(0)));

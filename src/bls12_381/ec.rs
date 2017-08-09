@@ -1480,7 +1480,7 @@ pub mod g2 {
             if let Some(y) = rhs.sqrt() {
                 let mut negy = y;
                 negy.negate();
-                
+
                 let p = G2Affine {
                     x: x,
                     y: if y < negy { y } else { negy },

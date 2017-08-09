@@ -197,7 +197,7 @@ impl SqrtField for Fq2 {
 }
 
 impl LegendreField for Fq2 {
-    fn legendre(&self) -> i32 {
+    fn legendre(&self) -> ::LegendreSymbol {
         Fq2::norm(&self).legendre()
     }
 }
@@ -431,13 +431,14 @@ fn test_fq2_sqrt() {
 
 #[test]
 fn test_fq2_legendre() {
+    use ::LegendreSymbol::*;
+
     // i^2 = -1
     let mut m1 = Fq2::one();
     m1.negate();
-    assert_eq!(1, m1.legendre());
-
+    assert_eq!(QResidue, m1.legendre());
     m1.mul_by_nonresidue();
-    assert_eq!(-1, m1.legendre());
+    assert_eq!(QNonResidue, m1.legendre());
 }
 
 #[cfg(test)]

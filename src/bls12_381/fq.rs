@@ -833,19 +833,14 @@ impl SqrtField for Fq {
 }
 
 impl LegendreField for Fq {
-    fn legendre(&self) -> i32 {
-        // (q - 1) / 2 =
-        // 2001204777610833696708894912867952078278441409969503942666029068062015825245418932221343814564507832018947136279893
-        let x = self.pow([0xcff7fffffffd555, 0xf55ffff58a9ffffd,
-                          0x39869507b587b120, 0x23ba5c279c2895fb,
-                          0x58dd3db21a5d66bb, 0xd0088f51cbff34d2]);
-        if x == Self::one() {
-            1
-        } else if x == Self::zero() {
-            0
-        } else {
-            -1
-        }
+    fn legendre(&self) -> ::LegendreSymbol {
+        use ::LegendreSymbol::*;
+
+        let s = self.pow([0xdcff7fffffffd555, 0xf55ffff58a9ffff, 0xb39869507b587b12,
+                          0xb23ba5c279c2895f, 0x258dd3db21a5d66b, 0xd0088f51cbff34d]);
+        if s == Fq::zero() { Zero }
+        else if s == Fq::one() { QResidue }
+        else { QNonResidue }
     }
 }
 
@@ -1320,12 +1315,12 @@ fn test_fq_sub_assign() {
         let mut tmp = Fq(FqRepr([0x531221a410efc95b, 0x72819306027e9717, 0x5ecefb937068b746, 0x97de59cd6feaefd7, 0xdc35c51158644588, 0xb2d176c04f2100]));
         tmp.sub_assign(&Fq(FqRepr([0x98910d20877e4ada, 0x940c983013f4b8ba, 0xf677dc9b8345ba33, 0xbef2ce6b7f577eba, 0xe1ae288ac3222c44, 0x5968bb602790806])));
         assert_eq!(tmp, Fq(FqRepr([0x748014838971292c, 0xfd20fad49fddde5c, 0xcf87f198e3d3f336, 0x3d62d6e6e41883db, 0x45a3443cd88dc61b, 0x151d57aaf755ff94])));
-        
+
         // Test the opposite subtraction which doesn't test reduction.
         tmp = Fq(FqRepr([0x98910d20877e4ada, 0x940c983013f4b8ba, 0xf677dc9b8345ba33, 0xbef2ce6b7f577eba, 0xe1ae288ac3222c44, 0x5968bb602790806]));
         tmp.sub_assign(&Fq(FqRepr([0x531221a410efc95b, 0x72819306027e9717, 0x5ecefb937068b746, 0x97de59cd6feaefd7, 0xdc35c51158644588, 0xb2d176c04f2100])));
         assert_eq!(tmp, Fq(FqRepr([0x457eeb7c768e817f, 0x218b052a117621a3, 0x97a8e10812dd02ed, 0x2714749e0f6c8ee3, 0x57863796abde6bc, 0x4e3ba3f4229e706])));
-        
+
         // Test for sensible results with zero
         tmp = Fq(FqRepr::from(0));
         tmp.sub_assign(&Fq(FqRepr::from(0)));
@@ -1796,29 +1791,21 @@ fn test_fq_ordering() {
 fn fq_repr_tests() {
     ::tests::repr::random_repr_tests::<FqRepr>();
 }
+
 #[test]
 fn test_fq_legendre() {
-    assert_eq!(1, Fq::one().legendre());
-    assert_eq!(0, Fq::zero().legendre());
+    use ::LegendreSymbol::*;
 
-    let e = Fq(FqRepr([0x914577fdcc41112, 0x1a6c20f3392c28e2, 0xd53f75da0c40fd21,
-                       0xb747c10d13caf0d0, 0x0de1adc19c24d8d2, 0x2103f924191033d2]));
-    assert_eq!(-1, e.legendre());
+    assert_eq!(QResidue, Fq::one().legendre());
+    assert_eq!(Zero, Fq::zero().legendre());
 
+    assert_eq!(QNonResidue, Fq::from_repr(FqRepr::from(2)).unwrap().legendre());
+    assert_eq!(QResidue, Fq::from_repr(FqRepr::from(4)).unwrap().legendre());
 
-    // f
-    let e = Fq(FqRepr([0xe51d5292ae8126f, 0x382d60874f48db82, 0xb0dde25abc614254,
-                       0x34f4456bd18813df, 0x2c668010247ee04c, 0x44cb8bbdd7c4f1b0]));
-    assert_eq!(-1, e.legendre());
-
-    // f ** 9
-    let e = Fq(FqRepr([0x69fc8eb1b590c712, 0xd73f4fb6fd34042e, 0xb5677ef2ed0eede7,
-                       0x367d831c592848c8, 0xb60615cc44e533f5, 0x127da624461b200e]));
-
-    assert_eq!(-1, e.legendre());
-
-    let e = Fq(FqRepr([0x83c7ad9e29b7facc, 0x97b3c8fbdb50cc39, 0x9e2ccd0eb5db5e72,
-                       0xc74a00d90e1b247d, 0x90e38ef46c8d7eb7, 0x16882d6aa70bb469]));
-    assert_eq!(1, e.legendre());
-
+    let e = FqRepr([0x52a112f249778642, 0xd0bedb989b7991f, 0xdad3b6681aa63c05,
+                    0xf2efc0bb4721b283, 0x6057a98f18c24733, 0x1022c2fd122889e4]);
+    assert_eq!(QNonResidue, Fq::from_repr(e).unwrap().legendre());
+    let e = FqRepr([0x6dae594e53a96c74, 0x19b16ca9ba64b37b, 0x5c764661a59bfc68,
+                    0xaa346e9b31c60a, 0x346059f9d87a9fa9, 0x1d61ac6bfd5c88b]);
+    assert_eq!(QResidue, Fq::from_repr(e).unwrap().legendre());
 }

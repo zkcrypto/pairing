@@ -555,45 +555,42 @@ impl SqrtField for Fr {
     fn sqrt(&self) -> Option<Self> {
         // Tonelli-Shank's algorithm for q mod 16 = 1
         // https://eprint.iacr.org/2012/685.pdf (page 12, algorithm 5)
+        match self.legendre() {
+            Zero => Some(*self),
+            QNonResidue => None,
+            QResidue => {
+                let mut c = Fr(ROOT_OF_UNITY);
+                // r = self^((t + 1) // 2)
+                let mut r = self.pow([0x7fff2dff80000000, 0x4d0ec02a9ded201, 0x94cebea4199cec04, 0x39f6d3a9]);
+                // t = self^t
+                let mut t = self.pow([0xfffe5bfeffffffff, 0x9a1d80553bda402, 0x299d7d483339d808, 0x73eda753]);
+                let mut m = S;
 
-        if self.is_zero() {
-            return Some(*self);
-        }
-
-        if let QNonResidue = self.legendre() {
-            None
-        } else {
-            let mut c = Fr(ROOT_OF_UNITY);
-            // r = self^((t + 1) // 2)
-            let mut r = self.pow([0x7fff2dff80000000, 0x4d0ec02a9ded201, 0x94cebea4199cec04, 0x39f6d3a9]);
-            // t = self^t
-            let mut t = self.pow([0xfffe5bfeffffffff, 0x9a1d80553bda402, 0x299d7d483339d808, 0x73eda753]);
-            let mut m = S;
-
-            while t != Self::one() {
+                while t != Self::one() {
                 let mut i = 1;
-                {
-                    let mut t2i = t;
-                    t2i.square();
-                    loop {
-                        if t2i == Self::one() {
-                            break;
-                        }
+                    {
+                        let mut t2i = t;
                         t2i.square();
-                        i += 1;
+                        loop {
+                            if t2i == Self::one() {
+                                break;
+                            }
+                            t2i.square();
+                            i += 1;
+                        }
                     }
-                }
 
-                for _ in 0..(m - i - 1) {
+                    for _ in 0..(m - i - 1) {
+                        c.square();
+                    }
+                    r.mul_assign(&c);
                     c.square();
+                    t.mul_assign(&c);
+                    m = i;
                 }
-                r.mul_assign(&c);
-                c.square();
-                t.mul_assign(&c);
-                m = i;
-            }
 
-            Some(r)
+                Some(r)
+            }
         }
     }
 }
@@ -606,6 +603,7 @@ impl LegendreField for Fr {
         else { QNonResidue }
     }
 }
+
 #[cfg(test)]
 use rand::{SeedableRng, XorShiftRng, Rand};
 

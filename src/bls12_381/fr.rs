@@ -1,4 +1,4 @@
-use ::{Field, LegendreField, PrimeField, SqrtField, PrimeFieldRepr, PrimeFieldDecodingError};
+use ::{Field, PrimeField, SqrtField, PrimeFieldRepr, PrimeFieldDecodingError};
 use ::LegendreSymbol::*;
 
 // r = 52435875175126190479447740508185965837690552500527637822603658699938581184513
@@ -552,6 +552,14 @@ impl Fr {
 }
 
 impl SqrtField for Fr {
+
+    fn legendre(&self) -> ::LegendreSymbol {
+        let s = self.pow([0x7fffffff80000000, 0xa9ded2017fff2dff, 0x199cec0404d0ec02, 0x39f6d3a994cebea4]);
+        if s == Self::zero() { Zero }
+        else if s == Self::one() { QResidue }
+        else { QNonResidue }
+    }
+
     fn sqrt(&self) -> Option<Self> {
         // Tonelli-Shank's algorithm for q mod 16 = 1
         // https://eprint.iacr.org/2012/685.pdf (page 12, algorithm 5)
@@ -592,15 +600,6 @@ impl SqrtField for Fr {
                 Some(r)
             }
         }
-    }
-}
-
-impl LegendreField for Fr {
-    fn legendre(&self) -> ::LegendreSymbol {
-        let s = self.pow([0x7fffffff80000000, 0xa9ded2017fff2dff, 0x199cec0404d0ec02, 0x39f6d3a994cebea4]);
-        if s == Self::zero() { Zero }
-        else if s == Self::one() { QResidue }
-        else { QNonResidue }
     }
 }
 

@@ -1,4 +1,4 @@
-use ::{Field, LegendreField, PrimeField, SqrtField, PrimeFieldRepr, PrimeFieldDecodingError};
+use ::{Field, PrimeField, SqrtField, PrimeFieldRepr, PrimeFieldDecodingError};
 use std::cmp::Ordering;
 use super::fq2::Fq2;
 
@@ -810,6 +810,17 @@ impl Fq {
 }
 
 impl SqrtField for Fq {
+
+    fn legendre(&self) -> ::LegendreSymbol {
+        use ::LegendreSymbol::*;
+
+        let s = self.pow([0xdcff7fffffffd555, 0xf55ffff58a9ffff, 0xb39869507b587b12,
+                          0xb23ba5c279c2895f, 0x258dd3db21a5d66b, 0xd0088f51cbff34d]);
+        if s == Fq::zero() { Zero }
+        else if s == Fq::one() { QResidue }
+        else { QNonResidue }
+    }
+
     fn sqrt(&self) -> Option<Self> {
         // Shank's algorithm for q mod 4 = 3
         // https://eprint.iacr.org/2012/685.pdf (page 9, algorithm 2)
@@ -832,17 +843,6 @@ impl SqrtField for Fq {
     }
 }
 
-impl LegendreField for Fq {
-    fn legendre(&self) -> ::LegendreSymbol {
-        use ::LegendreSymbol::*;
-
-        let s = self.pow([0xdcff7fffffffd555, 0xf55ffff58a9ffff, 0xb39869507b587b12,
-                          0xb23ba5c279c2895f, 0x258dd3db21a5d66b, 0xd0088f51cbff34d]);
-        if s == Fq::zero() { Zero }
-        else if s == Fq::one() { QResidue }
-        else { QNonResidue }
-    }
-}
 
 #[test]
 fn test_b_coeff() {

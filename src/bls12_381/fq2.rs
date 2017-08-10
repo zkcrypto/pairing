@@ -1,5 +1,5 @@
 use rand::{Rng, Rand};
-use ::{Field, LegendreField, SqrtField};
+use ::{Field, SqrtField};
 use super::fq::{Fq, FROBENIUS_COEFF_FQ2_C1, NEGATIVE_ONE};
 
 use std::cmp::Ordering;
@@ -156,6 +156,11 @@ impl Field for Fq2 {
 }
 
 impl SqrtField for Fq2 {
+
+    fn legendre(&self) -> ::LegendreSymbol {
+        Fq2::norm(&self).legendre()
+    }
+
     fn sqrt(&self) -> Option<Self> {
         // Algorithm 9, https://eprint.iacr.org/2012/685.pdf
 
@@ -193,12 +198,6 @@ impl SqrtField for Fq2 {
                 Some(a1)
             }
         }
-    }
-}
-
-impl LegendreField for Fq2 {
-    fn legendre(&self) -> ::LegendreSymbol {
-        Fq2::norm(&self).legendre()
     }
 }
 

@@ -432,6 +432,7 @@ fn test_fq2_sqrt() {
 fn test_fq2_legendre() {
     use ::LegendreSymbol::*;
 
+    assert_eq!(Zero, Fq2::zero().legendre());
     // i^2 = -1
     let mut m1 = Fq2::one();
     m1.negate();

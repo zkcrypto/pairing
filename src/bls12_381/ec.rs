@@ -166,6 +166,7 @@ macro_rules! curve_impl {
             fn into_projective(&self) -> $projective {
                 (*self).into()
             }
+
         }
 
         impl Rand for $projective {

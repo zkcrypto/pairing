@@ -814,6 +814,7 @@ impl SqrtField for Fq {
     fn legendre(&self) -> ::LegendreSymbol {
         use ::LegendreSymbol::*;
 
+        // s = self^((q - 1) // 2)
         let s = self.pow([0xdcff7fffffffd555, 0xf55ffff58a9ffff, 0xb39869507b587b12,
                           0xb23ba5c279c2895f, 0x258dd3db21a5d66b, 0xd0088f51cbff34d]);
         if s == Fq::zero() { Zero }

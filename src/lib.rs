@@ -327,7 +327,7 @@ pub trait Field: Sized +
 /// This trait represents an element of a field that has a square root operation described for it.
 pub trait SqrtField: Field
 {
-    /// Returns the legendre symbol of the field element.
+    /// Returns the Legendre symbol of the field element.
     fn legendre(&self) -> LegendreSymbol;
 
     /// Returns the square root of the field element, if it is

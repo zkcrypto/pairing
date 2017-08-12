@@ -416,8 +416,8 @@ pub trait PrimeFieldRepr: Sized +
 #[derive(Debug, PartialEq)]
 pub enum LegendreSymbol {
     Zero = 0,
-    QResidue = 1,
-    QNonResidue = -1
+    QuadraticResidue = 1,
+    QuadraticNonResidue = -1
 }
 
 /// An error that may occur when trying to interpret a `PrimeFieldRepr` as a

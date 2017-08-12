@@ -556,8 +556,8 @@ impl SqrtField for Fr {
     fn legendre(&self) -> ::LegendreSymbol {
         let s = self.pow([0x7fffffff80000000, 0xa9ded2017fff2dff, 0x199cec0404d0ec02, 0x39f6d3a994cebea4]);
         if s == Self::zero() { Zero }
-        else if s == Self::one() { QResidue }
-        else { QNonResidue }
+        else if s == Self::one() { QuadraticResidue }
+        else { QuadraticNonResidue }
     }
 
     fn sqrt(&self) -> Option<Self> {
@@ -565,8 +565,8 @@ impl SqrtField for Fr {
         // https://eprint.iacr.org/2012/685.pdf (page 12, algorithm 5)
         match self.legendre() {
             Zero => Some(*self),
-            QNonResidue => None,
-            QResidue => {
+            QuadraticNonResidue => None,
+            QuadraticResidue => {
                 let mut c = Fr(ROOT_OF_UNITY);
                 // r = self^((t + 1) // 2)
                 let mut r = self.pow([0x7fff2dff80000000, 0x4d0ec02a9ded201, 0x94cebea4199cec04, 0x39f6d3a9]);
@@ -785,13 +785,13 @@ fn test_fr_repr_sub_noborrow() {
 
 #[test]
 fn test_fr_legendre() {
-    assert_eq!(QResidue, Fr::one().legendre());
+    assert_eq!(QuadraticResidue, Fr::one().legendre());
     assert_eq!(Zero, Fr::zero().legendre());
 
     let e = FrRepr([0x0dbc5349cd5664da, 0x8ac5b6296e3ae29d, 0x127cb819feceaa3b, 0x3a6b21fb03867191]);
-    assert_eq!(QResidue, Fr::from_repr(e).unwrap().legendre());
+    assert_eq!(QuadraticResidue, Fr::from_repr(e).unwrap().legendre());
     let e = FrRepr([0x96341aefd047c045, 0x9b5f4254500a4d65, 0x1ee08223b68ac240, 0x31d9cd545c0ec7c6]);
-    assert_eq!(QNonResidue, Fr::from_repr(e).unwrap().legendre());
+    assert_eq!(QuadraticNonResidue, Fr::from_repr(e).unwrap().legendre());
 }
 
 #[test]

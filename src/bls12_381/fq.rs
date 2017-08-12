@@ -817,8 +817,8 @@ impl SqrtField for Fq {
         let s = self.pow([0xdcff7fffffffd555, 0xf55ffff58a9ffff, 0xb39869507b587b12,
                           0xb23ba5c279c2895f, 0x258dd3db21a5d66b, 0xd0088f51cbff34d]);
         if s == Fq::zero() { Zero }
-        else if s == Fq::one() { QResidue }
-        else { QNonResidue }
+        else if s == Fq::one() { QuadraticResidue }
+        else { QuadraticNonResidue }
     }
 
     fn sqrt(&self) -> Option<Self> {
@@ -1796,16 +1796,16 @@ fn fq_repr_tests() {
 fn test_fq_legendre() {
     use ::LegendreSymbol::*;
 
-    assert_eq!(QResidue, Fq::one().legendre());
+    assert_eq!(QuadraticResidue, Fq::one().legendre());
     assert_eq!(Zero, Fq::zero().legendre());
 
-    assert_eq!(QNonResidue, Fq::from_repr(FqRepr::from(2)).unwrap().legendre());
-    assert_eq!(QResidue, Fq::from_repr(FqRepr::from(4)).unwrap().legendre());
+    assert_eq!(QuadraticNonResidue, Fq::from_repr(FqRepr::from(2)).unwrap().legendre());
+    assert_eq!(QuadraticResidue, Fq::from_repr(FqRepr::from(4)).unwrap().legendre());
 
     let e = FqRepr([0x52a112f249778642, 0xd0bedb989b7991f, 0xdad3b6681aa63c05,
                     0xf2efc0bb4721b283, 0x6057a98f18c24733, 0x1022c2fd122889e4]);
-    assert_eq!(QNonResidue, Fq::from_repr(e).unwrap().legendre());
+    assert_eq!(QuadraticNonResidue, Fq::from_repr(e).unwrap().legendre());
     let e = FqRepr([0x6dae594e53a96c74, 0x19b16ca9ba64b37b, 0x5c764661a59bfc68,
                     0xaa346e9b31c60a, 0x346059f9d87a9fa9, 0x1d61ac6bfd5c88b]);
-    assert_eq!(QResidue, Fq::from_repr(e).unwrap().legendre());
+    assert_eq!(QuadraticResidue, Fq::from_repr(e).unwrap().legendre());
 }

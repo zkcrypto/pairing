@@ -67,8 +67,6 @@ impl AsMut<[u64]> for FrRepr {
 impl From<u64> for FrRepr {
     #[inline(always)]
     fn from(val: u64) -> FrRepr {
-        use std::default::Default;
-
         let mut repr = Self::default();
         repr.0[0] = val;
         repr

@@ -349,7 +349,7 @@ pub trait PrimeFieldRepr: Sized +
                           AsMut<[u64]> +
                           From<u64>
 {
-    /// Subtract another reprensetation from this one, returning the borrow bit.
+    /// Subtract another represetation from this one, returning the borrow bit.
     fn sub_noborrow(&mut self, other: &Self) -> bool;
 
     /// Add another representation to this one, returning the carry bit.
@@ -442,7 +442,7 @@ pub enum GroupDecodingError {
     NotInSubgroup,
     /// One of the coordinates could not be decoded
     CoordinateDecodingError(&'static str, PrimeFieldDecodingError),
-    /// The compression mode of the encoded elemnet was not as expected
+    /// The compression mode of the encoded element was not as expected
     UnexpectedCompressionMode,
     /// The encoding contained bits that should not have been set
     UnexpectedInformation
@@ -523,7 +523,7 @@ pub trait PrimeField: Field
     /// Convert this prime field element into a biginteger representation.
     fn from_repr(Self::Repr) -> Result<Self, PrimeFieldDecodingError>;
 
-    /// Convert a biginteger reprensentation into a prime field element, if
+    /// Convert a biginteger representation into a prime field element, if
     /// the number is an element of the field.
     fn into_repr(&self) -> Self::Repr;
 

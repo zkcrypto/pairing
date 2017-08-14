@@ -822,8 +822,7 @@ impl SqrtField for Fq {
         a0.square();
         a0.mul_assign(self);
 
-        // if a0 == -1
-        if a0.0 == FqRepr([0x43f5fffffffcaaae, 0x32b7fff2ed47fffd, 0x7e83a49a2e99d69, 0xeca8f3318332bb7a, 0xef148d1ea0f4c069, 0x40ab3263eff0206])
+        if a0 == NEGATIVE_ONE
         {
             None
         }

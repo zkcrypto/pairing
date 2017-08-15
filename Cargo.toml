@@ -17,3 +17,5 @@ clippy = { version = "0.0.151", optional = true }
 [features]
 unstable-wnaf = []
 unstable-features = ["unstable-wnaf"]
+u128-support = []
+default = ["u128-support"]

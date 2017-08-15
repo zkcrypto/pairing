@@ -231,8 +231,6 @@ impl AsMut<[u64]> for FqRepr {
 impl From<u64> for FqRepr {
     #[inline(always)]
     fn from(val: u64) -> FqRepr {
-        use std::default::Default;
-
         let mut repr = Self::default();
         repr.0[0] = val;
         repr

@@ -102,7 +102,7 @@ macro_rules! curve_impl {
                 }
             }
 
-            fn is_in_correct_subgroup(&self) -> bool {
+            fn is_in_correct_subgroup_assuming_on_curve(&self) -> bool {
                 self.mul($scalarfield::char()).is_zero()
             }
         }
@@ -620,7 +620,7 @@ pub mod g1 {
 
             if !affine.is_on_curve() {
                 Err(GroupDecodingError::NotOnCurve)
-            } else if !affine.is_in_correct_subgroup() {
+            } else if !affine.is_in_correct_subgroup_assuming_on_curve() {
                 Err(GroupDecodingError::NotInSubgroup)
             } else {
                 Ok(affine)
@@ -722,7 +722,7 @@ pub mod g1 {
 
             // NB: Decompression guarantees that it is on the curve already.
 
-            if !affine.is_in_correct_subgroup() {
+            if !affine.is_in_correct_subgroup_assuming_on_curve() {
                 Err(GroupDecodingError::NotInSubgroup)
             } else {
                 Ok(affine)
@@ -916,7 +916,7 @@ pub mod g1 {
                     infinity: false
                 };
 
-                assert!(!p.is_in_correct_subgroup());
+                assert!(!p.is_in_correct_subgroup_assuming_on_curve());
 
                 let mut g1 = G1::zero();
 
@@ -938,7 +938,7 @@ pub mod g1 {
                     assert_eq!(i, 4);
                     let g1 = G1Affine::from(g1);
 
-                    assert!(g1.is_in_correct_subgroup());
+                    assert!(g1.is_in_correct_subgroup_assuming_on_curve());
 
                     assert_eq!(g1, G1Affine::one());
                     break;
@@ -960,7 +960,7 @@ pub mod g1 {
                 infinity: false
             };
             assert!(!p.is_on_curve());
-            assert!(p.is_in_correct_subgroup());
+            assert!(p.is_in_correct_subgroup_assuming_on_curve());
         }
 
         // Reject point on a twist (b = 3)
@@ -971,7 +971,7 @@ pub mod g1 {
                 infinity: false
             };
             assert!(!p.is_on_curve());
-            assert!(!p.is_in_correct_subgroup());
+            assert!(!p.is_in_correct_subgroup_assuming_on_curve());
         }
 
         // Reject point in an invalid subgroup
@@ -983,7 +983,7 @@ pub mod g1 {
                 infinity: false
             };
             assert!(p.is_on_curve());
-            assert!(!p.is_in_correct_subgroup());
+            assert!(!p.is_in_correct_subgroup_assuming_on_curve());
         }
     }
 
@@ -1059,9 +1059,9 @@ pub mod g1 {
             infinity: false
         };
 
-        assert!(a.is_on_curve() && a.is_in_correct_subgroup());
-        assert!(b.is_on_curve() && b.is_in_correct_subgroup());
-        assert!(c.is_on_curve() && c.is_in_correct_subgroup());
+        assert!(a.is_on_curve() && a.is_in_correct_subgroup_assuming_on_curve());
+        assert!(b.is_on_curve() && b.is_in_correct_subgroup_assuming_on_curve());
+        assert!(c.is_on_curve() && c.is_in_correct_subgroup_assuming_on_curve());
 
         let mut tmp1 = a.into_projective();
         tmp1.add_assign(&b.into_projective());
@@ -1173,7 +1173,7 @@ pub mod g2 {
 
             if !affine.is_on_curve() {
                 Err(GroupDecodingError::NotOnCurve)
-            } else if !affine.is_in_correct_subgroup() {
+            } else if !affine.is_in_correct_subgroup_assuming_on_curve() {
                 Err(GroupDecodingError::NotInSubgroup)
             } else {
                 Ok(affine)
@@ -1287,7 +1287,7 @@ pub mod g2 {
 
             // NB: Decompression guarantees that it is on the curve already.
 
-            if !affine.is_in_correct_subgroup() {
+            if !affine.is_in_correct_subgroup_assuming_on_curve() {
                 Err(GroupDecodingError::NotInSubgroup)
             } else {
                 Ok(affine)
@@ -1487,7 +1487,7 @@ pub mod g2 {
                     infinity: false
                 };
 
-                assert!(!p.is_in_correct_subgroup());
+                assert!(!p.is_in_correct_subgroup_assuming_on_curve());
 
                 let mut g2 = G2::zero();
 
@@ -1509,7 +1509,7 @@ pub mod g2 {
                     assert_eq!(i, 2);
                     let g2 = G2Affine::from(g2);
 
-                    assert!(g2.is_in_correct_subgroup());
+                    assert!(g2.is_in_correct_subgroup_assuming_on_curve());
 
                     assert_eq!(g2, G2Affine::one());
                     break;
@@ -1537,7 +1537,7 @@ pub mod g2 {
                 infinity: false
             };
             assert!(!p.is_on_curve());
-            assert!(p.is_in_correct_subgroup());
+            assert!(p.is_in_correct_subgroup_assuming_on_curve());
         }
 
         // Reject point on a twist (b = 2 * (u + 1))
@@ -1554,7 +1554,7 @@ pub mod g2 {
                 infinity: false
             };
             assert!(!p.is_on_curve());
-            assert!(!p.is_in_correct_subgroup());
+            assert!(!p.is_in_correct_subgroup_assuming_on_curve());
         }
 
         // Reject point in an invalid subgroup
@@ -1572,7 +1572,7 @@ pub mod g2 {
                 infinity: false
             };
             assert!(p.is_on_curve());
-            assert!(!p.is_in_correct_subgroup());
+            assert!(!p.is_in_correct_subgroup_assuming_on_curve());
         }
     }
 

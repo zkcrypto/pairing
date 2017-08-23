@@ -158,7 +158,7 @@ impl Field for Fq2 {
 impl SqrtField for Fq2 {
 
     fn legendre(&self) -> ::LegendreSymbol {
-        Fq2::norm(&self).legendre()
+        self.norm().legendre()
     }
 
     fn sqrt(&self) -> Option<Self> {
@@ -578,7 +578,7 @@ fn bench_fq2_sqrt(b: &mut ::test::Bencher) {
 #[test]
 fn fq2_field_tests() {
     use ::PrimeField;
-    
+
     ::tests::field::random_field_tests::<Fq2>();
     ::tests::field::random_sqrt_tests::<Fq2>();
     ::tests::field::random_frobenius_tests::<Fq2, _>(super::fq::Fq::char(), 13);

@@ -554,6 +554,7 @@ impl Fr {
 impl SqrtField for Fr {
 
     fn legendre(&self) -> ::LegendreSymbol {
+        // s = self^((r - 1) // 2)
         let s = self.pow([0x7fffffff80000000, 0xa9ded2017fff2dff, 0x199cec0404d0ec02, 0x39f6d3a994cebea4]);
         if s == Self::zero() { Zero }
         else if s == Self::one() { QuadraticResidue }

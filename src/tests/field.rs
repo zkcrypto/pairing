@@ -1,5 +1,5 @@
 use rand::{Rng, SeedableRng, XorShiftRng};
-use ::{SqrtField, Field, PrimeField};
+use ::{SqrtField, Field, PrimeField, LegendreSymbol};
 
 pub fn random_frobenius_tests<F: Field, C: AsRef<[u64]>>(characteristic: C, maxpower: usize) {
     let mut rng = XorShiftRng::from_seed([0x5dbe6259, 0x8d313d76, 0x3237db17, 0xe5bc0654]);
@@ -26,6 +26,7 @@ pub fn random_sqrt_tests<F: SqrtField>() {
         let a = F::rand(&mut rng);
         let mut b = a;
         b.square();
+        assert_eq!(b.legendre(), LegendreSymbol::QuadraticResidue);
 
         let b = b.sqrt().unwrap();
         let mut negb = b;
@@ -38,6 +39,8 @@ pub fn random_sqrt_tests<F: SqrtField>() {
     for _ in 0..10000 {
         let mut b = c;
         b.square();
+        assert_eq!(b.legendre(), LegendreSymbol::QuadraticResidue);
+
         b = b.sqrt().unwrap();
 
         if b != c {

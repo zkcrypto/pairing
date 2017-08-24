@@ -1,4 +1,5 @@
 use ::{Field, PrimeField, SqrtField, PrimeFieldRepr, PrimeFieldDecodingError};
+use ::LegendreSymbol::*;
 
 // r = 52435875175126190479447740508185965837690552500527637822603658699938581184513
 const MODULUS: FrRepr = FrRepr([0xffffffff00000001, 0x53bda402fffe5bfe, 0x3339d80809a1d805, 0x73eda753299d7d48]);
@@ -551,49 +552,54 @@ impl Fr {
 }
 
 impl SqrtField for Fr {
+
+    fn legendre(&self) -> ::LegendreSymbol {
+        // s = self^((r - 1) // 2)
+        let s = self.pow([0x7fffffff80000000, 0xa9ded2017fff2dff, 0x199cec0404d0ec02, 0x39f6d3a994cebea4]);
+        if s == Self::zero() { Zero }
+        else if s == Self::one() { QuadraticResidue }
+        else { QuadraticNonResidue }
+    }
+
     fn sqrt(&self) -> Option<Self> {
         // Tonelli-Shank's algorithm for q mod 16 = 1
         // https://eprint.iacr.org/2012/685.pdf (page 12, algorithm 5)
+        match self.legendre() {
+            Zero => Some(*self),
+            QuadraticNonResidue => None,
+            QuadraticResidue => {
+                let mut c = Fr(ROOT_OF_UNITY);
+                // r = self^((t + 1) // 2)
+                let mut r = self.pow([0x7fff2dff80000000, 0x4d0ec02a9ded201, 0x94cebea4199cec04, 0x39f6d3a9]);
+                // t = self^t
+                let mut t = self.pow([0xfffe5bfeffffffff, 0x9a1d80553bda402, 0x299d7d483339d808, 0x73eda753]);
+                let mut m = S;
 
-        if self.is_zero() {
-            return Some(*self);
-        }
-
-        // if self^((r - 1) // 2) != 1
-        if self.pow([0x7fffffff80000000, 0xa9ded2017fff2dff, 0x199cec0404d0ec02, 0x39f6d3a994cebea4]) != Self::one() {
-            None
-        } else {
-            let mut c = Fr(ROOT_OF_UNITY);
-            // r = self^((t + 1) // 2)
-            let mut r = self.pow([0x7fff2dff80000000, 0x4d0ec02a9ded201, 0x94cebea4199cec04, 0x39f6d3a9]);
-            // t = self^t
-            let mut t = self.pow([0xfffe5bfeffffffff, 0x9a1d80553bda402, 0x299d7d483339d808, 0x73eda753]);
-            let mut m = S;
-
-            while t != Self::one() {
+                while t != Self::one() {
                 let mut i = 1;
-                {
-                    let mut t2i = t;
-                    t2i.square();
-                    loop {
-                        if t2i == Self::one() {
-                            break;
-                        }
+                    {
+                        let mut t2i = t;
                         t2i.square();
-                        i += 1;
+                        loop {
+                            if t2i == Self::one() {
+                                break;
+                            }
+                            t2i.square();
+                            i += 1;
+                        }
                     }
-                }
 
-                for _ in 0..(m - i - 1) {
+                    for _ in 0..(m - i - 1) {
+                        c.square();
+                    }
+                    r.mul_assign(&c);
                     c.square();
+                    t.mul_assign(&c);
+                    m = i;
                 }
-                r.mul_assign(&c);
-                c.square();
-                t.mul_assign(&c);
-                m = i;
-            }
 
-            Some(r)
+                Some(r)
+            }
         }
     }
 }
@@ -776,6 +782,17 @@ fn test_fr_repr_sub_noborrow() {
     // Subtracting x from x should produce no borrow
     let mut x = FrRepr([0xffffffff00000001, 0x53bda402fffe5bfe, 0x3339d80809a1d805, 0x73eda753299d7d48]);
     assert!(!x.sub_noborrow(&FrRepr([0xffffffff00000001, 0x53bda402fffe5bfe, 0x3339d80809a1d805, 0x73eda753299d7d48])))
+}
+
+#[test]
+fn test_fr_legendre() {
+    assert_eq!(QuadraticResidue, Fr::one().legendre());
+    assert_eq!(Zero, Fr::zero().legendre());
+
+    let e = FrRepr([0x0dbc5349cd5664da, 0x8ac5b6296e3ae29d, 0x127cb819feceaa3b, 0x3a6b21fb03867191]);
+    assert_eq!(QuadraticResidue, Fr::from_repr(e).unwrap().legendre());
+    let e = FrRepr([0x96341aefd047c045, 0x9b5f4254500a4d65, 0x1ee08223b68ac240, 0x31d9cd545c0ec7c6]);
+    assert_eq!(QuadraticNonResidue, Fr::from_repr(e).unwrap().legendre());
 }
 
 #[test]
@@ -1015,12 +1032,12 @@ fn test_fr_sub_assign() {
         let mut tmp = Fr(FrRepr([0x6a68c64b6f735a2b, 0xd5f4d143fe0a1972, 0x37c17f3829267c62, 0xa2f37391f30915c]));
         tmp.sub_assign(&Fr(FrRepr([0xade5adacdccb6190, 0xaa21ee0f27db3ccd, 0x2550f4704ae39086, 0x591d1902e7c5ba27])));
         assert_eq!(tmp, Fr(FrRepr([0xbc83189d92a7f89c, 0x7f908737d62d38a3, 0x45aa62cfe7e4c3e1, 0x24ffc5896108547d])));
-        
+
         // Test the opposite subtraction which doesn't test reduction.
         tmp = Fr(FrRepr([0xade5adacdccb6190, 0xaa21ee0f27db3ccd, 0x2550f4704ae39086, 0x591d1902e7c5ba27]));
         tmp.sub_assign(&Fr(FrRepr([0x6a68c64b6f735a2b, 0xd5f4d143fe0a1972, 0x37c17f3829267c62, 0xa2f37391f30915c])));
         assert_eq!(tmp, Fr(FrRepr([0x437ce7616d580765, 0xd42d1ccb29d1235b, 0xed8f753821bd1423, 0x4eede1c9c89528ca])));
-        
+
         // Test for sensible results with zero
         tmp = Fr(FrRepr::from(0));
         tmp.sub_assign(&Fr(FrRepr::from(0)));

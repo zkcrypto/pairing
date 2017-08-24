@@ -327,10 +327,14 @@ pub trait Field: Sized +
 /// This trait represents an element of a field that has a square root operation described for it.
 pub trait SqrtField: Field
 {
+    /// Returns the Legendre symbol of the field element.
+    fn legendre(&self) -> LegendreSymbol;
+
     /// Returns the square root of the field element, if it is
     /// quadratic residue.
     fn sqrt(&self) -> Option<Self>;
 }
+
 
 /// This trait represents a wrapper around a biginteger which can encode any element of a particular
 /// prime field. It is a smart wrapper around a sequence of `u64` limbs, least-significant digit
@@ -407,6 +411,13 @@ pub trait PrimeFieldRepr: Sized +
 
         Ok(())
     }
+}
+
+#[derive(Debug, PartialEq)]
+pub enum LegendreSymbol {
+    Zero = 0,
+    QuadraticResidue = 1,
+    QuadraticNonResidue = -1
 }
 
 /// An error that may occur when trying to interpret a `PrimeFieldRepr` as a

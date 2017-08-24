@@ -44,6 +44,17 @@ impl Fq2 {
         self.c0.sub_assign(&self.c1);
         self.c1.add_assign(&t0);
     }
+
+    /// Norm of Fq2 as extension field in i over Fq
+    pub fn norm(&self) -> Fq {
+        let mut t0 = self.c0;
+        let mut t1 = self.c1;
+        t0.square();
+        t1.square();
+        t1.add_assign(&t0);
+
+        t1
+    }
 }
 
 impl Rand for Fq2 {
@@ -145,6 +156,11 @@ impl Field for Fq2 {
 }
 
 impl SqrtField for Fq2 {
+
+    fn legendre(&self) -> ::LegendreSymbol {
+        self.norm().legendre()
+    }
+
     fn sqrt(&self) -> Option<Self> {
         // Algorithm 9, https://eprint.iacr.org/2012/685.pdf
 
@@ -412,6 +428,19 @@ fn test_fq2_sqrt() {
     );
 }
 
+#[test]
+fn test_fq2_legendre() {
+    use ::LegendreSymbol::*;
+
+    assert_eq!(Zero, Fq2::zero().legendre());
+    // i^2 = -1
+    let mut m1 = Fq2::one();
+    m1.negate();
+    assert_eq!(QuadraticResidue, m1.legendre());
+    m1.mul_by_nonresidue();
+    assert_eq!(QuadraticNonResidue, m1.legendre());
+}
+
 #[cfg(test)]
 use rand::{SeedableRng, XorShiftRng};
 
@@ -549,7 +578,7 @@ fn bench_fq2_sqrt(b: &mut ::test::Bencher) {
 #[test]
 fn fq2_field_tests() {
     use ::PrimeField;
-    
+
     ::tests::field::random_field_tests::<Fq2>();
     ::tests::field::random_sqrt_tests::<Fq2>();
     ::tests::field::random_frobenius_tests::<Fq2, _>(super::fq::Fq::char(), 13);

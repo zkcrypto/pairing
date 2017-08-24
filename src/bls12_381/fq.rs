@@ -810,6 +810,18 @@ impl Fq {
 }
 
 impl SqrtField for Fq {
+
+    fn legendre(&self) -> ::LegendreSymbol {
+        use ::LegendreSymbol::*;
+
+        // s = self^((q - 1) // 2)
+        let s = self.pow([0xdcff7fffffffd555, 0xf55ffff58a9ffff, 0xb39869507b587b12,
+                          0xb23ba5c279c2895f, 0x258dd3db21a5d66b, 0xd0088f51cbff34d]);
+        if s == Fq::zero() { Zero }
+        else if s == Fq::one() { QuadraticResidue }
+        else { QuadraticNonResidue }
+    }
+
     fn sqrt(&self) -> Option<Self> {
         // Shank's algorithm for q mod 4 = 3
         // https://eprint.iacr.org/2012/685.pdf (page 9, algorithm 2)
@@ -831,6 +843,7 @@ impl SqrtField for Fq {
         }
     }
 }
+
 
 #[test]
 fn test_b_coeff() {
@@ -1303,12 +1316,12 @@ fn test_fq_sub_assign() {
         let mut tmp = Fq(FqRepr([0x531221a410efc95b, 0x72819306027e9717, 0x5ecefb937068b746, 0x97de59cd6feaefd7, 0xdc35c51158644588, 0xb2d176c04f2100]));
         tmp.sub_assign(&Fq(FqRepr([0x98910d20877e4ada, 0x940c983013f4b8ba, 0xf677dc9b8345ba33, 0xbef2ce6b7f577eba, 0xe1ae288ac3222c44, 0x5968bb602790806])));
         assert_eq!(tmp, Fq(FqRepr([0x748014838971292c, 0xfd20fad49fddde5c, 0xcf87f198e3d3f336, 0x3d62d6e6e41883db, 0x45a3443cd88dc61b, 0x151d57aaf755ff94])));
-        
+
         // Test the opposite subtraction which doesn't test reduction.
         tmp = Fq(FqRepr([0x98910d20877e4ada, 0x940c983013f4b8ba, 0xf677dc9b8345ba33, 0xbef2ce6b7f577eba, 0xe1ae288ac3222c44, 0x5968bb602790806]));
         tmp.sub_assign(&Fq(FqRepr([0x531221a410efc95b, 0x72819306027e9717, 0x5ecefb937068b746, 0x97de59cd6feaefd7, 0xdc35c51158644588, 0xb2d176c04f2100])));
         assert_eq!(tmp, Fq(FqRepr([0x457eeb7c768e817f, 0x218b052a117621a3, 0x97a8e10812dd02ed, 0x2714749e0f6c8ee3, 0x57863796abde6bc, 0x4e3ba3f4229e706])));
-        
+
         // Test for sensible results with zero
         tmp = Fq(FqRepr::from(0));
         tmp.sub_assign(&Fq(FqRepr::from(0)));
@@ -1778,4 +1791,22 @@ fn test_fq_ordering() {
 #[test]
 fn fq_repr_tests() {
     ::tests::repr::random_repr_tests::<FqRepr>();
+}
+
+#[test]
+fn test_fq_legendre() {
+    use ::LegendreSymbol::*;
+
+    assert_eq!(QuadraticResidue, Fq::one().legendre());
+    assert_eq!(Zero, Fq::zero().legendre());
+
+    assert_eq!(QuadraticNonResidue, Fq::from_repr(FqRepr::from(2)).unwrap().legendre());
+    assert_eq!(QuadraticResidue, Fq::from_repr(FqRepr::from(4)).unwrap().legendre());
+
+    let e = FqRepr([0x52a112f249778642, 0xd0bedb989b7991f, 0xdad3b6681aa63c05,
+                    0xf2efc0bb4721b283, 0x6057a98f18c24733, 0x1022c2fd122889e4]);
+    assert_eq!(QuadraticNonResidue, Fq::from_repr(e).unwrap().legendre());
+    let e = FqRepr([0x6dae594e53a96c74, 0x19b16ca9ba64b37b, 0x5c764661a59bfc68,
+                    0xaa346e9b31c60a, 0x346059f9d87a9fa9, 0x1d61ac6bfd5c88b]);
+    assert_eq!(QuadraticResidue, Fq::from_repr(e).unwrap().legendre());
 }

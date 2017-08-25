@@ -12,6 +12,7 @@ homepage = "https://github.com/ebfull/pairing"
 repository = "https://github.com/ebfull/pairing"
 
 [dependencies]
+blake2-rfc = "0.2.18"
 rand = "0.4"
 byteorder = "1"
 clippy = { version = "0.0.190", optional = true }

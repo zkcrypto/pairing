@@ -1,3 +1,5 @@
+use blake2_rfc::blake2b::Blake2b;
+
 use rand::{Rand, Rng};
 use {Field, SqrtField};
 use super::fq::{FROBENIUS_COEFF_FQ2_C1, Fq, NEGATIVE_ONE};
@@ -53,6 +55,35 @@ impl Fq2 {
         t1.add_assign(&t0);
 
         t1
+    }
+
+    pub(crate) fn parity(&self) -> bool {
+        let mut neg = *self;
+        neg.negate();
+        self > &neg
+    }
+
+    pub(crate) fn get_swenc_sqrt_neg_three() -> Fq2 {
+        Fq2 {
+            c0: Fq::get_swenc_sqrt_neg_three(),
+            c1: Fq::zero()
+        }
+    }
+
+    pub(crate) fn get_swenc_sqrt_neg_three_minus_one_div_two() -> Fq2 {
+        Fq2 {
+            c0: Fq::get_swenc_sqrt_neg_three_minus_one_div_two(),
+            c1: Fq::zero()
+        }
+    }
+
+    pub(crate) fn hash(hasher: Blake2b) -> Self {
+        let mut hasher_c0 = hasher.clone();
+        let mut hasher_c1 = hasher.clone();
+        hasher_c0.update(b"_c0");
+        hasher_c1.update(b"_c1");
+
+        Fq2 { c0: Fq::hash(hasher_c0), c1: Fq::hash(hasher_c1) }
     }
 }
 

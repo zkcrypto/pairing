@@ -584,6 +584,7 @@ macro_rules! curve_impl {
 
 pub mod g1 {
     use rand::{Rand, Rng};
+    use std::fmt;
     use super::g2::G2Affine;
     use super::super::{Bls12, Fq, Fr, FrRepr, FqRepr, Fq12};
     use ::{CurveProjective, CurveAffine, PrimeField, SqrtField, PrimeFieldRepr, Field, BitIterator, EncodedPoint, GroupDecodingError, Engine};
@@ -608,6 +609,12 @@ pub mod g1 {
     impl AsMut<[u8]> for G1Uncompressed {
         fn as_mut(&mut self) -> &mut [u8] {
             &mut self.0
+        }
+    }
+
+    impl fmt::Debug for G1Uncompressed {
+        fn fmt(&self, formatter: &mut fmt::Formatter) -> Result<(), fmt::Error> {
+            self.0[..].fmt(formatter)
         }
     }
 
@@ -710,6 +717,12 @@ pub mod g1 {
     impl AsMut<[u8]> for G1Compressed {
         fn as_mut(&mut self) -> &mut [u8] {
             &mut self.0
+        }
+    }
+
+    impl fmt::Debug for G1Compressed {
+        fn fmt(&self, formatter: &mut fmt::Formatter) -> Result<(), fmt::Error> {
+            self.0[..].fmt(formatter)
         }
     }
 
@@ -879,7 +892,7 @@ pub mod g1 {
         }
     }
 
-    #[derive(Clone)]
+    #[derive(Clone, Debug)]
     pub struct G1Prepared(pub(crate) G1Affine);
 
     impl G1Prepared {
@@ -1137,6 +1150,7 @@ pub mod g1 {
 
 pub mod g2 {
     use rand::{Rand, Rng};
+    use std::fmt;
     use super::super::{Bls12, Fq2, Fr, Fq, FrRepr, FqRepr, Fq12};
     use super::g1::G1Affine;
     use ::{CurveProjective, CurveAffine, PrimeField, SqrtField, PrimeFieldRepr, Field, BitIterator, EncodedPoint, GroupDecodingError, Engine};
@@ -1161,6 +1175,12 @@ pub mod g2 {
     impl AsMut<[u8]> for G2Uncompressed {
         fn as_mut(&mut self) -> &mut [u8] {
             &mut self.0
+        }
+    }
+
+    impl fmt::Debug for G2Uncompressed {
+        fn fmt(&self, formatter: &mut fmt::Formatter) -> Result<(), fmt::Error> {
+            self.0[..].fmt(formatter)
         }
     }
 
@@ -1275,6 +1295,12 @@ pub mod g2 {
     impl AsMut<[u8]> for G2Compressed {
         fn as_mut(&mut self) -> &mut [u8] {
             &mut self.0
+        }
+    }
+
+    impl fmt::Debug for G2Compressed {
+        fn fmt(&self, formatter: &mut fmt::Formatter) -> Result<(), fmt::Error> {
+            self.0[..].fmt(formatter)
         }
     }
 
@@ -1459,7 +1485,7 @@ pub mod g2 {
         }
     }
 
-    #[derive(Clone)]
+    #[derive(Clone, Debug)]
     pub struct G2Prepared {
         pub(crate) coeffs: Vec<(Fq2, Fq2, Fq2)>,
         pub(crate) infinity: bool

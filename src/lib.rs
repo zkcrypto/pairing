@@ -13,6 +13,9 @@
 #![cfg_attr(feature = "clippy", allow(too_many_arguments))]
 #![cfg_attr(feature = "clippy", allow(unreadable_literal))]
 
+// Force public structures to implement Debug
+#![deny(missing_debug_implementations)]
+
 // The compiler provides `test` (on nightly) for benchmarking tools, but
 // it's hidden behind a feature flag. Enable it if we're testing.
 #![cfg_attr(test, feature(test))]
@@ -563,6 +566,7 @@ pub trait PrimeField: Field
     fn root_of_unity() -> Self;
 }
 
+#[derive(Debug)]
 pub struct BitIterator<E> {
     t: E,
     n: usize

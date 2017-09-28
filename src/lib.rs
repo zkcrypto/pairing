@@ -13,6 +13,7 @@
 #![cfg_attr(feature = "clippy", allow(too_many_arguments))]
 #![cfg_attr(feature = "clippy", allow(unreadable_literal))]
 #![cfg_attr(feature = "clippy", allow(new_without_default_derive))]
+#![cfg_attr(feature = "clippy", allow(expl_impl_clone_on_copy))] // TODO
 
 // Force public structures to implement Debug
 #![deny(missing_debug_implementations)]
@@ -519,7 +520,7 @@ pub trait PrimeField: Field
                     }
 
                     res.mul_assign(&ten);
-                    res.add_assign(&Self::from_repr(Self::Repr::from(c as u64)).unwrap());
+                    res.add_assign(&Self::from_repr(Self::Repr::from(u64::from(c))).unwrap());
                 },
                 None => {
                     return None;
@@ -622,7 +623,7 @@ mod arith {
     /// the borrow value.
     #[inline(always)]
     pub(crate) fn sbb(a: u64, b: u64, borrow: &mut u64) -> u64 {
-        let tmp = (1u128 << 64) + (a as u128) - (b as u128) - (*borrow as u128);
+        let tmp = (1u128 << 64) + u128::from(a) - u128::from(b) - u128::from(*borrow);
 
         *borrow = if tmp >> 64 == 0 { 1 } else { 0 };
 
@@ -633,7 +634,7 @@ mod arith {
     /// carry value.
     #[inline(always)]
     pub(crate) fn adc(a: u64, b: u64, carry: &mut u64) -> u64 {
-        let tmp = (a as u128) + (b as u128) + (*carry as u128);
+        let tmp = u128::from(a) + u128::from(b) + u128::from(*carry);
 
         *carry = (tmp >> 64) as u64;
 
@@ -644,7 +645,7 @@ mod arith {
     /// and setting carry to the most significant digit.
     #[inline(always)]
     pub(crate) fn mac_with_carry(a: u64, b: u64, c: u64, carry: &mut u64) -> u64 {
-        let tmp = (a as u128) + (b as u128) * (c as u128) + (*carry as u128);
+        let tmp = (u128::from(a)) + u128::from(b) * u128::from(c) + u128::from(*carry);
 
         *carry = (tmp >> 64) as u64;
 

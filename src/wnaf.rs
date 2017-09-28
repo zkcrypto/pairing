@@ -83,7 +83,7 @@ pub fn wnaf_exp<G: CurveProjective>(table: &[G], wnaf: &[i64]) -> G
     result
 }
 
-/// A wNAF exponentiation context.
+/// A "w-ary non-adjacent form" exponentiation context.
 #[derive(Debug)]
 pub struct Wnaf<W, B, S> {
     base: B,

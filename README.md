@@ -10,7 +10,7 @@ If you're using a supported platform and the nightly Rust compiler, you can enab
 
 ```toml
 [dependencies.pairing]
-version = "0.11"
+version = "0.12"
 features = ["u128-support"]
 ```
 

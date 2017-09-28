@@ -1,5 +1,7 @@
 [package]
 name = "pairing"
+
+# Remember to change version string in README.md.
 version = "0.11.0"
 authors = ["Sean Bowe <ewillbefull@gmail.com>"]
 license = "MIT/Apache-2.0"
@@ -17,4 +19,4 @@ clippy = { version = "0.0.151", optional = true }
 [features]
 unstable-features = []
 u128-support = []
-default = ["u128-support"]
+default = []

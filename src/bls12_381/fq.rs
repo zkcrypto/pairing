@@ -415,7 +415,10 @@ impl ::rand::Rand for Fq {
     fn rand<R: ::rand::Rng>(rng: &mut R) -> Self {
         loop {
             let mut tmp = Fq(FqRepr::rand(rng));
-            tmp.0.divn(REPR_SHAVE_BITS);
+
+            // Mask away the unused bits at the beginning.
+            tmp.0.as_mut()[5] &= 0xffffffffffffffff >> REPR_SHAVE_BITS;
+
             if tmp.is_valid() {
                 return tmp
             }

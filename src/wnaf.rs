@@ -108,7 +108,7 @@ impl<G: CurveProjective> Wnaf<(), Vec<G>, Vec<i64>> {
         // Return a Wnaf object that immutably borrows the computed base storage location,
         // but mutably borrows the scalar storage location.
         Wnaf {
-            base: &self.base,
+            base: &self.base[..],
             scalar: &mut self.scalar,
             window_size: window_size
         }
@@ -131,7 +131,7 @@ impl<G: CurveProjective> Wnaf<(), Vec<G>, Vec<i64>> {
         // immutably borrows the computed wNAF form scalar location.
         Wnaf {
             base: &mut self.base,
-            scalar: &self.scalar,
+            scalar: &self.scalar[..],
             window_size: window_size
         }
     }

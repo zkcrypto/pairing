@@ -24,8 +24,8 @@ pub mod tests;
 
 pub mod bls12_381;
 
-#[cfg(feature = "unstable-wnaf")]
-pub mod wnaf;
+mod wnaf;
+pub use self::wnaf::Wnaf;
 
 use std::fmt;
 use std::error::Error;

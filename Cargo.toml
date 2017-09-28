@@ -15,7 +15,6 @@ byteorder = "1.1.0"
 clippy = { version = "0.0.151", optional = true }
 
 [features]
-unstable-wnaf = []
-unstable-features = ["unstable-wnaf"]
+unstable-features = []
 u128-support = []
 default = ["u128-support"]

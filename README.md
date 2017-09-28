@@ -4,6 +4,20 @@ This is a Rust crate for using pairing-friendly elliptic curves. Currently, only
 
 ## [Documentation](https://docs.rs/pairing/)
 
+Bring the `pairing` crate into your project just as you normally would.
+
+If you're using a supported platform and the nightly Rust compiler, you can enable the `u128-support` feature for faster arithmetic.
+
+```toml
+[dependencies.pairing]
+version = "0.11"
+features = ["u128-support"]
+```
+
+## Security Warnings
+
+This library does not make any guarantees about constant-time operations, memory access patterns, or resistance to side-channel attacks.
+
 ## License
 
 Licensed under either of

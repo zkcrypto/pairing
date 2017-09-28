@@ -145,10 +145,9 @@ pub trait CurveProjective: PartialEq +
     /// Converts this element into its affine representation.
     fn into_affine(&self) -> Self::Affine;
 
-    /// Recommends a wNAF window table size given a scalar. Returns `None` if normal
-    /// scalar multiplication is encouraged. If `Some` is returned, it will be between
-    /// 2 and 22, inclusive.
-    fn recommended_wnaf_for_scalar(scalar: <Self::Scalar as PrimeField>::Repr) -> Option<usize>;
+    /// Recommends a wNAF window table size given a scalar. Always returns a number
+    /// between 2 and 22, inclusive.
+    fn recommended_wnaf_for_scalar(scalar: <Self::Scalar as PrimeField>::Repr) -> usize;
 
     /// Recommends a wNAF window size given the number of scalars you intend to multiply
     /// a base by. Always returns a number between 2 and 22, inclusive.

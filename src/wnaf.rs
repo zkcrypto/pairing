@@ -122,7 +122,7 @@ impl<G: CurveProjective> Wnaf<(), Vec<G>, Vec<i64>> {
     ) -> Wnaf<usize, &'a mut Vec<G>, &'a [i64]>
     {
         // Compute the appropriate window size for the scalar.
-        let window_size = G::recommended_wnaf_for_scalar(scalar).unwrap_or(2); // TODO
+        let window_size = G::recommended_wnaf_for_scalar(scalar);
 
         // Compute the wNAF form of the scalar.
         wnaf_form(&mut self.scalar, scalar, window_size);

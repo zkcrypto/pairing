@@ -459,21 +459,15 @@ impl PrimeField for Fq {
         MODULUS
     }
 
-    fn num_bits() -> u32 {
-        MODULUS_BITS
-    }
+    const NUM_BITS: u32 = MODULUS_BITS;
 
-    fn capacity() -> u32 {
-        Self::num_bits() - 1
-    }
+    const CAPACITY: u32 = Self::NUM_BITS - 1;
 
     fn multiplicative_generator() -> Self {
         Fq(GENERATOR)
     }
 
-    fn s() -> u32 {
-        S
-    }
+    const S: u32 = S;
 
     fn root_of_unity() -> Self {
         Fq(ROOT_OF_UNITY)
@@ -1500,20 +1494,20 @@ fn test_fq_display() {
 
 #[test]
 fn test_fq_num_bits() {
-	assert_eq!(Fq::num_bits(), 381);
-	assert_eq!(Fq::capacity(), 380);
+	assert_eq!(Fq::NUM_BITS, 381);
+	assert_eq!(Fq::CAPACITY, 380);
 }
 
 #[test]
 fn test_fq_root_of_unity() {
-    assert_eq!(Fq::s(), 1);
+    assert_eq!(Fq::S, 1);
     assert_eq!(Fq::multiplicative_generator(), Fq::from_repr(FqRepr::from(2)).unwrap());
     assert_eq!(
         Fq::multiplicative_generator().pow([0xdcff7fffffffd555, 0xf55ffff58a9ffff, 0xb39869507b587b12, 0xb23ba5c279c2895f, 0x258dd3db21a5d66b, 0xd0088f51cbff34d]),
         Fq::root_of_unity()
     );
     assert_eq!(
-        Fq::root_of_unity().pow([1 << Fq::s()]),
+        Fq::root_of_unity().pow([1 << Fq::S]),
         Fq::one()
     );
     assert!(Fq::multiplicative_generator().sqrt().is_none());

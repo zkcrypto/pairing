@@ -13,6 +13,7 @@
 #![cfg_attr(feature = "clippy", allow(too_many_arguments))]
 #![cfg_attr(feature = "clippy", allow(unreadable_literal))]
 #![cfg_attr(feature = "clippy", allow(new_without_default_derive))]
+#![cfg_attr(feature = "clippy", allow(expl_impl_clone_on_copy))] // TODO
 
 // Force public structures to implement Debug
 #![deny(missing_debug_implementations)]
@@ -519,7 +520,7 @@ pub trait PrimeField: Field
                     }
 
                     res.mul_assign(&ten);
-                    res.add_assign(&Self::from_repr(Self::Repr::from(c as u64)).unwrap());
+                    res.add_assign(&Self::from_repr(Self::Repr::from(u64::from(c))).unwrap());
                 },
                 None => {
                     return None;

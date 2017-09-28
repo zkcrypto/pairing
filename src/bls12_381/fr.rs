@@ -280,21 +280,15 @@ impl PrimeField for Fr {
         MODULUS
     }
 
-    fn num_bits() -> u32 {
-        MODULUS_BITS
-    }
+    const NUM_BITS: u32 = MODULUS_BITS;
 
-    fn capacity() -> u32 {
-        Self::num_bits() - 1
-    }
+    const CAPACITY: u32 = Self::NUM_BITS - 1;
 
     fn multiplicative_generator() -> Self {
         Fr(GENERATOR)
     }
 
-    fn s() -> u32 {
-        S
-    }
+    const S: u32 = S;
 
     fn root_of_unity() -> Self {
         Fr(ROOT_OF_UNITY)
@@ -1216,20 +1210,20 @@ fn test_fr_display() {
 
 #[test]
 fn test_fr_num_bits() {
-    assert_eq!(Fr::num_bits(), 255);
-    assert_eq!(Fr::capacity(), 254);
+    assert_eq!(Fr::NUM_BITS, 255);
+    assert_eq!(Fr::CAPACITY, 254);
 }
 
 #[test]
 fn test_fr_root_of_unity() {
-    assert_eq!(Fr::s(), 32);
+    assert_eq!(Fr::S, 32);
     assert_eq!(Fr::multiplicative_generator(), Fr::from_repr(FrRepr::from(7)).unwrap());
     assert_eq!(
         Fr::multiplicative_generator().pow([0xfffe5bfeffffffff, 0x9a1d80553bda402, 0x299d7d483339d808, 0x73eda753]),
         Fr::root_of_unity()
     );
     assert_eq!(
-        Fr::root_of_unity().pow([1 << Fr::s()]),
+        Fr::root_of_unity().pow([1 << Fr::S]),
         Fr::one()
     );
     assert!(Fr::multiplicative_generator().sqrt().is_none());

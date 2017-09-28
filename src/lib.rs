@@ -623,7 +623,7 @@ mod arith {
     /// the borrow value.
     #[inline(always)]
     pub(crate) fn sbb(a: u64, b: u64, borrow: &mut u64) -> u64 {
-        let tmp = (1u128 << 64) + (a as u128) - (b as u128) - (*borrow as u128);
+        let tmp = (1u128 << 64) + u128::from(a) - u128::from(b) - u128::from(*borrow);
 
         *borrow = if tmp >> 64 == 0 { 1 } else { 0 };
 
@@ -634,7 +634,7 @@ mod arith {
     /// carry value.
     #[inline(always)]
     pub(crate) fn adc(a: u64, b: u64, carry: &mut u64) -> u64 {
-        let tmp = (a as u128) + (b as u128) + (*carry as u128);
+        let tmp = u128::from(a) + u128::from(b) + u128::from(*carry);
 
         *carry = (tmp >> 64) as u64;
 
@@ -645,7 +645,7 @@ mod arith {
     /// and setting carry to the most significant digit.
     #[inline(always)]
     pub(crate) fn mac_with_carry(a: u64, b: u64, c: u64, carry: &mut u64) -> u64 {
-        let tmp = (a as u128) + (b as u128) * (c as u128) + (*carry as u128);
+        let tmp = (u128::from(a)) + u128::from(b) * u128::from(c) + u128::from(*carry);
 
         *carry = (tmp >> 64) as u64;
 

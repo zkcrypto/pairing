@@ -518,7 +518,7 @@ macro_rules! curve_impl {
                 (*self).into()
             }
 
-            fn recommended_wnaf_for_scalar(scalar: <Self::Scalar as PrimeField>::Repr) -> Option<usize> {
+            fn recommended_wnaf_for_scalar(scalar: <Self::Scalar as PrimeField>::Repr) -> usize {
                 Self::empirical_recommended_wnaf_for_scalar(scalar)
             }
 
@@ -859,20 +859,17 @@ pub mod g1 {
     }
 
     impl G1 {
-        fn empirical_recommended_wnaf_for_scalar(scalar: FrRepr) -> Option<usize>
+        fn empirical_recommended_wnaf_for_scalar(scalar: FrRepr) -> usize
         {
-            const RECOMMENDATIONS: [usize; 3] = [12, 34, 130];
-
-            let mut ret = None;
             let num_bits = scalar.num_bits() as usize;
 
-            for (i, r) in RECOMMENDATIONS.iter().enumerate() {
-                if *r >= num_bits {
-                    ret = Some(i + 2)
-                }
+            if num_bits >= 130 {
+                4
+            } else if num_bits >= 34 {
+                3
+            } else {
+                2
             }
-
-            ret
         }
 
         fn empirical_recommended_wnaf_for_num_scalars(num_scalars: usize) -> usize
@@ -1398,20 +1395,17 @@ pub mod g2 {
     }
 
     impl G2 {
-        fn empirical_recommended_wnaf_for_scalar(scalar: FrRepr) -> Option<usize>
+        fn empirical_recommended_wnaf_for_scalar(scalar: FrRepr) -> usize
         {
-            const RECOMMENDATIONS: [usize; 3] = [13, 37, 103];
-
-            let mut ret = None;
             let num_bits = scalar.num_bits() as usize;
 
-            for (i, r) in RECOMMENDATIONS.iter().enumerate() {
-                if *r >= num_bits {
-                    ret = Some(i + 2)
-                }
+            if num_bits >= 103 {
+                4
+            } else if num_bits >= 37 {
+                3
+            } else {
+                2
             }
-
-            ret
         }
 
         fn empirical_recommended_wnaf_for_num_scalars(num_scalars: usize) -> usize

@@ -1,4 +1,4 @@
-use rand::{SeedableRng, XorShiftRng, Rand};
+use rand::{SeedableRng, XorShiftRng, Rand, Rng};
 
 use ::{CurveProjective, CurveAffine, Field, EncodedPoint};
 
@@ -62,31 +62,115 @@ pub fn curve_tests<G: CurveProjective>()
     random_encoding_tests::<G::Affine>();
 }
 
-#[cfg(not(feature = "unstable-wnaf"))]
-fn random_wnaf_tests<G: CurveProjective>() { }
-
-#[cfg(feature = "unstable-wnaf")]
 fn random_wnaf_tests<G: CurveProjective>() {
     use ::wnaf::*;
     use ::PrimeField;
 
     let mut rng = XorShiftRng::from_seed([0x5dbe6259, 0x8d313d76, 0x3237db17, 0xe5bc0654]);
 
-    let mut table = vec![];
-    let mut wnaf = vec![];
+    {
+        let mut table = vec![];
+        let mut wnaf = vec![];
 
-    for w in 2..14 {
+        for w in 2..14 {
+            for _ in 0..100 {
+                let g = G::rand(&mut rng);
+                let s = G::Scalar::rand(&mut rng).into_repr();
+                let mut g1 = g;
+                g1.mul_assign(s);
+
+                wnaf_table(&mut table, g, w);
+                wnaf_form(&mut wnaf, s, w);
+                let g2 = wnaf_exp(&table, &wnaf);
+
+                assert_eq!(g1, g2);
+            }
+        }
+    }
+
+    {
+        fn only_compiles_if_send<S: Send>(_: &S) { }
+
         for _ in 0..100 {
             let g = G::rand(&mut rng);
             let s = G::Scalar::rand(&mut rng).into_repr();
             let mut g1 = g;
             g1.mul_assign(s);
 
-            wnaf_table(&mut table, g, w);
-            wnaf_form(&mut wnaf, s, w);
-            let g2 = wnaf_exp(&table, &wnaf);
+            let g2 = {
+                let mut wnaf = Wnaf::new();
+                wnaf.base(g, 1).scalar(s)
+            };
+            let g3 = {
+                let mut wnaf = Wnaf::new();
+                wnaf.scalar(s).base(g)
+            };
+            let g4 = {
+                let mut wnaf = Wnaf::new();
+                let mut shared = wnaf.base(g, 1).shared();
+
+                only_compiles_if_send(&shared);
+
+                shared.scalar(s)
+            };
+            let g5 = {
+                let mut wnaf = Wnaf::new();
+                let mut shared = wnaf.scalar(s).shared();
+
+                only_compiles_if_send(&shared);
+
+                shared.base(g)
+            };
+
+            let g6 = {
+                let mut wnaf = Wnaf::new();
+                {
+                    // Populate the vectors.
+                    wnaf.base(rng.gen(), 1).scalar(rng.gen());
+                }
+                wnaf.base(g, 1).scalar(s)
+            };
+            let g7 = {
+                let mut wnaf = Wnaf::new();
+                {
+                    // Populate the vectors.
+                    wnaf.base(rng.gen(), 1).scalar(rng.gen());
+                }
+                wnaf.scalar(s).base(g)
+            };
+            let g8 = {
+                let mut wnaf = Wnaf::new();
+                {
+                    // Populate the vectors.
+                    wnaf.base(rng.gen(), 1).scalar(rng.gen());
+                }
+                let mut shared = wnaf.base(g, 1).shared();
+
+                only_compiles_if_send(&shared);
+
+                shared.scalar(s)
+            };
+            let g9 = {
+                let mut wnaf = Wnaf::new();
+                {
+                    // Populate the vectors.
+                    wnaf.base(rng.gen(), 1).scalar(rng.gen());
+                }
+                let mut shared = wnaf.scalar(s).shared();
+
+                only_compiles_if_send(&shared);
+
+                shared.base(g)
+            };
 
             assert_eq!(g1, g2);
+            assert_eq!(g1, g3);
+            assert_eq!(g1, g4);
+            assert_eq!(g1, g5);
+            assert_eq!(g1, g6);
+            assert_eq!(g1, g7);
+            assert_eq!(g1, g8);
+            assert_eq!(g1, g9);
         }
     }
 }

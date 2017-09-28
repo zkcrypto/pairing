@@ -12,6 +12,7 @@
 #![cfg_attr(feature = "clippy", allow(inline_always))]
 #![cfg_attr(feature = "clippy", allow(too_many_arguments))]
 #![cfg_attr(feature = "clippy", allow(unreadable_literal))]
+#![cfg_attr(feature = "clippy", allow(new_without_default_derive))]
 
 // Force public structures to implement Debug
 #![deny(missing_debug_implementations)]
@@ -24,8 +25,8 @@ pub mod tests;
 
 pub mod bls12_381;
 
-#[cfg(feature = "unstable-wnaf")]
-pub mod wnaf;
+mod wnaf;
+pub use self::wnaf::Wnaf;
 
 use std::fmt;
 use std::error::Error;
@@ -144,10 +145,9 @@ pub trait CurveProjective: PartialEq +
     /// Converts this element into its affine representation.
     fn into_affine(&self) -> Self::Affine;
 
-    /// Recommends a wNAF window table size given a scalar. Returns `None` if normal
-    /// scalar multiplication is encouraged. If `Some` is returned, it will be between
-    /// 2 and 22, inclusive.
-    fn recommended_wnaf_for_scalar(scalar: <Self::Scalar as PrimeField>::Repr) -> Option<usize>;
+    /// Recommends a wNAF window table size given a scalar. Always returns a number
+    /// between 2 and 22, inclusive.
+    fn recommended_wnaf_for_scalar(scalar: <Self::Scalar as PrimeField>::Repr) -> usize;
 
     /// Recommends a wNAF window size given the number of scalars you intend to multiply
     /// a base by. Always returns a number between 2 and 22, inclusive.

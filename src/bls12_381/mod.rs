@@ -93,6 +93,10 @@ impl Engine for Bls12 {
             ell(&mut f, coeffs.next().unwrap(), &p.0);
         }
 
+        if BLS_X_IS_NEGATIVE {
+            f.conjugate();
+        }
+
         f
     }
 
@@ -148,6 +152,7 @@ impl Engine for Bls12 {
                 y2 = y3;
                 y2.frobenius_map(1);
                 y1.mul_assign(&y2);
+
                 Some(y1)
             },
             None => None

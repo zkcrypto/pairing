@@ -617,7 +617,6 @@ use self::arith::*;
 
 #[cfg(feature = "u128-support")]
 mod arith {
-
     /// Calculate a - b - borrow, returning the result and modifying
     /// the borrow value.
     #[inline(always)]

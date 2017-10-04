@@ -1,6 +1,5 @@
-// This library relies on the Rust nightly compiler's `i128_type` feature.
-// If that's not okay for you, disable the u128-support feature. (Pass
-// --no-default-features for example.)
+// If the "u128-support" feature is enabled, this library can use
+// more efficient arithmetic. Only available in the nightly compiler.
 #![cfg_attr(feature = "u128-support", feature(i128_type))]
 
 // `clippy` is a code linting tool for improving code quality by catching

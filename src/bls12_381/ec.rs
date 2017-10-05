@@ -85,11 +85,12 @@ macro_rules! curve_impl {
         }
 
         impl $affine {
-            /// Constructs an affine point with the lexicographically smallest
-            /// y-coordinate, given an x-coordinate, so long as the x-coordinate
-            /// exists on the curve. The point is not guaranteed to be in the
-            /// prime order subgroup.
-            fn get_point_from_x(x: $basefield) -> Option<$affine> {
+            /// Attempts to construct an affine point given an x-coordinate. The
+            /// point is not guaranteed to be in the prime order subgroup.
+            ///
+            /// If and only if `greatest` is set will the lexicographically
+            /// largest y-coordinate be selected.
+            fn get_point_from_x(x: $basefield, greatest: bool) -> Option<$affine> {
                 // Compute x^3 + b
                 let mut x3b = x;
                 x3b.square();
@@ -102,7 +103,7 @@ macro_rules! curve_impl {
 
                     $affine {
                         x: x,
-                        y: if y < negy {
+                        y: if (y < negy) ^ greatest {
                             y
                         } else {
                             negy
@@ -808,19 +809,7 @@ pub mod g1 {
                 // Interpret as Fq element.
                 let x = Fq::from_repr(x).map_err(|e| GroupDecodingError::CoordinateDecodingError("x coordinate", e))?;
 
-                match G1Affine::get_point_from_x(x) {
-                    Some(mut p) => {
-                        if greatest {
-                            p.negate();
-                        }
-
-                        Ok(p)
-                    },
-                    None => {
-                        // Point must not be on the curve.
-                        Err(GroupDecodingError::NotOnCurve)
-                    }
-                }
+                G1Affine::get_point_from_x(x, greatest).ok_or(GroupDecodingError::NotOnCurve)
             }
         }
         fn from_affine(affine: G1Affine) -> Self {
@@ -1321,19 +1310,7 @@ pub mod g2 {
                     c1: Fq::from_repr(x_c1).map_err(|e| GroupDecodingError::CoordinateDecodingError("x coordinate (c1)", e))?
                 };
 
-                match G2Affine::get_point_from_x(x) {
-                    Some(mut p) => {
-                        if greatest {
-                            p.negate();
-                        }
-
-                        Ok(p)
-                    },
-                    None => {
-                        // Point must not be on the curve.
-                        Err(GroupDecodingError::NotOnCurve)
-                    }
-                }
+                G2Affine::get_point_from_x(x, greatest).ok_or(GroupDecodingError::NotOnCurve)
             }
         }
         fn from_affine(affine: G2Affine) -> Self {

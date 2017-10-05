@@ -85,6 +85,34 @@ macro_rules! curve_impl {
         }
 
         impl $affine {
+            /// Attempts to construct an affine point given an x-coordinate. The
+            /// point is not guaranteed to be in the prime order subgroup.
+            ///
+            /// If and only if `greatest` is set will the lexicographically
+            /// largest y-coordinate be selected.
+            fn get_point_from_x(x: $basefield, greatest: bool) -> Option<$affine> {
+                // Compute x^3 + b
+                let mut x3b = x;
+                x3b.square();
+                x3b.mul_assign(&x);
+                x3b.add_assign(&$affine::get_coeff_b());
+
+                x3b.sqrt().map(|y| {
+                    let mut negy = y;
+                    negy.negate();
+
+                    $affine {
+                        x: x,
+                        y: if (y < negy) ^ greatest {
+                            y
+                        } else {
+                            negy
+                        },
+                        infinity: false
+                    }
+                })
+            }
+
             fn is_on_curve(&self) -> bool {
                 if self.is_zero() {
                     true
@@ -781,32 +809,7 @@ pub mod g1 {
                 // Interpret as Fq element.
                 let x = Fq::from_repr(x).map_err(|e| GroupDecodingError::CoordinateDecodingError("x coordinate", e))?;
 
-                // Compute x^3 + b
-                let mut x3b = x;
-                x3b.square();
-                x3b.mul_assign(&x);
-                x3b.add_assign(&G1Affine::get_coeff_b());
-
-                // Attempt to compute y
-                match x3b.sqrt() {
-                    Some(y) => {
-                        let mut negy = y;
-                        negy.negate();
-
-                        // Get the parity of the sqrt we found.
-                        let parity = y > negy;
-
-                        Ok(G1Affine {
-                            x: x,
-                            y: if parity == greatest { y } else { negy },
-                            infinity: false
-                        })
-                    },
-                    None => {
-                        // Point must not be on the curve.
-                        Err(GroupDecodingError::NotOnCurve)
-                    }
-                }
+                G1Affine::get_point_from_x(x, greatest).ok_or(GroupDecodingError::NotOnCurve)
             }
         }
         fn from_affine(affine: G1Affine) -> Self {
@@ -1307,32 +1310,7 @@ pub mod g2 {
                     c1: Fq::from_repr(x_c1).map_err(|e| GroupDecodingError::CoordinateDecodingError("x coordinate (c1)", e))?
                 };
 
-                // Compute x^3 + b
-                let mut x3b = x;
-                x3b.square();
-                x3b.mul_assign(&x);
-                x3b.add_assign(&G2Affine::get_coeff_b());
-
-                // Attempt to compute y
-                match x3b.sqrt() {
-                    Some(y) => {
-                        let mut negy = y;
-                        negy.negate();
-
-                        // Get the parity of the sqrt we found.
-                        let parity = y > negy;
-
-                        Ok(G2Affine {
-                            x: x,
-                            y: if parity == greatest { y } else { negy },
-                            infinity: false
-                        })
-                    },
-                    None => {
-                        // Point must not be on the curve.
-                        Err(GroupDecodingError::NotOnCurve)
-                    }
-                }
+                G2Affine::get_point_from_x(x, greatest).ok_or(GroupDecodingError::NotOnCurve)
             }
         }
         fn from_affine(affine: G2Affine) -> Self {

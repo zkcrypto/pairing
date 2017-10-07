@@ -85,6 +85,17 @@ macro_rules! curve_impl {
         }
 
         impl $affine {
+
+            fn mul_bits<S: AsRef<[u64]>>(&self, bits: BitIterator<S>) -> $projective {
+                let mut res = $projective::zero();
+                for i in bits {
+                    res.double();
+                    if i { res.add_assign_mixed(self) }
+                }
+                res
+            }
+
+
             /// Attempts to construct an affine point given an x-coordinate. The
             /// point is not guaranteed to be in the prime order subgroup.
             ///
@@ -163,18 +174,8 @@ macro_rules! curve_impl {
             }
 
             fn mul<S: Into<<Self::Scalar as PrimeField>::Repr>>(&self, by: S) -> $projective {
-                let mut res = $projective::zero();
-
-                for i in BitIterator::new(by.into())
-                {
-                    res.double();
-
-                    if i {
-                        res.add_assign_mixed(self);
-                    }
-                }
-
-                res
+                let bits = BitIterator::new(by.into());
+                self.mul_bits(bits)
             }
 
             fn negate(&mut self) {
@@ -844,6 +845,13 @@ pub mod g1 {
     }
 
     impl G1Affine {
+
+        fn scale_by_cofactor(&self) -> G1 {
+            // G1 cofactor = (x - 1)^2 / 3  = 76329603384216526031706109802092473003
+            let cofactor = BitIterator::new([0x8c00aaab0000aaab, 0x396c8c005555e156]);
+            self.mul_bits(cofactor)
+        }
+
         fn get_generator() -> Self {
             G1Affine {
                 x: super::super::fq::G1_GENERATOR_X,
@@ -929,25 +937,9 @@ pub mod g1 {
                     y: if yrepr < negyrepr { y } else { negy },
                     infinity: false
                 };
-
                 assert!(!p.is_in_correct_subgroup_assuming_on_curve());
 
-                let mut g1 = G1::zero();
-
-                // Cofactor of G1 is 76329603384216526031706109802092473003.
-                // Calculated by: ((x-1)**2) // 3
-                // where x is the BLS parameter.
-                for b in "111001011011001000110000000000010101010101010111100001010101101000110000000000101010101010101100000000000000001010101010101011"
-                         .chars()
-                         .map(|c| c == '1')
-                {
-                    g1.double();
-
-                    if b {
-                        g1.add_assign_mixed(&p);
-                    }
-                }
-
+                let g1 = p.scale_by_cofactor();
                 if !g1.is_zero() {
                     assert_eq!(i, 4);
                     let g1 = G1Affine::from(g1);
@@ -1367,6 +1359,15 @@ pub mod g2 {
             }
         }
 
+        fn scale_by_cofactor(&self) -> G2 {
+            // G2 cofactor = (x^8 - 4 x^7 + 5 x^6) - (4 x^4 + 6 x^3 - 4 x^2 - 4 x + 13) // 9
+            // 0x5d543a95414e7f1091d50792876a202cd91de4547085abaa68a205b2e5a7ddfa628f1cb4d9e82ef21537e293a6691ae1616ec6e786f0c70cf1c38e31c7238e5
+            let cofactor = BitIterator::new([0xcf1c38e31c7238e5, 0x1616ec6e786f0c70, 0x21537e293a6691ae,
+                                             0xa628f1cb4d9e82ef, 0xa68a205b2e5a7ddf, 0xcd91de4547085aba,
+                                             0x91d50792876a202, 0x5d543a95414e7f1]);
+            self.mul_bits(cofactor)
+        }
+
         fn perform_pairing(&self, other: &G1Affine) -> Fq12 {
             super::super::Bls12::pairing(*other, *self)
         }
@@ -1434,28 +1435,12 @@ pub mod g2 {
 
                 assert!(!p.is_in_correct_subgroup_assuming_on_curve());
 
-                let mut g2 = G2::zero();
-
-                // Cofactor of G2 is 305502333931268344200999753193121504214466019254188142667664032982267604182971884026507427359259977847832272839041616661285803823378372096355777062779109.
-                // Calculated by: ((x**8) - (4 * (x**7)) + (5 * (x**6)) - (4 * (x**4)) + (6 * (x**3)) - (4 * (x**2)) - (4*x) + 13) // 9
-                // where x is the BLS parameter.
-                for b in "101110101010100001110101001010101000001010011100111111100010000100100011101010100000111100100101000011101101010001000000010110011011001000111011110010001010100011100001000010110101011101010100110100010100010000001011011001011100101101001111101110111111010011000101000111100011100101101001101100111101000001011101111001000010101001101111110001010010011101001100110100100011010111000010110000101101110110001101110011110000110111100001100011100001100111100011100001110001110001100011100011100100011100011100101"
-                         .chars()
-                         .map(|c| c == '1')
-                {
-                    g2.double();
-
-                    if b {
-                        g2.add_assign_mixed(&p);
-                    }
-                }
-
+                let g2 = p.scale_by_cofactor();
                 if !g2.is_zero() {
                     assert_eq!(i, 2);
                     let g2 = G2Affine::from(g2);
 
                     assert!(g2.is_in_correct_subgroup_assuming_on_curve());
-
                     assert_eq!(g2, G2Affine::one());
                     break;
                 }

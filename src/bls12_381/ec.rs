@@ -845,7 +845,7 @@ pub mod g1 {
     }
 
     impl G1Affine {
-
+        #[allow(dead_code)]
         fn scale_by_cofactor(&self) -> G1 {
             // G1 cofactor = (x - 1)^2 / 3  = 76329603384216526031706109802092473003
             let cofactor = BitIterator::new([0x8c00aaab0000aaab, 0x396c8c005555e156]);
@@ -1359,6 +1359,7 @@ pub mod g2 {
             }
         }
 
+        #[allow(dead_code)]
         fn scale_by_cofactor(&self) -> G2 {
             // G2 cofactor = (x^8 - 4 x^7 + 5 x^6) - (4 x^4 + 6 x^3 - 4 x^2 - 4 x + 13) // 9
             // 0x5d543a95414e7f1091d50792876a202cd91de4547085abaa68a205b2e5a7ddfa628f1cb4d9e82ef21537e293a6691ae1616ec6e786f0c70cf1c38e31c7238e5

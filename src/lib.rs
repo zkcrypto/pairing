@@ -97,7 +97,7 @@ pub trait CurveProjective: PartialEq +
                            rand::Rand +
                            'static
 {
-    type Engine: Engine;
+    type Engine: Engine<Fr=Self::Scalar>;
     type Scalar: PrimeField;
     type Base: SqrtField;
     type Affine: CurveAffine<Projective=Self, Scalar=Self::Scalar>;
@@ -166,7 +166,7 @@ pub trait CurveAffine: Copy +
                        Eq +
                        'static
 {
-    type Engine: Engine;
+    type Engine: Engine<Fr=Self::Scalar>;
     type Scalar: PrimeField;
     type Base: SqrtField;
     type Projective: CurveProjective<Affine=Self, Scalar=Self::Scalar>;

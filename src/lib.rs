@@ -34,7 +34,8 @@ use std::io::{self, Read, Write};
 /// An "engine" is a collection of types (fields, elliptic curve groups, etc.)
 /// with well-defined relationships. In particular, the G1/G2 curve groups are
 /// of prime order `r`, and are equipped with a bilinear pairing function.
-pub trait Engine: Sized {
+pub trait Engine: Sized + 'static + Clone
+{
     /// This is the scalar field of the G1/G2 groups.
     type Fr: PrimeField;
 

@@ -17,7 +17,7 @@ const R: FrRepr = FrRepr([0x1fffffffe, 0x5884b7fa00034802, 0x998c4fefecbc4ff5, 0
 // R2 = R^2 % r
 const R2: FrRepr = FrRepr([0xc999e990f3f29c6d, 0x2b6cedcb87925c23, 0x5d314967254398f, 0x748d9d99f59ff11]);
 
-// INV = -(r^{-1} mod r) mod r
+// INV = -(r^{-1} mod 2^64) mod 2^64
 const INV: u64 = 0xfffffffeffffffff;
 
 // GENERATOR = 7 (multiplicative generator of r-1 order, that is also quadratic nonresidue)

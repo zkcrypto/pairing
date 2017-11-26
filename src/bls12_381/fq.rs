@@ -18,7 +18,7 @@ const R: FqRepr = FqRepr([0x760900000002fffd, 0xebf4000bc40c0002, 0x5f48985753c7
 // R2 = R^2 % q
 const R2: FqRepr = FqRepr([0xf4df1f341c341746, 0xa76e6a609d104f1, 0x8de5476c4c95b6d5, 0x67eb88a9939d83c0, 0x9a793e85b519952d, 0x11988fe592cae3aa]);
 
-// INV = -(q^{-1} mod q) mod q
+// INV = -(q^{-1} mod 2^64) mod 2^64
 const INV: u64 = 0x89f3fffcfffcfffd;
 
 // GENERATOR = 2 (multiplicative generator of q-1 order, that is also quadratic nonresidue)
@@ -823,7 +823,7 @@ impl SqrtField for Fq {
         // Shank's algorithm for q mod 4 = 3
         // https://eprint.iacr.org/2012/685.pdf (page 9, algorithm 2)
 
-        // a1 = self^((q - 3) // 2)
+        // a1 = self^((q - 3) // 4)
         let mut a1 = self.pow([0xee7fbfffffffeaaa, 0x7aaffffac54ffff, 0xd9cc34a83dac3d89, 0xd91dd2e13ce144af, 0x92c6e9ed90d2eb35, 0x680447a8e5ff9a6]);
         let mut a0 = a1;
         a0.square();

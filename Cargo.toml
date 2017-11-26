@@ -2,7 +2,7 @@
 name = "pairing"
 
 # Remember to change version string in README.md.
-version = "0.13.0"
+version = "0.13.1"
 authors = ["Sean Bowe <ewillbefull@gmail.com>"]
 license = "MIT/Apache-2.0"
 

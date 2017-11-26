@@ -37,7 +37,7 @@ use std::io::{self, Read, Write};
 pub trait Engine: Sized + 'static + Clone
 {
     /// This is the scalar field of the G1/G2 groups.
-    type Fr: PrimeField;
+    type Fr: PrimeField + SqrtField;
 
     /// The projective representation of an element in G1.
     type G1: CurveProjective<Engine=Self, Base=Self::Fq, Scalar=Self::Fr, Affine=Self::G1Affine> + From<Self::G1Affine>;
@@ -99,7 +99,7 @@ pub trait CurveProjective: PartialEq +
                            'static
 {
     type Engine: Engine<Fr=Self::Scalar>;
-    type Scalar: PrimeField;
+    type Scalar: PrimeField + SqrtField;
     type Base: SqrtField;
     type Affine: CurveAffine<Projective=Self, Scalar=Self::Scalar>;
 
@@ -168,7 +168,7 @@ pub trait CurveAffine: Copy +
                        'static
 {
     type Engine: Engine<Fr=Self::Scalar>;
-    type Scalar: PrimeField;
+    type Scalar: PrimeField + SqrtField;
     type Base: SqrtField;
     type Projective: CurveProjective<Affine=Self, Scalar=Self::Scalar>;
     type Prepared: Clone + Send + Sync + 'static;

@@ -254,6 +254,10 @@ impl From<Fr> for FrRepr {
     }
 }
 
+const Fr_NUM_BITS: u32 = MODULUS_BITS;
+const Fr_CAPACITY: u32 = Fr_NUM_BITS - 1;
+const Fr_S: u32 = S;
+
 impl PrimeField for Fr {
     type Repr = FrRepr;
 
@@ -280,15 +284,9 @@ impl PrimeField for Fr {
         MODULUS
     }
 
-    const NUM_BITS: u32 = MODULUS_BITS;
-
-    const CAPACITY: u32 = Self::NUM_BITS - 1;
-
     fn multiplicative_generator() -> Self {
         Fr(GENERATOR)
     }
-
-    const S: u32 = S;
 
     fn root_of_unity() -> Self {
         Fr(ROOT_OF_UNITY)
@@ -1210,8 +1208,8 @@ fn test_fr_display() {
 
 #[test]
 fn test_fr_num_bits() {
-    assert_eq!(Fr::NUM_BITS, 255);
-    assert_eq!(Fr::CAPACITY, 254);
+    assert_eq!(Fr_NUM_BITS, 255);
+    assert_eq!(Fr_CAPACITY, 254);
 }
 
 #[test]

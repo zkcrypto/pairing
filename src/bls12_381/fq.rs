@@ -432,6 +432,10 @@ impl From<Fq> for FqRepr {
     }
 }
 
+const Fq_NUM_BITS: u32 = MODULUS_BITS;
+const Fq_CAPACITY: u32 = Fq_NUM_BITS - 1;
+const Fq_S: u32 = S;
+
 impl PrimeField for Fq {
     type Repr = FqRepr;
 
@@ -459,15 +463,9 @@ impl PrimeField for Fq {
         MODULUS
     }
 
-    const NUM_BITS: u32 = MODULUS_BITS;
-
-    const CAPACITY: u32 = Self::NUM_BITS - 1;
-
     fn multiplicative_generator() -> Self {
         Fq(GENERATOR)
     }
-
-    const S: u32 = S;
 
     fn root_of_unity() -> Self {
         Fq(ROOT_OF_UNITY)
@@ -1494,8 +1492,8 @@ fn test_fq_display() {
 
 #[test]
 fn test_fq_num_bits() {
-	assert_eq!(Fq::NUM_BITS, 381);
-	assert_eq!(Fq::CAPACITY, 380);
+	assert_eq!(Fq_NUM_BITS, 381);
+	assert_eq!(Fq_CAPACITY, 380);
 }
 
 #[test]

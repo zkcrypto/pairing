@@ -613,14 +613,18 @@ fn test_bit_iterator() {
     assert!(a.next().is_none());
 }
 
-use self::arith::*;
+#[cfg(not(feature = "expose-arith"))]
+use self::arith_impl::*;
+
+#[cfg(feature = "expose-arith")]
+pub use self::arith_impl::*;
 
 #[cfg(feature = "u128-support")]
-mod arith {
+mod arith_impl {
     /// Calculate a - b - borrow, returning the result and modifying
     /// the borrow value.
     #[inline(always)]
-    pub(crate) fn sbb(a: u64, b: u64, borrow: &mut u64) -> u64 {
+    pub fn sbb(a: u64, b: u64, borrow: &mut u64) -> u64 {
         let tmp = (1u128 << 64) + u128::from(a) - u128::from(b) - u128::from(*borrow);
 
         *borrow = if tmp >> 64 == 0 { 1 } else { 0 };
@@ -631,7 +635,7 @@ mod arith {
     /// Calculate a + b + carry, returning the sum and modifying the
     /// carry value.
     #[inline(always)]
-    pub(crate) fn adc(a: u64, b: u64, carry: &mut u64) -> u64 {
+    pub fn adc(a: u64, b: u64, carry: &mut u64) -> u64 {
         let tmp = u128::from(a) + u128::from(b) + u128::from(*carry);
 
         *carry = (tmp >> 64) as u64;
@@ -642,7 +646,7 @@ mod arith {
     /// Calculate a + (b * c) + carry, returning the least significant digit
     /// and setting carry to the most significant digit.
     #[inline(always)]
-    pub(crate) fn mac_with_carry(a: u64, b: u64, c: u64, carry: &mut u64) -> u64 {
+    pub fn mac_with_carry(a: u64, b: u64, c: u64, carry: &mut u64) -> u64 {
         let tmp = (u128::from(a)) + u128::from(b) * u128::from(c) + u128::from(*carry);
 
         *carry = (tmp >> 64) as u64;
@@ -652,7 +656,7 @@ mod arith {
 }
 
 #[cfg(not(feature = "u128-support"))]
-mod arith {
+mod arith_impl {
     #[inline(always)]
     fn split_u64(i: u64) -> (u64, u64) {
         (i >> 32, i & 0xFFFFFFFF)
@@ -663,8 +667,10 @@ mod arith {
         (hi << 32) | lo
     }
 
+    /// Calculate a - b - borrow, returning the result and modifying
+    /// the borrow value.
     #[inline(always)]
-    pub(crate) fn sbb(a: u64, b: u64, borrow: &mut u64) -> u64 {
+    pub fn sbb(a: u64, b: u64, borrow: &mut u64) -> u64 {
         let (a_hi, a_lo) = split_u64(a);
         let (b_hi, b_lo) = split_u64(b);
         let (b, r0) = split_u64((1 << 32) + a_lo - b_lo - *borrow);
@@ -675,8 +681,10 @@ mod arith {
         combine_u64(r1, r0)
     }
 
+    /// Calculate a + b + carry, returning the sum and modifying the
+    /// carry value.
     #[inline(always)]
-    pub(crate) fn adc(a: u64, b: u64, carry: &mut u64) -> u64 {
+    pub fn adc(a: u64, b: u64, carry: &mut u64) -> u64 {
         let (a_hi, a_lo) = split_u64(a);
         let (b_hi, b_lo) = split_u64(b);
         let (carry_hi, carry_lo) = split_u64(*carry);
@@ -689,8 +697,10 @@ mod arith {
         combine_u64(r1, r0)
     }
 
+    /// Calculate a + (b * c) + carry, returning the least significant digit
+    /// and setting carry to the most significant digit.
     #[inline(always)]
-    pub(crate) fn mac_with_carry(a: u64, b: u64, c: u64, carry: &mut u64) -> u64 {
+    pub fn mac_with_carry(a: u64, b: u64, c: u64, carry: &mut u64) -> u64 {
         /*
                                 [  b_hi  |  b_lo  ]
                                 [  c_hi  |  c_lo  ] *

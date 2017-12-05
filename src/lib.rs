@@ -540,18 +540,20 @@ pub trait PrimeField: Field
     /// Returns the field characteristic; the modulus.
     fn char() -> Self::Repr;
 
+    // These constants have been commented out for Rust 1.19 compatibility
+
     /// How many bits are needed to represent an element of this field.
-    const NUM_BITS: u32;
+    // const NUM_BITS: u32;
 
     /// How many bits of information can be reliably stored in the field element.
-    const CAPACITY: u32;
+    // const CAPACITY: u32;
+
+    /// 2^s * t = `char()` - 1 with t odd.
+    // const S: u32;
 
     /// Returns the multiplicative generator of `char()` - 1 order. This element
     /// must also be quadratic nonresidue.
     fn multiplicative_generator() -> Self;
-
-    /// 2^s * t = `char()` - 1 with t odd.
-    const S: u32;
 
     /// Returns the 2^s root of unity computed by exponentiating the `multiplicative_generator()`
     /// by t.

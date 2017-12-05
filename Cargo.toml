@@ -2,7 +2,7 @@
 name = "pairing"
 
 # Remember to change version string in README.md.
-version = "0.13.1"
+version = "0.13.2"
 authors = ["Sean Bowe <ewillbefull@gmail.com>"]
 license = "MIT/Apache-2.0"
 
@@ -17,6 +17,7 @@ byteorder = "1"
 clippy = { version = "0.0.174", optional = true }
 
 [features]
-unstable-features = []
+unstable-features = ["expose-arith"]
+expose-arith = []
 u128-support = []
 default = []

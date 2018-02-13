@@ -11,6 +11,7 @@
 #![cfg_attr(feature = "clippy", allow(inline_always))]
 #![cfg_attr(feature = "clippy", allow(too_many_arguments))]
 #![cfg_attr(feature = "clippy", allow(unreadable_literal))]
+#![cfg_attr(feature = "clippy", allow(many_single_char_names))]
 #![cfg_attr(feature = "clippy", allow(new_without_default_derive))]
 
 // Force public structures to implement Debug

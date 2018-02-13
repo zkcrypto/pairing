@@ -364,25 +364,21 @@ impl PrimeFieldRepr for FqRepr {
     }
 
     #[inline(always)]
-    fn add_nocarry(&mut self, other: &FqRepr) -> bool {
+    fn add_nocarry(&mut self, other: &FqRepr) {
         let mut carry = 0;
 
         for (a, b) in self.0.iter_mut().zip(other.0.iter()) {
             *a = ::adc(*a, *b, &mut carry);
         }
-
-        carry != 0
     }
 
     #[inline(always)]
-    fn sub_noborrow(&mut self, other: &FqRepr) -> bool {
+    fn sub_noborrow(&mut self, other: &FqRepr) {
         let mut borrow = 0;
 
         for (a, b) in self.0.iter_mut().zip(other.0.iter()) {
             *a = ::sbb(*a, *b, &mut borrow);
         }
-
-        borrow != 0
     }
 }
 
@@ -1067,13 +1063,10 @@ fn test_fq_repr_sub_noborrow() {
         assert_eq!(csub_ab, csub_ba);
     }
 
-    // Subtracting q+1 from q should produce a borrow
+    // Subtracting q+1 from q should produce -1 (mod 2**384)
     let mut qplusone = FqRepr([0xb9feffffffffaaab, 0x1eabfffeb153ffff, 0x6730d2a0f6b0f624, 0x64774b84f38512bf, 0x4b1ba7b6434bacd7, 0x1a0111ea397fe69a]);
-    assert!(qplusone.sub_noborrow(&FqRepr([0xb9feffffffffaaac, 0x1eabfffeb153ffff, 0x6730d2a0f6b0f624, 0x64774b84f38512bf, 0x4b1ba7b6434bacd7, 0x1a0111ea397fe69a])));
-
-    // Subtracting x from x should produce no borrow
-    let mut x = FqRepr([0xb9feffffffffaaac, 0x1eabfffeb153ffff, 0x6730d2a0f6b0f624, 0x64774b84f38512bf, 0x4b1ba7b6434bacd7, 0x1a0111ea397fe69a]);
-    assert!(!x.sub_noborrow(&FqRepr([0xb9feffffffffaaac, 0x1eabfffeb153ffff, 0x6730d2a0f6b0f624, 0x64774b84f38512bf, 0x4b1ba7b6434bacd7, 0x1a0111ea397fe69a])))
+    qplusone.sub_noborrow(&FqRepr([0xb9feffffffffaaac, 0x1eabfffeb153ffff, 0x6730d2a0f6b0f624, 0x64774b84f38512bf, 0x4b1ba7b6434bacd7, 0x1a0111ea397fe69a]));
+    assert_eq!(qplusone, FqRepr([0xffffffffffffffff, 0xffffffffffffffff, 0xffffffffffffffff, 0xffffffffffffffff, 0xffffffffffffffff, 0xffffffffffffffff]));
 }
 
 #[test]
@@ -1126,13 +1119,10 @@ fn test_fq_repr_add_nocarry() {
         assert_eq!(abc, cba);
     }
 
-    // Adding 1 to (2^384 - 1) should produce a carry
+    // Adding 1 to (2^384 - 1) should produce zero
     let mut x = FqRepr([0xffffffffffffffff, 0xffffffffffffffff, 0xffffffffffffffff, 0xffffffffffffffff, 0xffffffffffffffff, 0xffffffffffffffff]);
-    assert!(x.add_nocarry(&FqRepr::from(1)));
-
-    // Adding 1 to q should not produce a carry
-    let mut x = FqRepr([0xb9feffffffffaaab, 0x1eabfffeb153ffff, 0x6730d2a0f6b0f624, 0x64774b84f38512bf, 0x4b1ba7b6434bacd7, 0x1a0111ea397fe69a]);
-    assert!(!x.add_nocarry(&FqRepr::from(1)));
+    x.add_nocarry(&FqRepr::from(1));
+    assert!(x.is_zero());
 }
 
 #[test]

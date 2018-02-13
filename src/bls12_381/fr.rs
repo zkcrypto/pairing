@@ -201,25 +201,21 @@ impl PrimeFieldRepr for FrRepr {
     }
 
     #[inline(always)]
-    fn add_nocarry(&mut self, other: &FrRepr) -> bool {
+    fn add_nocarry(&mut self, other: &FrRepr) {
         let mut carry = 0;
 
         for (a, b) in self.0.iter_mut().zip(other.0.iter()) {
             *a = ::adc(*a, *b, &mut carry);
         }
-
-        carry != 0
     }
 
     #[inline(always)]
-    fn sub_noborrow(&mut self, other: &FrRepr) -> bool {
+    fn sub_noborrow(&mut self, other: &FrRepr) {
         let mut borrow = 0;
 
         for (a, b) in self.0.iter_mut().zip(other.0.iter()) {
             *a = ::sbb(*a, *b, &mut borrow);
         }
-
-        borrow != 0
     }
 }
 
@@ -772,13 +768,10 @@ fn test_fr_repr_sub_noborrow() {
         assert_eq!(csub_ab, csub_ba);
     }
 
-    // Subtracting r+1 from r should produce a borrow
+    // Subtracting r+1 from r should produce -1 (mod 2**256)
     let mut qplusone = FrRepr([0xffffffff00000001, 0x53bda402fffe5bfe, 0x3339d80809a1d805, 0x73eda753299d7d48]);
-    assert!(qplusone.sub_noborrow(&FrRepr([0xffffffff00000002, 0x53bda402fffe5bfe, 0x3339d80809a1d805, 0x73eda753299d7d48])));
-
-    // Subtracting x from x should produce no borrow
-    let mut x = FrRepr([0xffffffff00000001, 0x53bda402fffe5bfe, 0x3339d80809a1d805, 0x73eda753299d7d48]);
-    assert!(!x.sub_noborrow(&FrRepr([0xffffffff00000001, 0x53bda402fffe5bfe, 0x3339d80809a1d805, 0x73eda753299d7d48])))
+    qplusone.sub_noborrow(&FrRepr([0xffffffff00000002, 0x53bda402fffe5bfe, 0x3339d80809a1d805, 0x73eda753299d7d48]));
+    assert_eq!(qplusone, FrRepr([0xffffffffffffffff, 0xffffffffffffffff, 0xffffffffffffffff, 0xffffffffffffffff]));
 }
 
 #[test]
@@ -842,13 +835,10 @@ fn test_fr_repr_add_nocarry() {
         assert_eq!(abc, cba);
     }
 
-    // Adding 1 to (2^256 - 1) should produce a carry
+    // Adding 1 to (2^256 - 1) should produce zero
     let mut x = FrRepr([0xffffffffffffffff, 0xffffffffffffffff, 0xffffffffffffffff, 0xffffffffffffffff]);
-    assert!(x.add_nocarry(&FrRepr::from(1)));
-
-    // Adding 1 to r should not produce a carry
-    let mut x = FrRepr([0xffffffff00000001, 0x53bda402fffe5bfe, 0x3339d80809a1d805, 0x73eda753299d7d48]);
-    assert!(!x.add_nocarry(&FrRepr::from(1)));
+    x.add_nocarry(&FrRepr::from(1));
+    assert!(x.is_zero());
 }
 
 #[test]

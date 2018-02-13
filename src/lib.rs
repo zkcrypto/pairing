@@ -352,11 +352,11 @@ pub trait PrimeFieldRepr: Sized +
                           AsMut<[u64]> +
                           From<u64>
 {
-    /// Subtract another represetation from this one, returning the borrow bit.
-    fn sub_noborrow(&mut self, other: &Self) -> bool;
+    /// Subtract another represetation from this one.
+    fn sub_noborrow(&mut self, other: &Self);
 
-    /// Add another representation to this one, returning the carry bit.
-    fn add_nocarry(&mut self, other: &Self) -> bool;
+    /// Add another representation to this one.
+    fn add_nocarry(&mut self, other: &Self);
 
     /// Compute the number of bits needed to encode this number. Always a
     /// multiple of 64.

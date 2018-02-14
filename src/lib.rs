@@ -376,14 +376,14 @@ pub trait PrimeFieldRepr: Sized +
     fn div2(&mut self);
 
     /// Performs a rightwise bitshift of this number by some amount.
-    fn divn(&mut self, amt: u32);
+    fn shr(&mut self, amt: u32);
 
     /// Performs a leftwise bitshift of this number, effectively multiplying
     /// it by 2. Overflow is ignored.
     fn mul2(&mut self);
 
     /// Performs a leftwise bitshift of this number by some amount.
-    fn muln(&mut self, amt: u32);
+    fn shl(&mut self, amt: u32);
 
     /// Writes this `PrimeFieldRepr` as a big endian integer. Always writes
     /// `(num_bits` / 8) bytes.

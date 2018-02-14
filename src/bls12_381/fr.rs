@@ -113,7 +113,7 @@ impl PrimeFieldRepr for FrRepr {
     }
 
     #[inline(always)]
-    fn divn(&mut self, mut n: u32) {
+    fn shr(&mut self, mut n: u32) {
         if n >= 64 * 4 {
             *self = Self::from(0);
             return;
@@ -161,7 +161,7 @@ impl PrimeFieldRepr for FrRepr {
     }
 
     #[inline(always)]
-    fn muln(&mut self, mut n: u32) {
+    fn shl(&mut self, mut n: u32) {
         if n >= 64 * 4 {
             *self = Self::from(0);
             return;
@@ -670,29 +670,29 @@ fn test_fr_repr_div2() {
 }
 
 #[test]
-fn test_fr_repr_divn() {
+fn test_fr_repr_shr() {
     let mut a = FrRepr([0xb33fbaec482a283f, 0x997de0d3a88cb3df, 0x9af62d2a9a0e5525, 0x36003ab08de70da1]);
-    a.divn(0);
+    a.shr(0);
     assert_eq!(
         a,
         FrRepr([0xb33fbaec482a283f, 0x997de0d3a88cb3df, 0x9af62d2a9a0e5525, 0x36003ab08de70da1])
     );
-    a.divn(1);
+    a.shr(1);
     assert_eq!(
         a,
         FrRepr([0xd99fdd762415141f, 0xccbef069d44659ef, 0xcd7b16954d072a92, 0x1b001d5846f386d0])
     );
-    a.divn(50);
+    a.shr(50);
     assert_eq!(
         a,
         FrRepr([0xbc1a7511967bf667, 0xc5a55341caa4b32f, 0x75611bce1b4335e, 0x6c0])
     );
-    a.divn(130);
+    a.shr(130);
     assert_eq!(
         a,
         FrRepr([0x1d5846f386d0cd7, 0x1b0, 0x0, 0x0])
     );
-    a.divn(64);
+    a.shr(64);
     assert_eq!(
         a,
         FrRepr([0x1b0, 0x0, 0x0, 0x0])

@@ -3,8 +3,8 @@ use ::{PrimeFieldRepr};
 
 pub fn random_repr_tests<R: PrimeFieldRepr>() {
     random_encoding_tests::<R>();
-    random_muln_tests::<R>();
-    random_divn_tests::<R>();
+    random_shl_tests::<R>();
+    random_shr_tests::<R>();
 }
 
 fn random_encoding_tests<R: PrimeFieldRepr>() {
@@ -22,7 +22,7 @@ fn random_encoding_tests<R: PrimeFieldRepr>() {
     }
 }
 
-fn random_muln_tests<R: PrimeFieldRepr>() {
+fn random_shl_tests<R: PrimeFieldRepr>() {
     let mut rng = XorShiftRng::from_seed([0x5dbe6259, 0x8d313d76, 0x3237db17, 0xe5bc0654]);
 
     for _ in 0..100 {
@@ -36,14 +36,14 @@ fn random_muln_tests<R: PrimeFieldRepr>() {
                 r1.mul2();
             }
 
-            r2.muln(shift);
+            r2.shl(shift);
 
             assert_eq!(r1, r2);
         }
     }
 }
 
-fn random_divn_tests<R: PrimeFieldRepr>() {
+fn random_shr_tests<R: PrimeFieldRepr>() {
     let mut rng = XorShiftRng::from_seed([0x5dbe6259, 0x8d313d76, 0x3237db17, 0xe5bc0654]);
 
     for _ in 0..100 {
@@ -57,7 +57,7 @@ fn random_divn_tests<R: PrimeFieldRepr>() {
                 r1.div2();
             }
 
-            r2.divn(shift);
+            r2.shr(shift);
 
             assert_eq!(r1, r2);
         }

@@ -573,7 +573,7 @@ impl SqrtField for Fr {
                 let mut m = S;
 
                 while t != Self::one() {
-                let mut i = 1;
+                    let mut i = 1;
                     {
                         let mut t2i = t;
                         t2i.square();

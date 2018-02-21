@@ -1,5 +1,5 @@
-use rand::{Rng, Rand};
-use ::{Field};
+use rand::{Rand, Rng};
+use Field;
 use super::fq2::Fq2;
 use super::fq::{FROBENIUS_COEFF_FQ6_C1, FROBENIUS_COEFF_FQ6_C2};
 
@@ -8,11 +8,10 @@ use super::fq::{FROBENIUS_COEFF_FQ6_C1, FROBENIUS_COEFF_FQ6_C2};
 pub struct Fq6 {
     pub c0: Fq2,
     pub c1: Fq2,
-    pub c2: Fq2
+    pub c2: Fq2,
 }
 
-impl ::std::fmt::Display for Fq6
-{
+impl ::std::fmt::Display for Fq6 {
     fn fmt(&self, f: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
         write!(f, "Fq6({} + {} * v, {} * v^2)", self.c0, self.c1, self.c2)
     }
@@ -23,7 +22,7 @@ impl Rand for Fq6 {
         Fq6 {
             c0: rng.gen(),
             c1: rng.gen(),
-            c2: rng.gen()
+            c2: rng.gen(),
         }
     }
 }
@@ -38,8 +37,7 @@ impl Fq6 {
         self.c0.mul_by_nonresidue();
     }
 
-    pub fn mul_by_1(&mut self, c1: &Fq2)
-    {
+    pub fn mul_by_1(&mut self, c1: &Fq2) {
         let mut b_b = self.c1;
         b_b.mul_assign(c1);
 
@@ -67,8 +65,7 @@ impl Fq6 {
         self.c2 = b_b;
     }
 
-    pub fn mul_by_01(&mut self, c0: &Fq2, c1: &Fq2)
-    {
+    pub fn mul_by_01(&mut self, c0: &Fq2, c1: &Fq2) {
         let mut a_a = self.c0;
         let mut b_b = self.c1;
         a_a.mul_assign(c0);
@@ -112,13 +109,12 @@ impl Fq6 {
     }
 }
 
-impl Field for Fq6
-{
+impl Field for Fq6 {
     fn zero() -> Self {
         Fq6 {
             c0: Fq2::zero(),
             c1: Fq2::zero(),
-            c2: Fq2::zero()
+            c2: Fq2::zero(),
         }
     }
 
@@ -126,7 +122,7 @@ impl Field for Fq6
         Fq6 {
             c0: Fq2::one(),
             c1: Fq2::zero(),
-            c2: Fq2::zero()
+            c2: Fq2::zero(),
         }
     }
 
@@ -158,8 +154,7 @@ impl Field for Fq6
         self.c2.sub_assign(&other.c2);
     }
 
-    fn frobenius_map(&mut self, power: usize)
-    {
+    fn frobenius_map(&mut self, power: usize) {
         self.c0.frobenius_map(power);
         self.c1.frobenius_map(power);
         self.c2.frobenius_map(power);
@@ -293,15 +288,15 @@ impl Field for Fq6
                 let mut tmp = Fq6 {
                     c0: t,
                     c1: t,
-                    c2: t
+                    c2: t,
                 };
                 tmp.c0.mul_assign(&c0);
                 tmp.c1.mul_assign(&c1);
                 tmp.c2.mul_assign(&c2);
 
                 Some(tmp)
-            },
-            None => None
+            }
+            None => None,
         }
     }
 }
@@ -316,7 +311,7 @@ fn test_fq6_mul_nonresidue() {
     let nqr = Fq6 {
         c0: Fq2::zero(),
         c1: Fq2::one(),
-        c2: Fq2::zero()
+        c2: Fq2::zero(),
     };
 
     for _ in 0..1000 {
@@ -342,7 +337,7 @@ fn test_fq6_mul_by_1() {
         b.mul_assign(&Fq6 {
             c0: Fq2::zero(),
             c1: c1,
-            c2: Fq2::zero()
+            c2: Fq2::zero(),
         });
 
         assert_eq!(a, b);
@@ -363,7 +358,7 @@ fn test_fq6_mul_by_01() {
         b.mul_assign(&Fq6 {
             c0: c0,
             c1: c1,
-            c2: Fq2::zero()
+            c2: Fq2::zero(),
         });
 
         assert_eq!(a, b);
@@ -372,8 +367,8 @@ fn test_fq6_mul_by_01() {
 
 #[test]
 fn fq6_field_tests() {
-    use ::PrimeField;
-    
+    use PrimeField;
+
     ::tests::field::random_field_tests::<Fq6>();
     ::tests::field::random_frobenius_tests::<Fq6, _>(super::fq::Fq::char(), 13);
 }

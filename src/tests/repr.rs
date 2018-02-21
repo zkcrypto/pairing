@@ -1,5 +1,5 @@
 use rand::{SeedableRng, XorShiftRng};
-use ::{PrimeFieldRepr};
+use PrimeFieldRepr;
 
 pub fn random_repr_tests<R: PrimeFieldRepr>() {
     random_encoding_tests::<R>();
@@ -28,7 +28,7 @@ fn random_shl_tests<R: PrimeFieldRepr>() {
     for _ in 0..100 {
         let r = R::rand(&mut rng);
 
-        for shift in 0..(r.num_bits()+1) {
+        for shift in 0..(r.num_bits() + 1) {
             let mut r1 = r;
             let mut r2 = r;
 
@@ -49,7 +49,7 @@ fn random_shr_tests<R: PrimeFieldRepr>() {
     for _ in 0..100 {
         let r = R::rand(&mut rng);
 
-        for shift in 0..(r.num_bits()+1) {
+        for shift in 0..(r.num_bits() + 1) {
             let mut r1 = r;
             let mut r2 = r;
 

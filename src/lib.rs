@@ -1,7 +1,6 @@
 // If the "u128-support" feature is enabled, this library can use
 // more efficient arithmetic. Only available in the nightly compiler.
 #![cfg_attr(feature = "u128-support", feature(i128_type))]
-
 // `clippy` is a code linting tool for improving code quality by catching
 // common mistakes or strange code patterns. If the `clippy` feature is
 // provided, it is enabled and all compiler warnings are prohibited.
@@ -13,12 +12,11 @@
 #![cfg_attr(feature = "clippy", allow(unreadable_literal))]
 #![cfg_attr(feature = "clippy", allow(many_single_char_names))]
 #![cfg_attr(feature = "clippy", allow(new_without_default_derive))]
-
 // Force public structures to implement Debug
 #![deny(missing_debug_implementations)]
 
-extern crate rand;
 extern crate byteorder;
+extern crate rand;
 
 #[cfg(test)]
 pub mod tests;
@@ -35,22 +33,49 @@ use std::io::{self, Read, Write};
 /// An "engine" is a collection of types (fields, elliptic curve groups, etc.)
 /// with well-defined relationships. In particular, the G1/G2 curve groups are
 /// of prime order `r`, and are equipped with a bilinear pairing function.
-pub trait Engine: Sized + 'static + Clone
-{
+pub trait Engine: Sized + 'static + Clone {
     /// This is the scalar field of the G1/G2 groups.
     type Fr: PrimeField + SqrtField;
 
     /// The projective representation of an element in G1.
-    type G1: CurveProjective<Engine=Self, Base=Self::Fq, Scalar=Self::Fr, Affine=Self::G1Affine> + From<Self::G1Affine>;
+    type G1: CurveProjective<
+        Engine = Self,
+        Base = Self::Fq,
+        Scalar = Self::Fr,
+        Affine = Self::G1Affine,
+    >
+        + From<Self::G1Affine>;
 
     /// The affine representation of an element in G1.
-    type G1Affine: CurveAffine<Engine=Self, Base=Self::Fq, Scalar=Self::Fr, Projective=Self::G1, Pair=Self::G2Affine, PairingResult=Self::Fqk> + From<Self::G1>;
+    type G1Affine: CurveAffine<
+        Engine = Self,
+        Base = Self::Fq,
+        Scalar = Self::Fr,
+        Projective = Self::G1,
+        Pair = Self::G2Affine,
+        PairingResult = Self::Fqk,
+    >
+        + From<Self::G1>;
 
     /// The projective representation of an element in G2.
-    type G2: CurveProjective<Engine=Self, Base=Self::Fqe, Scalar=Self::Fr, Affine=Self::G2Affine> + From<Self::G2Affine>;
+    type G2: CurveProjective<
+        Engine = Self,
+        Base = Self::Fqe,
+        Scalar = Self::Fr,
+        Affine = Self::G2Affine,
+    >
+        + From<Self::G2Affine>;
 
     /// The affine representation of an element in G2.
-    type G2Affine: CurveAffine<Engine=Self, Base=Self::Fqe, Scalar=Self::Fr, Projective=Self::G2, Pair=Self::G1Affine, PairingResult=Self::Fqk> + From<Self::G2>;
+    type G2Affine: CurveAffine<
+        Engine = Self,
+        Base = Self::Fqe,
+        Scalar = Self::Fr,
+        Projective = Self::G2,
+        Pair = Self::G1Affine,
+        PairingResult = Self::Fqk,
+    >
+        + From<Self::G2>;
 
     /// The base field that hosts G1.
     type Fq: PrimeField + SqrtField;
@@ -63,46 +88,47 @@ pub trait Engine: Sized + 'static + Clone
 
     /// Perform a miller loop with some number of (G1, G2) pairs.
     fn miller_loop<'a, I>(i: I) -> Self::Fqk
-        where I: IntoIterator<Item=&'a (
-                                    &'a <Self::G1Affine as CurveAffine>::Prepared,
-                                    &'a <Self::G2Affine as CurveAffine>::Prepared
-                               )>;
+    where
+        I: IntoIterator<
+            Item = &'a (
+                &'a <Self::G1Affine as CurveAffine>::Prepared,
+                &'a <Self::G2Affine as CurveAffine>::Prepared,
+            ),
+        >;
 
     /// Perform final exponentiation of the result of a miller loop.
     fn final_exponentiation(&Self::Fqk) -> Option<Self::Fqk>;
 
     /// Performs a complete pairing operation `(p, q)`.
     fn pairing<G1, G2>(p: G1, q: G2) -> Self::Fqk
-        where G1: Into<Self::G1Affine>,
-              G2: Into<Self::G2Affine>
+    where
+        G1: Into<Self::G1Affine>,
+        G2: Into<Self::G2Affine>,
     {
         Self::final_exponentiation(&Self::miller_loop(
-            [(
-                &(p.into().prepare()),
-                &(q.into().prepare())
-            )].into_iter()
+            [(&(p.into().prepare()), &(q.into().prepare()))].into_iter(),
         )).unwrap()
     }
 }
 
 /// Projective representation of an elliptic curve point guaranteed to be
 /// in the correct prime order subgroup.
-pub trait CurveProjective: PartialEq +
-                           Eq +
-                           Sized +
-                           Copy +
-                           Clone +
-                           Send +
-                           Sync +
-                           fmt::Debug +
-                           fmt::Display +
-                           rand::Rand +
-                           'static
-{
-    type Engine: Engine<Fr=Self::Scalar>;
+pub trait CurveProjective
+    : PartialEq
+    + Eq
+    + Sized
+    + Copy
+    + Clone
+    + Send
+    + Sync
+    + fmt::Debug
+    + fmt::Display
+    + rand::Rand
+    + 'static {
+    type Engine: Engine<Fr = Self::Scalar>;
     type Scalar: PrimeField + SqrtField;
     type Base: SqrtField;
-    type Affine: CurveAffine<Projective=Self, Scalar=Self::Scalar>;
+    type Affine: CurveAffine<Projective = Self, Scalar = Self::Scalar>;
 
     /// Returns the additive identity.
     fn zero() -> Self;
@@ -157,25 +183,17 @@ pub trait CurveProjective: PartialEq +
 
 /// Affine representation of an elliptic curve point guaranteed to be
 /// in the correct prime order subgroup.
-pub trait CurveAffine: Copy +
-                       Clone +
-                       Sized +
-                       Send +
-                       Sync +
-                       fmt::Debug +
-                       fmt::Display +
-                       PartialEq +
-                       Eq +
-                       'static
-{
-    type Engine: Engine<Fr=Self::Scalar>;
+pub trait CurveAffine
+    : Copy + Clone + Sized + Send + Sync + fmt::Debug + fmt::Display + PartialEq + Eq + 'static
+    {
+    type Engine: Engine<Fr = Self::Scalar>;
     type Scalar: PrimeField + SqrtField;
     type Base: SqrtField;
-    type Projective: CurveProjective<Affine=Self, Scalar=Self::Scalar>;
+    type Projective: CurveProjective<Affine = Self, Scalar = Self::Scalar>;
     type Prepared: Clone + Send + Sync + 'static;
-    type Uncompressed: EncodedPoint<Affine=Self>;
-    type Compressed: EncodedPoint<Affine=Self>;
-    type Pair: CurveAffine<Pair=Self>;
+    type Uncompressed: EncodedPoint<Affine = Self>;
+    type Compressed: EncodedPoint<Affine = Self>;
+    type Pair: CurveAffine<Pair = Self>;
     type PairingResult: Field;
 
     /// Returns the additive identity.
@@ -217,15 +235,8 @@ pub trait CurveAffine: Copy +
 }
 
 /// An encoded elliptic curve point, which should essentially wrap a `[u8; N]`.
-pub trait EncodedPoint: Sized +
-                        Send +
-                        Sync +
-                        AsRef<[u8]> +
-                        AsMut<[u8]> +
-                        Clone +
-                        Copy +
-                        'static
-{
+pub trait EncodedPoint
+    : Sized + Send + Sync + AsRef<[u8]> + AsMut<[u8]> + Clone + Copy + 'static {
     type Affine: CurveAffine;
 
     /// Creates an empty representation.
@@ -253,17 +264,9 @@ pub trait EncodedPoint: Sized +
 }
 
 /// This trait represents an element of a field.
-pub trait Field: Sized +
-                 Eq +
-                 Copy +
-                 Clone +
-                 Send +
-                 Sync +
-                 fmt::Debug +
-                 fmt::Display +
-                 'static +
-                 rand::Rand
-{
+pub trait Field
+    : Sized + Eq + Copy + Clone + Send + Sync + fmt::Debug + fmt::Display + 'static + rand::Rand
+    {
     /// Returns the zero element of the field, the additive identity.
     fn zero() -> Self;
 
@@ -300,8 +303,7 @@ pub trait Field: Sized +
 
     /// Exponentiates this element by a number represented with `u64` limbs,
     /// least significant digit first.
-    fn pow<S: AsRef<[u64]>>(&self, exp: S) -> Self
-    {
+    fn pow<S: AsRef<[u64]>>(&self, exp: S) -> Self {
         let mut res = Self::one();
 
         let mut found_one = false;
@@ -323,8 +325,7 @@ pub trait Field: Sized +
 }
 
 /// This trait represents an element of a field that has a square root operation described for it.
-pub trait SqrtField: Field
-{
+pub trait SqrtField: Field {
     /// Returns the Legendre symbol of the field element.
     fn legendre(&self) -> LegendreSymbol;
 
@@ -333,26 +334,25 @@ pub trait SqrtField: Field
     fn sqrt(&self) -> Option<Self>;
 }
 
-
 /// This trait represents a wrapper around a biginteger which can encode any element of a particular
 /// prime field. It is a smart wrapper around a sequence of `u64` limbs, least-significant digit
 /// first.
-pub trait PrimeFieldRepr: Sized +
-                          Copy +
-                          Clone +
-                          Eq +
-                          Ord +
-                          Send +
-                          Sync +
-                          Default +
-                          fmt::Debug +
-                          fmt::Display +
-                          'static +
-                          rand::Rand +
-                          AsRef<[u64]> +
-                          AsMut<[u64]> +
-                          From<u64>
-{
+pub trait PrimeFieldRepr
+    : Sized
+    + Copy
+    + Clone
+    + Eq
+    + Ord
+    + Send
+    + Sync
+    + Default
+    + fmt::Debug
+    + fmt::Display
+    + 'static
+    + rand::Rand
+    + AsRef<[u64]>
+    + AsMut<[u64]>
+    + From<u64> {
     /// Subtract another represetation from this one.
     fn sub_noborrow(&mut self, other: &Self);
 
@@ -388,7 +388,7 @@ pub trait PrimeFieldRepr: Sized +
 
     /// Writes this `PrimeFieldRepr` as a big endian integer.
     fn write_be<W: Write>(&self, mut writer: W) -> io::Result<()> {
-        use byteorder::{WriteBytesExt, BigEndian};
+        use byteorder::{BigEndian, WriteBytesExt};
 
         for digit in self.as_ref().iter().rev() {
             writer.write_u64::<BigEndian>(*digit)?;
@@ -399,7 +399,7 @@ pub trait PrimeFieldRepr: Sized +
 
     /// Reads a big endian integer into this representation.
     fn read_be<R: Read>(&mut self, mut reader: R) -> io::Result<()> {
-        use byteorder::{ReadBytesExt, BigEndian};
+        use byteorder::{BigEndian, ReadBytesExt};
 
         for digit in self.as_mut().iter_mut().rev() {
             *digit = reader.read_u64::<BigEndian>()?;
@@ -413,7 +413,7 @@ pub trait PrimeFieldRepr: Sized +
 pub enum LegendreSymbol {
     Zero = 0,
     QuadraticResidue = 1,
-    QuadraticNonResidue = -1
+    QuadraticNonResidue = -1,
 }
 
 /// An error that may occur when trying to interpret a `PrimeFieldRepr` as a
@@ -421,13 +421,13 @@ pub enum LegendreSymbol {
 #[derive(Debug)]
 pub enum PrimeFieldDecodingError {
     /// The encoded value is not in the field
-    NotInField(String)
+    NotInField(String),
 }
 
 impl Error for PrimeFieldDecodingError {
     fn description(&self) -> &str {
         match *self {
-            PrimeFieldDecodingError::NotInField(..) => "not an element of the field"
+            PrimeFieldDecodingError::NotInField(..) => "not an element of the field",
         }
     }
 }
@@ -454,7 +454,7 @@ pub enum GroupDecodingError {
     /// The compression mode of the encoded element was not as expected
     UnexpectedCompressionMode,
     /// The encoding contained bits that should not have been set
-    UnexpectedInformation
+    UnexpectedInformation,
 }
 
 impl Error for GroupDecodingError {
@@ -463,8 +463,10 @@ impl Error for GroupDecodingError {
             GroupDecodingError::NotOnCurve => "coordinate(s) do not lie on the curve",
             GroupDecodingError::NotInSubgroup => "the element is not part of an r-order subgroup",
             GroupDecodingError::CoordinateDecodingError(..) => "coordinate(s) could not be decoded",
-            GroupDecodingError::UnexpectedCompressionMode => "encoding has unexpected compression mode",
-            GroupDecodingError::UnexpectedInformation => "encoding has unexpected information"
+            GroupDecodingError::UnexpectedCompressionMode => {
+                "encoding has unexpected compression mode"
+            }
+            GroupDecodingError::UnexpectedInformation => "encoding has unexpected information",
         }
     }
 }
@@ -474,17 +476,14 @@ impl fmt::Display for GroupDecodingError {
         match *self {
             GroupDecodingError::CoordinateDecodingError(description, ref err) => {
                 write!(f, "{} decoding error: {}", description, err)
-            },
-            _ => {
-                write!(f, "{}", self.description())
             }
+            _ => write!(f, "{}", self.description()),
         }
     }
 }
 
 /// This represents an element of a prime field.
-pub trait PrimeField: Field
-{
+pub trait PrimeField: Field {
     /// The prime field can be converted back and forth into this biginteger
     /// representation.
     type Repr: PrimeFieldRepr + From<Self>;
@@ -519,7 +518,7 @@ pub trait PrimeField: Field
 
                     res.mul_assign(&ten);
                     res.add_assign(&Self::from_repr(Self::Repr::from(u64::from(c))).unwrap());
-                },
+                }
                 None => {
                     return None;
                 }
@@ -560,17 +559,14 @@ pub trait PrimeField: Field
 #[derive(Debug)]
 pub struct BitIterator<E> {
     t: E,
-    n: usize
+    n: usize,
 }
 
 impl<E: AsRef<[u64]>> BitIterator<E> {
     pub fn new(t: E) -> Self {
         let n = t.as_ref().len() * 64;
 
-        BitIterator {
-            t: t,
-            n: n
-        }
+        BitIterator { t: t, n: n }
     }
 }
 
@@ -603,7 +599,12 @@ fn test_bit_iterator() {
 
     let expected = "1010010101111110101010000101101011101000011101110101001000011001100100100011011010001011011011010001011011101100110100111011010010110001000011110100110001100110011101101000101100011100100100100100001010011101010111110011101011000011101000111011011101011001";
 
-    let mut a = BitIterator::new([0x429d5f3ac3a3b759, 0xb10f4c66768b1c92, 0x92368b6d16ecd3b4, 0xa57ea85ae8775219]);
+    let mut a = BitIterator::new([
+        0x429d5f3ac3a3b759,
+        0xb10f4c66768b1c92,
+        0x92368b6d16ecd3b4,
+        0xa57ea85ae8775219,
+    ]);
 
     for e in expected.chars() {
         assert!(a.next().unwrap() == (e == '1'));

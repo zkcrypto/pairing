@@ -12,7 +12,7 @@ homepage = "https://github.com/ebfull/pairing"
 repository = "https://github.com/ebfull/pairing"
 
 [dependencies]
-rand = "0.3"
+rand = "0.4"
 byteorder = "1"
 clippy = { version = "0.0.186", optional = true }
 

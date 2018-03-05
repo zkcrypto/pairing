@@ -1,9 +1,8 @@
-use rand::{SeedableRng, XorShiftRng, Rand, Rng};
+use rand::{Rand, Rng, SeedableRng, XorShiftRng};
 
-use ::{CurveProjective, CurveAffine, Field, EncodedPoint};
+use {CurveAffine, CurveProjective, EncodedPoint, Field};
 
-pub fn curve_tests<G: CurveProjective>()
-{
+pub fn curve_tests<G: CurveProjective>() {
     let mut rng = XorShiftRng::from_seed([0x5dbe6259, 0x8d313d76, 0x3237db17, 0xe5bc0654]);
 
     // Negation edge case with zero.
@@ -48,7 +47,10 @@ pub fn curve_tests<G: CurveProjective>()
     {
         let a = G::rand(&mut rng);
         let b = a.into_affine().into_projective();
-        let c = a.into_affine().into_projective().into_affine().into_projective();
+        let c = a.into_affine()
+            .into_projective()
+            .into_affine()
+            .into_projective();
         assert_eq!(a, b);
         assert_eq!(b, c);
     }
@@ -63,8 +65,8 @@ pub fn curve_tests<G: CurveProjective>()
 }
 
 fn random_wnaf_tests<G: CurveProjective>() {
-    use ::wnaf::*;
-    use ::PrimeField;
+    use wnaf::*;
+    use PrimeField;
 
     let mut rng = XorShiftRng::from_seed([0x5dbe6259, 0x8d313d76, 0x3237db17, 0xe5bc0654]);
 
@@ -89,7 +91,7 @@ fn random_wnaf_tests<G: CurveProjective>() {
     }
 
     {
-        fn only_compiles_if_send<S: Send>(_: &S) { }
+        fn only_compiles_if_send<S: Send>(_: &S) {}
 
         for _ in 0..100 {
             let g = G::rand(&mut rng);
@@ -370,7 +372,9 @@ fn random_transformation_tests<G: CurveProjective>() {
             v[s] = v[s].into_affine().into_projective();
         }
 
-        let expected_v = v.iter().map(|v| v.into_affine().into_projective()).collect::<Vec<_>>();
+        let expected_v = v.iter()
+            .map(|v| v.into_affine().into_projective())
+            .collect::<Vec<_>>();
         G::batch_normalization(&mut v);
 
         for i in &v {
@@ -381,8 +385,7 @@ fn random_transformation_tests<G: CurveProjective>() {
     }
 }
 
-fn random_encoding_tests<G: CurveAffine>()
-{
+fn random_encoding_tests<G: CurveAffine>() {
     let mut rng = XorShiftRng::from_seed([0x5dbe6259, 0x8d313d76, 0x3237db17, 0xe5bc0654]);
 
     assert_eq!(

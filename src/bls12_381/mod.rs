@@ -13,9 +13,10 @@ pub use self::fq::{Fq, FqRepr};
 pub use self::fq2::Fq2;
 pub use self::fq6::Fq6;
 pub use self::fq12::Fq12;
-pub use self::ec::{G1, G2, G1Affine, G2Affine, G1Prepared, G2Prepared, G1Uncompressed, G2Uncompressed, G1Compressed, G2Compressed};
+pub use self::ec::{G1, G1Affine, G1Compressed, G1Prepared, G1Uncompressed, G2, G2Affine,
+                   G2Compressed, G2Prepared, G2Uncompressed};
 
-use super::{Engine, CurveAffine, Field, BitIterator};
+use super::{BitIterator, CurveAffine, Engine, Field};
 
 // The BLS parameter x for BLS12-381 is -0xd201000000010000
 const BLS_X: u64 = 0xd201000000010000;
@@ -35,10 +36,13 @@ impl Engine for Bls12 {
     type Fqk = Fq12;
 
     fn miller_loop<'a, I>(i: I) -> Self::Fqk
-        where I: IntoIterator<Item=&'a (
-                                    &'a <Self::G1Affine as CurveAffine>::Prepared,
-                                    &'a <Self::G2Affine as CurveAffine>::Prepared
-                               )>
+    where
+        I: IntoIterator<
+            Item = &'a (
+                &'a <Self::G1Affine as CurveAffine>::Prepared,
+                &'a <Self::G2Affine as CurveAffine>::Prepared,
+            ),
+        >,
     {
         let mut pairs = vec![];
         for &(p, q) in i {
@@ -48,12 +52,7 @@ impl Engine for Bls12 {
         }
 
         // Twisting isomorphism from E to E'
-        fn ell(
-            f: &mut Fq12,
-            coeffs: &(Fq2, Fq2, Fq2),
-            p: &G1Affine
-        )
-        {
+        fn ell(f: &mut Fq12, coeffs: &(Fq2, Fq2, Fq2), p: &G1Affine) {
             let mut c0 = coeffs.0;
             let mut c1 = coeffs.1;
 
@@ -112,8 +111,7 @@ impl Engine for Bls12 {
                 r.frobenius_map(2);
                 r.mul_assign(&f2);
 
-                fn exp_by_x(f: &mut Fq12, x: u64)
-                {
+                fn exp_by_x(f: &mut Fq12, x: u64) {
                     *f = f.pow(&[x]);
                     if BLS_X_IS_NEGATIVE {
                         f.conjugate();
@@ -154,8 +152,8 @@ impl Engine for Bls12 {
                 y1.mul_assign(&y2);
 
                 Some(y1)
-            },
-            None => None
+            }
+            None => None,
         }
     }
 }
@@ -169,14 +167,11 @@ impl G2Prepared {
         if q.is_zero() {
             return G2Prepared {
                 coeffs: vec![],
-                infinity: true
-            }
+                infinity: true,
+            };
         }
 
-        fn doubling_step(
-            r: &mut G2
-        ) -> (Fq2, Fq2, Fq2)
-        {
+        fn doubling_step(r: &mut G2) -> (Fq2, Fq2, Fq2) {
             // Adaptation of Algorithm 26, https://eprint.iacr.org/2010/354.pdf
             let mut tmp0 = r.x;
             tmp0.square();
@@ -247,11 +242,7 @@ impl G2Prepared {
             (tmp0, tmp3, tmp6)
         }
 
-        fn addition_step(
-            r: &mut G2,
-            q: &G2Affine
-        ) -> (Fq2, Fq2, Fq2)
-        {
+        fn addition_step(r: &mut G2, q: &G2Affine) -> (Fq2, Fq2, Fq2) {
             // Adaptation of Algorithm 27, https://eprint.iacr.org/2010/354.pdf
             let mut zsquared = r.z;
             zsquared.square();
@@ -360,7 +351,7 @@ impl G2Prepared {
 
         G2Prepared {
             coeffs: coeffs,
-            infinity: false
+            infinity: false,
         }
     }
 }

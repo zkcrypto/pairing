@@ -1,18 +1,17 @@
-use rand::{Rng, Rand};
-use ::{Field};
+use rand::{Rand, Rng};
+use Field;
 use super::fq6::Fq6;
 use super::fq2::Fq2;
-use super::fq::{FROBENIUS_COEFF_FQ12_C1};
+use super::fq::FROBENIUS_COEFF_FQ12_C1;
 
 /// An element of Fq12, represented by c0 + c1 * w.
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub struct Fq12 {
     pub c0: Fq6,
-    pub c1: Fq6
+    pub c1: Fq6,
 }
 
-impl ::std::fmt::Display for Fq12
-{
+impl ::std::fmt::Display for Fq12 {
     fn fmt(&self, f: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
         write!(f, "Fq12({} + {} * w)", self.c0, self.c1)
     }
@@ -22,24 +21,17 @@ impl Rand for Fq12 {
     fn rand<R: Rng>(rng: &mut R) -> Self {
         Fq12 {
             c0: rng.gen(),
-            c1: rng.gen()
+            c1: rng.gen(),
         }
     }
 }
 
 impl Fq12 {
-    pub fn conjugate(&mut self)
-    {
+    pub fn conjugate(&mut self) {
         self.c1.negate();
     }
 
-    pub fn mul_by_014(
-        &mut self,
-        c0: &Fq2,
-        c1: &Fq2,
-        c4: &Fq2
-    )
-    {
+    pub fn mul_by_014(&mut self, c0: &Fq2, c1: &Fq2, c4: &Fq2) {
         let mut aa = self.c0;
         aa.mul_by_01(c0, c1);
         let mut bb = self.c1;
@@ -56,19 +48,18 @@ impl Fq12 {
     }
 }
 
-impl Field for Fq12
-{
+impl Field for Fq12 {
     fn zero() -> Self {
         Fq12 {
             c0: Fq6::zero(),
-            c1: Fq6::zero()
+            c1: Fq6::zero(),
         }
     }
 
     fn one() -> Self {
         Fq12 {
             c0: Fq6::one(),
-            c1: Fq6::zero()
+            c1: Fq6::zero(),
         }
     }
 
@@ -96,8 +87,7 @@ impl Field for Fq12
         self.c1.sub_assign(&other.c1);
     }
 
-    fn frobenius_map(&mut self, power: usize)
-    {
+    fn frobenius_map(&mut self, power: usize) {
         self.c0.frobenius_map(power);
         self.c1.frobenius_map(power);
 
@@ -148,10 +138,7 @@ impl Field for Fq12
         c0s.sub_assign(&c1s);
 
         c0s.inverse().map(|t| {
-            let mut tmp = Fq12 {
-                c0: t,
-                c1: t
-            };
+            let mut tmp = Fq12 { c0: t, c1: t };
             tmp.c0.mul_assign(&self.c0);
             tmp.c1.mul_assign(&self.c1);
             tmp.c1.negate();
@@ -180,13 +167,13 @@ fn test_fq12_mul_by_014() {
             c0: Fq6 {
                 c0: c0,
                 c1: c1,
-                c2: Fq2::zero()
+                c2: Fq2::zero(),
             },
             c1: Fq6 {
                 c0: Fq2::zero(),
                 c1: c5,
-                c2: Fq2::zero()
-            }
+                c2: Fq2::zero(),
+            },
         });
 
         assert_eq!(a, b);
@@ -195,7 +182,7 @@ fn test_fq12_mul_by_014() {
 
 #[test]
 fn fq12_field_tests() {
-    use ::PrimeField;
+    use PrimeField;
 
     ::tests::field::random_field_tests::<Fq12>();
     ::tests::field::random_frobenius_tests::<Fq12, _>(super::fq::Fq::char(), 13);

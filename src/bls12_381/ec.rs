@@ -169,7 +169,8 @@ macro_rules! curve_impl {
             /// E(Fq) in our construction, it does have two solutions.
             /// We follow the convention of the paper by mapping these
             /// to some arbitrary points; in our case, the positive/negative
-            /// fixed generator.
+            /// fixed generator (with the parity of the y-coordinate
+            /// corresponding to the t value).
             ///
             /// Unlike the paper, which maps t = 0 to an arbitrary point,
             /// we map it to the point at infinity. This arrangement allows
@@ -197,7 +198,7 @@ macro_rules! curve_impl {
                 // Handle the case t^2 + b + 1 == 0
                 if w.is_zero()  {
                     let mut ret = Self::one();
-                    if !parity {
+                    if parity {
                         ret.negate()
                     }
                     return ret
@@ -1425,6 +1426,7 @@ pub mod g1 {
         let p = G1Affine::sw_encode(t);
         assert!(p.is_on_curve());
         assert!(!p.is_zero());
+        assert_eq!(p.y.parity(), t.parity());
 
         // test that the encoding function is odd for the above t
         t.negate();

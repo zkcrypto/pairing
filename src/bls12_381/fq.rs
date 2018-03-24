@@ -1251,7 +1251,7 @@ fn test_hash() {
     // where X is a coin flip
     let mean = 1000 * 6 / 2;
     // sqrt(1000 * 6 * .25) = 38.72983346207417
-    let variance = 40;
+    let variance = 40 * 4;
     assert!((lsb_ones - mean).abs() < variance);
 }
 

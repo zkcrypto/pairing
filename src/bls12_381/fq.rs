@@ -1183,7 +1183,7 @@ impl Fq {
     pub(crate) fn hash(hasher: Blake2b) -> Self {
         let mut repr: [u64; 8] = [0; 8];
         let digest = hasher.finalize();
-        BigEndian::read_u64_into(&digest.as_bytes(), &mut repr);
+        BigEndian::read_u64_into(digest.as_bytes(), &mut repr);
         repr.reverse();
         Self::one().mul_bits(BitIterator::new(repr))
     }

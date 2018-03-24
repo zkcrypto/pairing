@@ -77,9 +77,8 @@ impl Fq2 {
         }
     }
 
-    pub(crate) fn hash(hasher: Blake2b) -> Self {
-        let mut hasher_c0 = hasher.clone();
-        let mut hasher_c1 = hasher.clone();
+    pub(crate) fn hash(mut hasher_c0: Blake2b) -> Self {
+        let mut hasher_c1 = hasher_c0.clone();
         hasher_c0.update(b"_c0");
         hasher_c1.update(b"_c1");
 

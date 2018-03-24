@@ -144,9 +144,46 @@ macro_rules! curve_impl {
                 self.mul($scalarfield::char()).is_zero()
             }
 
+            /// Implements the Shallue–van de Woestijne encoding described in
+            /// Section 3, "Indifferentiable Hashing to Barreto–Naehrig Curves"
+            /// from Foque-Tibouchi: <https://www.di.ens.fr/~fouque/pub/latincrypt12.pdf>.
+            ///
+            /// The encoding is adapted for BLS12-381.
+            ///
+            /// This encoding produces a point in E/E'. It does not reach every
+            /// point. The resulting point may not be in the prime order subgroup,
+            /// but it will be on the curve. It could be the point at infinity.
+            ///
+            /// ## Description
+            ///
+            /// Lemma 3 gives us three points:
+            ///
+            /// x_1 = (-1 + sqrt(-3))/2 - (sqrt(-3) * t^2)/(1 + b + t^2)
+            /// x_2 = (-1 - sqrt(-3))/2 + (sqrt(-3) * t^2)/(1 + b + t^2)
+            /// x_3 = 1 - (1 + b + t^2)^2/(3 * t^2)
+            ///
+            /// Given t != 0 and t != 1 + b + t^2 != 0, at least one of
+            /// these three points (x1, x2, x3) is valid on the curve.
+            ///
+            /// In the paper, 1 + b + t^2 != 0 has no solutions, but for
+            /// E(Fq) in our construction, it does have two solutions.
+            /// We follow the convention of the paper by mapping these
+            /// to some arbitrary points; in our case, the positive/negative
+            /// fixed generator.
+            ///
+            /// Unlike the paper, which maps t = 0 to an arbitrary point,
+            /// we map it to the point at infinity. This arrangement allows
+            /// us to preserve sw_encode(t) = sw_encode(-t) for all t.
+            ///
+            /// We choose the smallest i such that x_i is on the curve.
+            /// We choose the corresponding y-coordinate with the same
+            /// parity, defined as the point being lexicographically larger
+            /// than its negative.
             fn sw_encode(t: $basefield) -> Self {
-                // handle the case t == 0
-                if t.is_zero() { return Self::zero() };
+                // Handle the case t == 0
+                if t.is_zero() {
+                    return Self::zero()
+                }
 
                 // We choose the corresponding y-coordinate with the same parity as t.
                 let parity = t.parity();
@@ -156,12 +193,16 @@ macro_rules! curve_impl {
                 w.square();
                 w.add_assign(&$affine::get_coeff_b());
                 w.add_assign(&$basefield::one());
-                // handle the case t^2 + b + 1 == 0
+
+                // Handle the case t^2 + b + 1 == 0
                 if w.is_zero()  {
                     let mut ret = Self::one();
-                    if !parity { ret.negate() }
+                    if !parity {
+                        ret.negate()
+                    }
                     return ret
-                };
+                }
+
                 w = w.inverse().unwrap();
                 w.mul_assign(&$basefield::get_swenc_sqrt_neg_three());
                 w.mul_assign(&t);
@@ -189,7 +230,7 @@ macro_rules! curve_impl {
                 x3 = x3.inverse().unwrap();
                 x3.add_assign(&$basefield::one());
                 Self::get_point_from_x(x3, parity).expect(
-                    "this point must be valid if the other two are not."
+                    "this point must be valid if the other two are not"
                 )
             }
         }

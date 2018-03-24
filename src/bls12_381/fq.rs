@@ -1153,16 +1153,24 @@ impl Fq {
         let mut res = Self::zero();
         for bit in bits {
             res.double();
-            if bit { res.add_assign(self) }
+
+            if bit {
+                res.add_assign(self)
+            }
         }
         res
     }
 
-    /// Hash into the field.
+    /// Hash into the field. This takes a `Blake2b` instance,
+    /// computes the hash, and interprets the hash as a big endian
+    /// number. The number is reduced mod q. The caller is
+    /// responsible for ensuring the Blake2b instance was
+    /// initialized with a 64 byte digest result.
     pub(crate) fn hash(hasher: Blake2b) -> Self {
         let mut repr: [u64; 8] = [0; 8];
         let digest = hasher.finalize();
         BigEndian::read_u64_into(&digest.as_bytes(), &mut repr);
+        repr.reverse();
         Self::one().mul_bits(BitIterator::new(repr))
     }
 }
@@ -3045,4 +3053,14 @@ fn test_fq_legendre() {
         0x1d61ac6bfd5c88b,
     ]);
     assert_eq!(QuadraticResidue, Fq::from_repr(e).unwrap().legendre());
+}
+
+#[test]
+fn test_fq_hash() {
+    let h = Blake2b::new(64);
+
+    assert_eq!(
+        Fq::hash(h),
+        Fq::from_str("2969971670216977749765615497980645380676770840200853026844185893034591434908642692717019379762235872058512380843355").unwrap()
+    );
 }

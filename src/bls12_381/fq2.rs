@@ -66,14 +66,14 @@ impl Fq2 {
     pub(crate) fn get_swenc_sqrt_neg_three() -> Fq2 {
         Fq2 {
             c0: Fq::get_swenc_sqrt_neg_three(),
-            c1: Fq::zero()
+            c1: Fq::zero(),
         }
     }
 
     pub(crate) fn get_swenc_sqrt_neg_three_minus_one_div_two() -> Fq2 {
         Fq2 {
             c0: Fq::get_swenc_sqrt_neg_three_minus_one_div_two(),
-            c1: Fq::zero()
+            c1: Fq::zero(),
         }
     }
 
@@ -83,7 +83,10 @@ impl Fq2 {
         hasher_c0.update(b"_c0");
         hasher_c1.update(b"_c1");
 
-        Fq2 { c0: Fq::hash(hasher_c0), c1: Fq::hash(hasher_c1) }
+        Fq2 {
+            c0: Fq::hash(hasher_c0),
+            c1: Fq::hash(hasher_c1),
+        }
     }
 }
 
@@ -946,7 +949,7 @@ fn test_swenc_consts() {
     // c0 = sqrt(-3)
     let mut c0 = Fq2 {
         c0: Fq::from_repr(FqRepr::from(3)).unwrap(),
-        c1: Fq::zero()
+        c1: Fq::zero(),
     };
     c0.negate();
     let mut c0 = c0.sqrt().unwrap();

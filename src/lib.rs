@@ -181,7 +181,6 @@ pub trait CurveProjective:
 
     /// Given a message, hash into a random element of the prime-order subgroup.
     fn hash(&[u8]) -> Self;
-
 }
 
 /// Affine representation of an elliptic curve point guaranteed to be

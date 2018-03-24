@@ -1,4 +1,4 @@
-use ::{BitIterator, Field, PrimeField, SqrtField, PrimeFieldRepr, PrimeFieldDecodingError};
+use {BitIterator, Field, PrimeField, PrimeFieldDecodingError, PrimeFieldRepr, SqrtField};
 use super::fq2::Fq2;
 
 use blake2_rfc::blake2b::Blake2b;
@@ -49,12 +49,26 @@ const INV: u64 = 0x89f3fffcfffcfffd;
 // SWENC_SQRT_NEG_THREE = sqrt(-3) mod q =
 // 1586958781458431025242759403266842894121773480562120986020912974854563298150952611241517463240701
 // used to help find a Fq-rational point in the conic described by the Shallue–van de Woestijne encoding.
-const SWENC_SQRT_NEG_THREE: Fq = Fq(FqRepr([0x1dec6c36f3181f22, 0xb4b9bb641054b457, 0x25695a2be9415286, 0x982b6cbf66c749bc, 0x7d58e1ae1feb7873, 0x62c96300937c0b9]));
+const SWENC_SQRT_NEG_THREE: Fq = Fq(FqRepr([
+    0x1dec6c36f3181f22,
+    0xb4b9bb641054b457,
+    0x25695a2be9415286,
+    0x982b6cbf66c749bc,
+    0x7d58e1ae1feb7873,
+    0x62c96300937c0b9,
+]));
 
 // SWENC_SQRT_NEG_THREE_MINUS_ONE_DIV_TWO = (sqrt(-3) - 1) / 2 mod q =
 // 793479390729215512621379701633421447060886740281060493010456487427281649075476305620758731620350
 // used to speed up the computation of the abscissa x_1(t).
-const SWENC_SQRT_NEG_THREE_MINUS_ONE_DIV_TWO: Fq = Fq(FqRepr([0x30f1361b798a64e8, 0xf3b8ddab7ece5a2a, 0x16a8ca3ac61577f7, 0xc26a2ff874fd029b, 0x3636b76660701c6e, 0x51ba4ab241b6160]));
+const SWENC_SQRT_NEG_THREE_MINUS_ONE_DIV_TWO: Fq = Fq(FqRepr([
+    0x30f1361b798a64e8,
+    0xf3b8ddab7ece5a2a,
+    0x16a8ca3ac61577f7,
+    0xc26a2ff874fd029b,
+    0x3636b76660701c6e,
+    0x51ba4ab241b6160,
+]));
 
 // GENERATOR = 2 (multiplicative generator of q-1 order, that is also quadratic nonresidue)
 const GENERATOR: FqRepr = FqRepr([
@@ -1224,7 +1238,7 @@ impl SqrtField for Fq {
 }
 
 #[cfg(test)]
-use rand::{SeedableRng, XorShiftRng, Rand, Rng};
+use rand::{Rand, Rng, SeedableRng, XorShiftRng};
 
 #[test]
 fn test_hash() {
@@ -1234,7 +1248,7 @@ fn test_hash() {
     assert!(Fq::hash(hasher).is_valid());
 
     let mut rng = XorShiftRng::from_seed([0x5dbe6259, 0x8d313d76, 0x3237db17, 0xe5bc0654]);
-    let mut lsb_ones : i32 = 0;
+    let mut lsb_ones: i32 = 0;
     for _ in 0..1000 {
         let seed = rng.gen::<[u8; 32]>();
         let mut hasher = Blake2b::new(64);
@@ -1243,9 +1257,11 @@ fn test_hash() {
         // check that the hash image is in the field
         assert!(e.is_valid());
         // count how many less-significant bits are set in each limb
-        lsb_ones += e.into_repr().as_ref().iter().map(|x| {
-            if x % 2 == 0 {0i32} else {1i32}
-        }).sum::<i32>();
+        lsb_ones += e.into_repr()
+            .as_ref()
+            .iter()
+            .map(|x| if x % 2 == 0 { 0i32 } else { 1i32 })
+            .sum::<i32>();
     }
     // lsb_ones should a uniformly random variable 100*X
     // where X is a coin flip

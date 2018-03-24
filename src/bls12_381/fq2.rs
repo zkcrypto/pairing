@@ -937,3 +937,25 @@ fn fq2_field_tests() {
     ::tests::field::random_sqrt_tests::<Fq2>();
     ::tests::field::random_frobenius_tests::<Fq2, _>(super::fq::Fq::char(), 13);
 }
+
+#[test]
+fn test_swenc_consts() {
+    use super::FqRepr;
+    use PrimeField;
+
+    // c0 = sqrt(-3)
+    let mut c0 = Fq2 {
+        c0: Fq::from_repr(FqRepr::from(3)).unwrap(),
+        c1: Fq::zero()
+    };
+    c0.negate();
+    let mut c0 = c0.sqrt().unwrap();
+    c0.negate(); // Fq2 sqrt impl produces the negative sqrt
+    assert_eq!(c0, Fq2::get_swenc_sqrt_neg_three());
+
+    // c2 = (sqrt(-3) - 1) / 2
+    let mut expected = Fq2::get_swenc_sqrt_neg_three_minus_one_div_two();
+    expected.add_assign(&Fq2::get_swenc_sqrt_neg_three_minus_one_div_two());
+    expected.add_assign(&Fq2::one());
+    assert_eq!(c0, expected);
+}

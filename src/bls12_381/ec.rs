@@ -670,15 +670,15 @@ macro_rules! curve_impl {
                 let mut hasher_1 = hasher_0.clone();
 
                 hasher_0.update(b"_0");
-                let t1 = Self::Base::hash(hasher_0);
-                let t1 = Self::Affine::sw_encode(t1);
+                let t0 = Self::Base::hash(hasher_0);
+                let t0 = Self::Affine::sw_encode(t0);
 
                 hasher_1.update(b"_1");
-                let t2 = Self::Base::hash(hasher_1);
-                let t2 = Self::Affine::sw_encode(t2);
+                let t1 = Self::Base::hash(hasher_1);
+                let t1 = Self::Affine::sw_encode(t1);
 
-                let mut res = t1.into_projective();
-                res.add_assign_mixed(&t2);
+                let mut res = t0.into_projective();
+                res.add_assign_mixed(&t1);
                 res.into_affine().scale_by_cofactor()
             }
         }

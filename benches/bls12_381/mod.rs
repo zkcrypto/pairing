@@ -6,8 +6,22 @@ mod ec;
 
 use rand::{Rand, SeedableRng, XorShiftRng};
 
-use pairing::{Engine, CurveAffine};
+use pairing::{Engine, CurveAffine, CurveProjective};
 use pairing::bls12_381::*;
+
+#[bench]
+fn bench_g1_hash(b: &mut ::test::Bencher) {
+    b.iter(|| {
+        G1::hash(&[])
+    });
+}
+
+#[bench]
+fn bench_g2_hash(b: &mut ::test::Bencher) {
+    b.iter(|| {
+        G2::hash(&[])
+    });
+}
 
 #[bench]
 fn bench_pairing_g1_preparation(b: &mut ::test::Bencher) {

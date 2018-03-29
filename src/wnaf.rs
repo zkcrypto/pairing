@@ -102,7 +102,7 @@ impl<G: CurveProjective> Wnaf<(), Vec<G>, Vec<i64>> {
         Wnaf {
             base: &self.base[..],
             scalar: &mut self.scalar,
-            window_size: window_size,
+            window_size,
         }
     }
 
@@ -123,7 +123,7 @@ impl<G: CurveProjective> Wnaf<(), Vec<G>, Vec<i64>> {
         Wnaf {
             base: &mut self.base,
             scalar: &self.scalar[..],
-            window_size: window_size,
+            window_size,
         }
     }
 }

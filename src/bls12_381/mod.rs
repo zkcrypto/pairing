@@ -350,7 +350,7 @@ impl G2Prepared {
         coeffs.push(doubling_step(&mut r));
 
         G2Prepared {
-            coeffs: coeffs,
+            coeffs,
             infinity: false,
         }
     }

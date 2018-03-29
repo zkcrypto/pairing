@@ -14,7 +14,7 @@ repository = "https://github.com/ebfull/pairing"
 [dependencies]
 rand = "0.4"
 byteorder = "1"
-clippy = { version = "0.0.186", optional = true }
+clippy = { version = "0.0.190", optional = true }
 
 [features]
 unstable-features = ["expose-arith"]

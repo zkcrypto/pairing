@@ -849,13 +849,12 @@ fn test_fr_repr_sub_noborrow() {
         0x298a30c744b31acf,
     ]));
     assert!(
-        t
-            == FrRepr([
-                0xb813415048991c1f,
-                0x10ad07ae88725d92,
-                0x5a7b851271759961,
-                0x36850eedd30c39c5
-            ])
+        t == FrRepr([
+            0xb813415048991c1f,
+            0x10ad07ae88725d92,
+            0x5a7b851271759961,
+            0x36850eedd30c39c5
+        ])
     );
 
     for _ in 0..1000 {
@@ -1252,13 +1251,12 @@ fn test_fr_mul_assign() {
         0x5ae3f03b561a841d,
     ])));
     assert!(
-        tmp
-            == Fr(FrRepr([
-                0x23717213ce710f71,
-                0xdbee1fe53a16e1af,
-                0xf565d3e1c2a48000,
-                0x4426507ee75df9d7
-            ]))
+        tmp == Fr(FrRepr([
+            0x23717213ce710f71,
+            0xdbee1fe53a16e1af,
+            0xf565d3e1c2a48000,
+            0x4426507ee75df9d7
+        ]))
     );
 
     let mut rng = XorShiftRng::from_seed([0x5dbe6259, 0x8d313d76, 0x3237db17, 0xe5bc0654]);

@@ -2,7 +2,7 @@
 name = "pairing"
 
 # Remember to change version string in README.md.
-version = "0.14.0"
+version = "0.14.1"
 authors = ["Sean Bowe <ewillbefull@gmail.com>"]
 license = "MIT/Apache-2.0"
 
@@ -14,7 +14,7 @@ repository = "https://github.com/ebfull/pairing"
 [dependencies]
 rand = "0.4"
 byteorder = "1"
-clippy = { version = "0.0.186", optional = true }
+clippy = { version = "0.0.190", optional = true }
 
 [features]
 unstable-features = ["expose-arith"]

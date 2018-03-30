@@ -52,6 +52,36 @@ fn test_pairing_result_against_relic() {
     });
 }
 
+#[test]
+fn test_g1_hash_vectors() {
+    let mut expected = &include_bytes!("g1_hashtopoint.dat")[..];
+
+    for i in 0..1000 {
+        let p = G1::hash(format!("{}", i).as_bytes())
+            .into_affine()
+            .into_uncompressed();
+
+        assert_eq!(p.as_ref(), &expected[0..96]);
+        expected = &expected[96..];
+    }
+    assert_eq!(expected.len(), 0);
+}
+
+#[test]
+fn test_g2_hash_vectors() {
+    let mut expected = &include_bytes!("g2_hashtopoint.dat")[..];
+
+    for i in 0..1000 {
+        let p = G2::hash(format!("{}", i).as_bytes())
+            .into_affine()
+            .into_uncompressed();
+
+        assert_eq!(p.as_ref(), &expected[0..(96*2)]);
+        expected = &expected[(96*2)..];
+    }
+    assert_eq!(expected.len(), 0);
+}
+
 fn test_vectors<G: CurveProjective, E: EncodedPoint<Affine = G::Affine>>(expected: &[u8]) {
     let mut e = G::zero();
 

@@ -76,8 +76,8 @@ fn test_g2_hash_vectors() {
             .into_affine()
             .into_uncompressed();
 
-        assert_eq!(p.as_ref(), &expected[0..(96*2)]);
-        expected = &expected[(96*2)..];
+        assert_eq!(p.as_ref(), &expected[0..(96 * 2)]);
+        expected = &expected[(96 * 2)..];
     }
     assert_eq!(expected.len(), 0);
 }

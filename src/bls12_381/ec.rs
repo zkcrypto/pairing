@@ -1423,10 +1423,22 @@ pub mod g1 {
         t.add_assign(&G1Affine::get_coeff_b());
         t.negate();
         let mut t = t.sqrt().unwrap();
+        t.negate(); // If sqrt impl changes, this test will be affected
         let p = G1Affine::sw_encode(t);
         assert!(p.is_on_curve());
         assert!(!p.is_zero());
         assert_eq!(p.y.parity(), t.parity());
+        assert_eq!(p, G1Affine::one());
+        t.negate();
+        let p = G1Affine::sw_encode(t);
+        assert!(p.is_on_curve());
+        assert!(!p.is_zero());
+        assert_eq!(p.y.parity(), t.parity());
+        {
+            let mut negone = G1Affine::one();
+            negone.negate();
+            assert_eq!(p, negone);
+        }
 
         // test that the encoding function is odd for the above t
         t.negate();

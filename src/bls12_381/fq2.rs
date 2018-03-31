@@ -60,7 +60,7 @@ impl Fq2 {
     pub(crate) fn parity(&self) -> bool {
         let mut neg = *self;
         neg.negate();
-        self > &neg
+        *self > neg
     }
 
     pub(crate) fn get_swenc_sqrt_neg_three() -> Fq2 {

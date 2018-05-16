@@ -407,6 +407,28 @@ pub trait PrimeFieldRepr:
 
         Ok(())
     }
+
+    /// Writes this `PrimeFieldRepr` as a little endian integer.
+    fn write_le<W: Write>(&self, mut writer: W) -> io::Result<()> {
+        use byteorder::{LittleEndian, WriteBytesExt};
+
+        for digit in self.as_ref().iter() {
+            writer.write_u64::<LittleEndian>(*digit)?;
+        }
+
+        Ok(())
+    }
+
+    /// Reads a little endian integer into this representation.
+    fn read_le<R: Read>(&mut self, mut reader: R) -> io::Result<()> {
+        use byteorder::{LittleEndian, ReadBytesExt};
+
+        for digit in self.as_mut().iter_mut() {
+            *digit = reader.read_u64::<LittleEndian>()?;
+        }
+
+        Ok(())
+    }
 }
 
 #[derive(Debug, PartialEq)]

@@ -24,8 +24,8 @@ pub mod bls12_381;
 mod wnaf;
 pub use self::wnaf::Wnaf;
 
-use std::fmt;
 use std::error::Error;
+use std::fmt;
 use std::io::{self, Read, Write};
 
 /// An "engine" is a collection of types (fields, elliptic curve groups, etc.)

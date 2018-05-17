@@ -1,5 +1,5 @@
 use super::*;
-use ::*;
+use *;
 
 #[test]
 fn test_pairing_result_against_relic() {

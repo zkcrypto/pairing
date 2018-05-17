@@ -1,6 +1,6 @@
-use {Field, PrimeField, PrimeFieldDecodingError, PrimeFieldRepr, SqrtField};
-use std::cmp::Ordering;
 use super::fq2::Fq2;
+use std::cmp::Ordering;
+use {Field, PrimeField, PrimeFieldDecodingError, PrimeFieldRepr, SqrtField};
 
 // q = 4002409555221667393417789825735904156556882819939007885332058136124031650490837864442687629129015664037894272559787
 const MODULUS: FqRepr = FqRepr([

@@ -1,13 +1,13 @@
-mod fq;
-mod fr;
-mod fq2;
-mod fq12;
 mod ec;
+mod fq;
+mod fq12;
+mod fq2;
+mod fr;
 
 use rand::{Rand, SeedableRng, XorShiftRng};
 
-use pairing::{CurveAffine, Engine};
 use pairing::bls12_381::*;
+use pairing::{CurveAffine, Engine};
 
 #[bench]
 fn bench_pairing_g1_preparation(b: &mut ::test::Bencher) {

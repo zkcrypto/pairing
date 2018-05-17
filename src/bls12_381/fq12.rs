@@ -1,8 +1,8 @@
+use super::fq::FROBENIUS_COEFF_FQ12_C1;
+use super::fq2::Fq2;
+use super::fq6::Fq6;
 use rand::{Rand, Rng};
 use Field;
-use super::fq6::Fq6;
-use super::fq2::Fq2;
-use super::fq::FROBENIUS_COEFF_FQ12_C1;
 
 /// An element of Fq12, represented by c0 + c1 * w.
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]

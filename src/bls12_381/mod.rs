@@ -1,20 +1,22 @@
+mod ec;
 mod fq;
-mod fr;
+mod fq12;
 mod fq2;
 mod fq6;
-mod fq12;
-mod ec;
+mod fr;
 
 #[cfg(test)]
 mod tests;
 
-pub use self::fr::{Fr, FrRepr};
+pub use self::ec::{
+    G1, G1Affine, G1Compressed, G1Prepared, G1Uncompressed, G2, G2Affine, G2Compressed, G2Prepared,
+    G2Uncompressed,
+};
 pub use self::fq::{Fq, FqRepr};
+pub use self::fq12::Fq12;
 pub use self::fq2::Fq2;
 pub use self::fq6::Fq6;
-pub use self::fq12::Fq12;
-pub use self::ec::{G1, G1Affine, G1Compressed, G1Prepared, G1Uncompressed, G2, G2Affine,
-                   G2Compressed, G2Prepared, G2Uncompressed};
+pub use self::fr::{Fr, FrRepr};
 
 use super::{BitIterator, CurveAffine, Engine, Field};
 

@@ -1,5 +1,5 @@
-use {Field, PrimeField, PrimeFieldDecodingError, PrimeFieldRepr, SqrtField};
 use LegendreSymbol::*;
+use {Field, PrimeField, PrimeFieldDecodingError, PrimeFieldRepr, SqrtField};
 
 // r = 52435875175126190479447740508185965837690552500527637822603658699938581184513
 const MODULUS: FrRepr = FrRepr([

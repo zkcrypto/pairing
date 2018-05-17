@@ -47,7 +47,8 @@ pub fn curve_tests<G: CurveProjective>() {
     {
         let a = G::rand(&mut rng);
         let b = a.into_affine().into_projective();
-        let c = a.into_affine()
+        let c = a
+            .into_affine()
             .into_projective()
             .into_affine()
             .into_projective();
@@ -372,7 +373,8 @@ fn random_transformation_tests<G: CurveProjective>() {
             v[s] = v[s].into_affine().into_projective();
         }
 
-        let expected_v = v.iter()
+        let expected_v = v
+            .iter()
             .map(|v| v.into_affine().into_projective())
             .collect::<Vec<_>>();
         G::batch_normalization(&mut v);

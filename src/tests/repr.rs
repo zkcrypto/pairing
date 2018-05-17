@@ -12,13 +12,46 @@ fn random_encoding_tests<R: PrimeFieldRepr>() {
 
     for _ in 0..1000 {
         let r = R::rand(&mut rng);
-        let mut rdecoded = R::default();
 
-        let mut v: Vec<u8> = vec![];
-        r.write_be(&mut v).unwrap();
-        rdecoded.read_be(&v[0..]).unwrap();
+        // Big endian
+        {
+            let mut rdecoded = R::default();
 
-        assert_eq!(r, rdecoded);
+            let mut v: Vec<u8> = vec![];
+            r.write_be(&mut v).unwrap();
+            rdecoded.read_be(&v[0..]).unwrap();
+
+            assert_eq!(r, rdecoded);
+        }
+
+        // Little endian
+        {
+            let mut rdecoded = R::default();
+
+            let mut v: Vec<u8> = vec![];
+            r.write_le(&mut v).unwrap();
+            rdecoded.read_le(&v[0..]).unwrap();
+
+            assert_eq!(r, rdecoded);
+        }
+
+        {
+            let mut rdecoded_le = R::default();
+            let mut rdecoded_be_flip = R::default();
+
+            let mut v: Vec<u8> = vec![];
+            r.write_le(&mut v).unwrap();
+
+            // This reads in little-endian, so we are done.
+            rdecoded_le.read_le(&v[..]).unwrap();
+
+            // This reads in big-endian, so we perform a swap of the
+            // bytes beforehand.
+            let v: Vec<u8> = v.into_iter().rev().collect();
+            rdecoded_be_flip.read_be(&v[..]).unwrap();
+
+            assert_eq!(rdecoded_le, rdecoded_be_flip);
+        }
     }
 }
 

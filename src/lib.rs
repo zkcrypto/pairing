@@ -9,6 +9,7 @@
 #![cfg_attr(feature = "clippy", allow(unreadable_literal))]
 #![cfg_attr(feature = "clippy", allow(many_single_char_names))]
 #![cfg_attr(feature = "clippy", allow(new_without_default_derive))]
+#![cfg_attr(feature = "clippy", allow(write_literal))]
 // Force public structures to implement Debug
 #![deny(missing_debug_implementations)]
 
@@ -23,8 +24,8 @@ pub mod bls12_381;
 mod wnaf;
 pub use self::wnaf::Wnaf;
 
-use std::fmt;
 use std::error::Error;
+use std::fmt;
 use std::io::{self, Read, Write};
 
 /// An "engine" is a collection of types (fields, elliptic curve groups, etc.)
@@ -403,6 +404,28 @@ pub trait PrimeFieldRepr:
 
         for digit in self.as_mut().iter_mut().rev() {
             *digit = reader.read_u64::<BigEndian>()?;
+        }
+
+        Ok(())
+    }
+
+    /// Writes this `PrimeFieldRepr` as a little endian integer.
+    fn write_le<W: Write>(&self, mut writer: W) -> io::Result<()> {
+        use byteorder::{LittleEndian, WriteBytesExt};
+
+        for digit in self.as_ref().iter() {
+            writer.write_u64::<LittleEndian>(*digit)?;
+        }
+
+        Ok(())
+    }
+
+    /// Reads a little endian integer into this representation.
+    fn read_le<R: Read>(&mut self, mut reader: R) -> io::Result<()> {
+        use byteorder::{LittleEndian, ReadBytesExt};
+
+        for digit in self.as_mut().iter_mut() {
+            *digit = reader.read_u64::<LittleEndian>()?;
         }
 
         Ok(())

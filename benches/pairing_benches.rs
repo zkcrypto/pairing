@@ -1,7 +1,7 @@
 #![feature(test)]
 
-extern crate test;
-extern crate rand;
 extern crate pairing;
+extern crate rand;
+extern crate test;
 
 mod bls12_381;

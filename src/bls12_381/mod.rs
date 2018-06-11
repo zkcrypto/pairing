@@ -5,6 +5,8 @@ mod fq2;
 mod fq6;
 mod fr;
 
+#[cfg(feature = "serde")]
+mod serde_impl;
 #[cfg(test)]
 mod tests;
 

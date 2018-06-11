@@ -5,6 +5,7 @@ use rand::{Rand, Rng};
 
 /// An element of Fq6, represented by c0 + c1 * v + c2 * v^(2).
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub struct Fq6 {
     pub c0: Fq2,
     pub c1: Fq2,

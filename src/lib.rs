@@ -12,9 +12,11 @@
 #![deny(missing_debug_implementations)]
 
 extern crate byteorder;
-#[macro_use]
 extern crate ff;
 extern crate rand;
+#[cfg(feature = "serde")]
+#[macro_use(Serialize, Deserialize)]
+extern crate serde;
 
 #[cfg(test)]
 pub mod tests;

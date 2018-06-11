@@ -6,6 +6,7 @@ use std::cmp::Ordering;
 
 /// An element of Fq2, represented by c0 + c1 * u.
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub struct Fq2 {
     pub c0: Fq,
     pub c1: Fq,

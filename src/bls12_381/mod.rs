@@ -18,7 +18,9 @@ pub use self::fq2::Fq2;
 pub use self::fq6::Fq6;
 pub use self::fr::{Fr, FrRepr};
 
-use super::{BitIterator, CurveAffine, Engine, Field};
+use super::{CurveAffine, Engine};
+
+use ff::{BitIterator, Field};
 
 // The BLS parameter x for BLS12-381 is -0xd201000000010000
 const BLS_X: u64 = 0xd201000000010000;

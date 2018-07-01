@@ -25,7 +25,7 @@ pub mod bls12_381;
 mod wnaf;
 pub use self::wnaf::Wnaf;
 
-use ff::*;
+use ff::{Field, PrimeField, PrimeFieldDecodingError, PrimeFieldRepr, SqrtField};
 use std::error::Error;
 use std::fmt;
 

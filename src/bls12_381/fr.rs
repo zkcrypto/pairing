@@ -1,5 +1,4 @@
-use LegendreSymbol::*;
-use {Field, PrimeField, PrimeFieldDecodingError, PrimeFieldRepr, SqrtField};
+use ff::{Field, PrimeField, PrimeFieldDecodingError, PrimeFieldRepr, SqrtField};
 
 // r = 52435875175126190479447740508185965837690552500527637822603658699938581184513
 const MODULUS: FrRepr = FrRepr([
@@ -229,7 +228,7 @@ impl PrimeFieldRepr for FrRepr {
         let mut carry = 0;
 
         for (a, b) in self.0.iter_mut().zip(other.0.iter()) {
-            *a = ::adc(*a, *b, &mut carry);
+            *a = ::ff::adc(*a, *b, &mut carry);
         }
     }
 
@@ -238,7 +237,7 @@ impl PrimeFieldRepr for FrRepr {
         let mut borrow = 0;
 
         for (a, b) in self.0.iter_mut().zip(other.0.iter()) {
-            *a = ::sbb(*a, *b, &mut borrow);
+            *a = ::ff::sbb(*a, *b, &mut borrow);
         }
     }
 }
@@ -437,28 +436,28 @@ impl Field for Fr {
     #[inline]
     fn mul_assign(&mut self, other: &Fr) {
         let mut carry = 0;
-        let r0 = ::mac_with_carry(0, (self.0).0[0], (other.0).0[0], &mut carry);
-        let r1 = ::mac_with_carry(0, (self.0).0[0], (other.0).0[1], &mut carry);
-        let r2 = ::mac_with_carry(0, (self.0).0[0], (other.0).0[2], &mut carry);
-        let r3 = ::mac_with_carry(0, (self.0).0[0], (other.0).0[3], &mut carry);
+        let r0 = ::ff::mac_with_carry(0, (self.0).0[0], (other.0).0[0], &mut carry);
+        let r1 = ::ff::mac_with_carry(0, (self.0).0[0], (other.0).0[1], &mut carry);
+        let r2 = ::ff::mac_with_carry(0, (self.0).0[0], (other.0).0[2], &mut carry);
+        let r3 = ::ff::mac_with_carry(0, (self.0).0[0], (other.0).0[3], &mut carry);
         let r4 = carry;
         let mut carry = 0;
-        let r1 = ::mac_with_carry(r1, (self.0).0[1], (other.0).0[0], &mut carry);
-        let r2 = ::mac_with_carry(r2, (self.0).0[1], (other.0).0[1], &mut carry);
-        let r3 = ::mac_with_carry(r3, (self.0).0[1], (other.0).0[2], &mut carry);
-        let r4 = ::mac_with_carry(r4, (self.0).0[1], (other.0).0[3], &mut carry);
+        let r1 = ::ff::mac_with_carry(r1, (self.0).0[1], (other.0).0[0], &mut carry);
+        let r2 = ::ff::mac_with_carry(r2, (self.0).0[1], (other.0).0[1], &mut carry);
+        let r3 = ::ff::mac_with_carry(r3, (self.0).0[1], (other.0).0[2], &mut carry);
+        let r4 = ::ff::mac_with_carry(r4, (self.0).0[1], (other.0).0[3], &mut carry);
         let r5 = carry;
         let mut carry = 0;
-        let r2 = ::mac_with_carry(r2, (self.0).0[2], (other.0).0[0], &mut carry);
-        let r3 = ::mac_with_carry(r3, (self.0).0[2], (other.0).0[1], &mut carry);
-        let r4 = ::mac_with_carry(r4, (self.0).0[2], (other.0).0[2], &mut carry);
-        let r5 = ::mac_with_carry(r5, (self.0).0[2], (other.0).0[3], &mut carry);
+        let r2 = ::ff::mac_with_carry(r2, (self.0).0[2], (other.0).0[0], &mut carry);
+        let r3 = ::ff::mac_with_carry(r3, (self.0).0[2], (other.0).0[1], &mut carry);
+        let r4 = ::ff::mac_with_carry(r4, (self.0).0[2], (other.0).0[2], &mut carry);
+        let r5 = ::ff::mac_with_carry(r5, (self.0).0[2], (other.0).0[3], &mut carry);
         let r6 = carry;
         let mut carry = 0;
-        let r3 = ::mac_with_carry(r3, (self.0).0[3], (other.0).0[0], &mut carry);
-        let r4 = ::mac_with_carry(r4, (self.0).0[3], (other.0).0[1], &mut carry);
-        let r5 = ::mac_with_carry(r5, (self.0).0[3], (other.0).0[2], &mut carry);
-        let r6 = ::mac_with_carry(r6, (self.0).0[3], (other.0).0[3], &mut carry);
+        let r3 = ::ff::mac_with_carry(r3, (self.0).0[3], (other.0).0[0], &mut carry);
+        let r4 = ::ff::mac_with_carry(r4, (self.0).0[3], (other.0).0[1], &mut carry);
+        let r5 = ::ff::mac_with_carry(r5, (self.0).0[3], (other.0).0[2], &mut carry);
+        let r6 = ::ff::mac_with_carry(r6, (self.0).0[3], (other.0).0[3], &mut carry);
         let r7 = carry;
         self.mont_reduce(r0, r1, r2, r3, r4, r5, r6, r7);
     }
@@ -466,16 +465,16 @@ impl Field for Fr {
     #[inline]
     fn square(&mut self) {
         let mut carry = 0;
-        let r1 = ::mac_with_carry(0, (self.0).0[0], (self.0).0[1], &mut carry);
-        let r2 = ::mac_with_carry(0, (self.0).0[0], (self.0).0[2], &mut carry);
-        let r3 = ::mac_with_carry(0, (self.0).0[0], (self.0).0[3], &mut carry);
+        let r1 = ::ff::mac_with_carry(0, (self.0).0[0], (self.0).0[1], &mut carry);
+        let r2 = ::ff::mac_with_carry(0, (self.0).0[0], (self.0).0[2], &mut carry);
+        let r3 = ::ff::mac_with_carry(0, (self.0).0[0], (self.0).0[3], &mut carry);
         let r4 = carry;
         let mut carry = 0;
-        let r3 = ::mac_with_carry(r3, (self.0).0[1], (self.0).0[2], &mut carry);
-        let r4 = ::mac_with_carry(r4, (self.0).0[1], (self.0).0[3], &mut carry);
+        let r3 = ::ff::mac_with_carry(r3, (self.0).0[1], (self.0).0[2], &mut carry);
+        let r4 = ::ff::mac_with_carry(r4, (self.0).0[1], (self.0).0[3], &mut carry);
         let r5 = carry;
         let mut carry = 0;
-        let r5 = ::mac_with_carry(r5, (self.0).0[2], (self.0).0[3], &mut carry);
+        let r5 = ::ff::mac_with_carry(r5, (self.0).0[2], (self.0).0[3], &mut carry);
         let r6 = carry;
 
         let r7 = r6 >> 63;
@@ -487,14 +486,14 @@ impl Field for Fr {
         let r1 = r1 << 1;
 
         let mut carry = 0;
-        let r0 = ::mac_with_carry(0, (self.0).0[0], (self.0).0[0], &mut carry);
-        let r1 = ::adc(r1, 0, &mut carry);
-        let r2 = ::mac_with_carry(r2, (self.0).0[1], (self.0).0[1], &mut carry);
-        let r3 = ::adc(r3, 0, &mut carry);
-        let r4 = ::mac_with_carry(r4, (self.0).0[2], (self.0).0[2], &mut carry);
-        let r5 = ::adc(r5, 0, &mut carry);
-        let r6 = ::mac_with_carry(r6, (self.0).0[3], (self.0).0[3], &mut carry);
-        let r7 = ::adc(r7, 0, &mut carry);
+        let r0 = ::ff::mac_with_carry(0, (self.0).0[0], (self.0).0[0], &mut carry);
+        let r1 = ::ff::adc(r1, 0, &mut carry);
+        let r2 = ::ff::mac_with_carry(r2, (self.0).0[1], (self.0).0[1], &mut carry);
+        let r3 = ::ff::adc(r3, 0, &mut carry);
+        let r4 = ::ff::mac_with_carry(r4, (self.0).0[2], (self.0).0[2], &mut carry);
+        let r5 = ::ff::adc(r5, 0, &mut carry);
+        let r6 = ::ff::mac_with_carry(r6, (self.0).0[3], (self.0).0[3], &mut carry);
+        let r7 = ::ff::adc(r7, 0, &mut carry);
         self.mont_reduce(r0, r1, r2, r3, r4, r5, r6, r7);
     }
 }
@@ -534,35 +533,35 @@ impl Fr {
 
         let k = r0.wrapping_mul(INV);
         let mut carry = 0;
-        ::mac_with_carry(r0, k, MODULUS.0[0], &mut carry);
-        r1 = ::mac_with_carry(r1, k, MODULUS.0[1], &mut carry);
-        r2 = ::mac_with_carry(r2, k, MODULUS.0[2], &mut carry);
-        r3 = ::mac_with_carry(r3, k, MODULUS.0[3], &mut carry);
-        r4 = ::adc(r4, 0, &mut carry);
+        ::ff::mac_with_carry(r0, k, MODULUS.0[0], &mut carry);
+        r1 = ::ff::mac_with_carry(r1, k, MODULUS.0[1], &mut carry);
+        r2 = ::ff::mac_with_carry(r2, k, MODULUS.0[2], &mut carry);
+        r3 = ::ff::mac_with_carry(r3, k, MODULUS.0[3], &mut carry);
+        r4 = ::ff::adc(r4, 0, &mut carry);
         let carry2 = carry;
         let k = r1.wrapping_mul(INV);
         let mut carry = 0;
-        ::mac_with_carry(r1, k, MODULUS.0[0], &mut carry);
-        r2 = ::mac_with_carry(r2, k, MODULUS.0[1], &mut carry);
-        r3 = ::mac_with_carry(r3, k, MODULUS.0[2], &mut carry);
-        r4 = ::mac_with_carry(r4, k, MODULUS.0[3], &mut carry);
-        r5 = ::adc(r5, carry2, &mut carry);
+        ::ff::mac_with_carry(r1, k, MODULUS.0[0], &mut carry);
+        r2 = ::ff::mac_with_carry(r2, k, MODULUS.0[1], &mut carry);
+        r3 = ::ff::mac_with_carry(r3, k, MODULUS.0[2], &mut carry);
+        r4 = ::ff::mac_with_carry(r4, k, MODULUS.0[3], &mut carry);
+        r5 = ::ff::adc(r5, carry2, &mut carry);
         let carry2 = carry;
         let k = r2.wrapping_mul(INV);
         let mut carry = 0;
-        ::mac_with_carry(r2, k, MODULUS.0[0], &mut carry);
-        r3 = ::mac_with_carry(r3, k, MODULUS.0[1], &mut carry);
-        r4 = ::mac_with_carry(r4, k, MODULUS.0[2], &mut carry);
-        r5 = ::mac_with_carry(r5, k, MODULUS.0[3], &mut carry);
-        r6 = ::adc(r6, carry2, &mut carry);
+        ::ff::mac_with_carry(r2, k, MODULUS.0[0], &mut carry);
+        r3 = ::ff::mac_with_carry(r3, k, MODULUS.0[1], &mut carry);
+        r4 = ::ff::mac_with_carry(r4, k, MODULUS.0[2], &mut carry);
+        r5 = ::ff::mac_with_carry(r5, k, MODULUS.0[3], &mut carry);
+        r6 = ::ff::adc(r6, carry2, &mut carry);
         let carry2 = carry;
         let k = r3.wrapping_mul(INV);
         let mut carry = 0;
-        ::mac_with_carry(r3, k, MODULUS.0[0], &mut carry);
-        r4 = ::mac_with_carry(r4, k, MODULUS.0[1], &mut carry);
-        r5 = ::mac_with_carry(r5, k, MODULUS.0[2], &mut carry);
-        r6 = ::mac_with_carry(r6, k, MODULUS.0[3], &mut carry);
-        r7 = ::adc(r7, carry2, &mut carry);
+        ::ff::mac_with_carry(r3, k, MODULUS.0[0], &mut carry);
+        r4 = ::ff::mac_with_carry(r4, k, MODULUS.0[1], &mut carry);
+        r5 = ::ff::mac_with_carry(r5, k, MODULUS.0[2], &mut carry);
+        r6 = ::ff::mac_with_carry(r6, k, MODULUS.0[3], &mut carry);
+        r7 = ::ff::adc(r7, carry2, &mut carry);
         (self.0).0[0] = r4;
         (self.0).0[1] = r5;
         (self.0).0[2] = r6;
@@ -572,7 +571,7 @@ impl Fr {
 }
 
 impl SqrtField for Fr {
-    fn legendre(&self) -> ::LegendreSymbol {
+    fn legendre(&self) -> ::ff::LegendreSymbol {
         // s = self^((r - 1) // 2)
         let s = self.pow([
             0x7fffffff80000000,
@@ -581,11 +580,11 @@ impl SqrtField for Fr {
             0x39f6d3a994cebea4,
         ]);
         if s == Self::zero() {
-            Zero
+            ::ff::LegendreSymbol::Zero
         } else if s == Self::one() {
-            QuadraticResidue
+            ::ff::LegendreSymbol::QuadraticResidue
         } else {
-            QuadraticNonResidue
+            ::ff::LegendreSymbol::QuadraticNonResidue
         }
     }
 
@@ -593,9 +592,9 @@ impl SqrtField for Fr {
         // Tonelli-Shank's algorithm for q mod 16 = 1
         // https://eprint.iacr.org/2012/685.pdf (page 12, algorithm 5)
         match self.legendre() {
-            Zero => Some(*self),
-            QuadraticNonResidue => None,
-            QuadraticResidue => {
+            ::ff::LegendreSymbol::Zero => Some(*self),
+            ::ff::LegendreSymbol::QuadraticNonResidue => None,
+            ::ff::LegendreSymbol::QuadraticResidue => {
                 let mut c = Fr(ROOT_OF_UNITY);
                 // r = self^((t + 1) // 2)
                 let mut r = self.pow([
@@ -909,6 +908,8 @@ fn test_fr_repr_sub_noborrow() {
 
 #[test]
 fn test_fr_legendre() {
+    use ff::LegendreSymbol::*;
+
     assert_eq!(QuadraticResidue, Fr::one().legendre());
     assert_eq!(Zero, Fr::zero().legendre());
 

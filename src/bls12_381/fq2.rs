@@ -160,7 +160,7 @@ impl Field for Fq2 {
 }
 
 impl SqrtField for Fq2 {
-    fn legendre(&self) -> ::LegendreSymbol {
+    fn legendre(&self) -> ::ff::LegendreSymbol {
         self.norm().legendre()
     }
 
@@ -865,7 +865,7 @@ fn test_fq2_sqrt() {
 
 #[test]
 fn test_fq2_legendre() {
-    use LegendreSymbol::*;
+    use ff::LegendreSymbol::*;
 
     assert_eq!(Zero, Fq2::zero().legendre());
     // i^2 = -1

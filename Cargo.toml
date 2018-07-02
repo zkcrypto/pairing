@@ -20,5 +20,5 @@ ff = "0.3"
 [features]
 unstable-features = ["expose-arith"]
 expose-arith = []
-u128-support = []
+u128-support = ["ff/u128-support"]
 default = []

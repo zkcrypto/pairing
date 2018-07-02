@@ -1,6 +1,6 @@
 use rand::{Rand, SeedableRng, XorShiftRng};
 
-use ff::{Field, PrimeField, PrimeFieldRepr, SqrtField};
+use ff::{Field, PrimeField, PrimeFieldRepr};
 use pairing::bls12_381::*;
 
 #[bench]

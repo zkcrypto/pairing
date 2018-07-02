@@ -22,7 +22,7 @@ pub mod tests;
 
 pub mod bls12_381;
 
-use ff::{Field, PrimeField, PrimeFieldDecodingError, PrimeFieldRepr, ScalarEngine, SqrtField};
+use ff::{Field, PrimeField, ScalarEngine, SqrtField};
 use group::{CurveAffine, CurveProjective};
 
 /// An "engine" is a collection of types (fields, elliptic curve groups, etc.)

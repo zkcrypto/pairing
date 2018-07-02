@@ -1,5 +1,5 @@
 use super::fq2::Fq2;
-use {Field, PrimeField, PrimeFieldDecodingError, PrimeFieldRepr};
+use ff::{Field, PrimeField, PrimeFieldDecodingError, PrimeFieldRepr};
 
 // B coefficient of BLS12-381 curve, 4.
 pub const B_COEFF: Fq = Fq(FqRepr([

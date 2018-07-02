@@ -1,6 +1,6 @@
 use super::fq::{FROBENIUS_COEFF_FQ2_C1, Fq, NEGATIVE_ONE};
+use ff::{Field, SqrtField};
 use rand::{Rand, Rng};
-use {Field, SqrtField};
 
 use std::cmp::Ordering;
 
@@ -272,7 +272,7 @@ fn test_fq2_basics() {
 #[test]
 fn test_fq2_squaring() {
     use super::fq::FqRepr;
-    use PrimeField;
+    use ff::PrimeField;
 
     let mut a = Fq2 {
         c0: Fq::one(),
@@ -346,7 +346,7 @@ fn test_fq2_squaring() {
 #[test]
 fn test_fq2_mul() {
     use super::fq::FqRepr;
-    use PrimeField;
+    use ff::PrimeField;
 
     let mut a = Fq2 {
         c0: Fq::from_repr(FqRepr([
@@ -410,7 +410,7 @@ fn test_fq2_mul() {
 #[test]
 fn test_fq2_inverse() {
     use super::fq::FqRepr;
-    use PrimeField;
+    use ff::PrimeField;
 
     assert!(Fq2::zero().inverse().is_none());
 
@@ -459,7 +459,7 @@ fn test_fq2_inverse() {
 #[test]
 fn test_fq2_addition() {
     use super::fq::FqRepr;
-    use PrimeField;
+    use ff::PrimeField;
 
     let mut a = Fq2 {
         c0: Fq::from_repr(FqRepr([
@@ -523,7 +523,7 @@ fn test_fq2_addition() {
 #[test]
 fn test_fq2_subtraction() {
     use super::fq::FqRepr;
-    use PrimeField;
+    use ff::PrimeField;
 
     let mut a = Fq2 {
         c0: Fq::from_repr(FqRepr([
@@ -587,7 +587,7 @@ fn test_fq2_subtraction() {
 #[test]
 fn test_fq2_negation() {
     use super::fq::FqRepr;
-    use PrimeField;
+    use ff::PrimeField;
 
     let mut a = Fq2 {
         c0: Fq::from_repr(FqRepr([
@@ -634,7 +634,7 @@ fn test_fq2_negation() {
 #[test]
 fn test_fq2_doubling() {
     use super::fq::FqRepr;
-    use PrimeField;
+    use ff::PrimeField;
 
     let mut a = Fq2 {
         c0: Fq::from_repr(FqRepr([
@@ -681,7 +681,7 @@ fn test_fq2_doubling() {
 #[test]
 fn test_fq2_frobenius_map() {
     use super::fq::FqRepr;
-    use PrimeField;
+    use ff::PrimeField;
 
     let mut a = Fq2 {
         c0: Fq::from_repr(FqRepr([
@@ -794,7 +794,7 @@ fn test_fq2_frobenius_map() {
 #[test]
 fn test_fq2_sqrt() {
     use super::fq::FqRepr;
-    use PrimeField;
+    use ff::PrimeField;
 
     assert_eq!(
         Fq2 {
@@ -900,7 +900,7 @@ fn test_fq2_mul_nonresidue() {
 
 #[test]
 fn fq2_field_tests() {
-    use PrimeField;
+    use ff::PrimeField;
 
     ::tests::field::random_field_tests::<Fq2>();
     ::tests::field::random_sqrt_tests::<Fq2>();

@@ -1584,14 +1584,16 @@ fn test_fq_is_valid() {
             0x17c8be1800b9f059
         ])).is_valid()
     );
-    assert!(!Fq(FqRepr([
-        0xffffffffffffffff,
-        0xffffffffffffffff,
-        0xffffffffffffffff,
-        0xffffffffffffffff,
-        0xffffffffffffffff,
-        0xffffffffffffffff
-    ])).is_valid());
+    assert!(
+        !Fq(FqRepr([
+            0xffffffffffffffff,
+            0xffffffffffffffff,
+            0xffffffffffffffff,
+            0xffffffffffffffff,
+            0xffffffffffffffff,
+            0xffffffffffffffff
+        ])).is_valid()
+    );
 
     let mut rng = XorShiftRng::from_seed([0x5dbe6259, 0x8d313d76, 0x3237db17, 0xe5bc0654]);
 

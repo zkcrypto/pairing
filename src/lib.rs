@@ -8,7 +8,6 @@
 #![cfg_attr(feature = "cargo-clippy", allow(many_single_char_names))]
 #![cfg_attr(feature = "cargo-clippy", allow(new_without_default_derive))]
 #![cfg_attr(feature = "cargo-clippy", allow(write_literal))]
-
 // Force public structures to implement Debug
 #![deny(missing_debug_implementations)]
 

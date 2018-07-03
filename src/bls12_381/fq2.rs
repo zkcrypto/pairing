@@ -263,10 +263,12 @@ fn test_fq2_basics() {
     );
     assert!(Fq2::zero().is_zero());
     assert!(!Fq2::one().is_zero());
-    assert!(!Fq2 {
-        c0: Fq::zero(),
-        c1: Fq::one(),
-    }.is_zero());
+    assert!(
+        !Fq2 {
+            c0: Fq::zero(),
+            c1: Fq::one(),
+        }.is_zero()
+    );
 }
 
 #[test]

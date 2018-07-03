@@ -388,12 +388,14 @@ fn test_fr_is_valid() {
             0x73eda753299d7d48
         ])).is_valid()
     );
-    assert!(!Fr(FrRepr([
-        0xffffffffffffffff,
-        0xffffffffffffffff,
-        0xffffffffffffffff,
-        0xffffffffffffffff
-    ])).is_valid());
+    assert!(
+        !Fr(FrRepr([
+            0xffffffffffffffff,
+            0xffffffffffffffff,
+            0xffffffffffffffff,
+            0xffffffffffffffff
+        ])).is_valid()
+    );
 
     let mut rng = XorShiftRng::from_seed([0x5dbe6259, 0x8d313d76, 0x3237db17, 0xe5bc0654]);
 

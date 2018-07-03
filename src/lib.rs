@@ -25,17 +25,14 @@ pub mod bls12_381;
 mod wnaf;
 pub use self::wnaf::Wnaf;
 
-use ff::{Field, PrimeField, PrimeFieldDecodingError, PrimeFieldRepr, SqrtField};
+use ff::{Field, PrimeField, PrimeFieldDecodingError, PrimeFieldRepr, ScalarEngine, SqrtField};
 use std::error::Error;
 use std::fmt;
 
 /// An "engine" is a collection of types (fields, elliptic curve groups, etc.)
 /// with well-defined relationships. In particular, the G1/G2 curve groups are
 /// of prime order `r`, and are equipped with a bilinear pairing function.
-pub trait Engine: Sized + 'static + Clone {
-    /// This is the scalar field of the G1/G2 groups.
-    type Fr: PrimeField + SqrtField;
-
+pub trait Engine: ScalarEngine {
     /// The projective representation of an element in G1.
     type G1: CurveProjective<
             Engine = Self,

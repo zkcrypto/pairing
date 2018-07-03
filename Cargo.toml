@@ -17,10 +17,9 @@ repository = "https://github.com/ebfull/pairing"
 [dependencies]
 rand = "0.4"
 byteorder = "1"
-ff = "0.3"
+ff = { version = "0.4", features = ["derive"] }
 
 [features]
 unstable-features = ["expose-arith"]
 expose-arith = []
-u128-support = ["ff/u128-support"]
 default = []

@@ -20,7 +20,7 @@ pub use self::fr::{Fr, FrRepr};
 
 use super::{CurveAffine, Engine};
 
-use ff::{BitIterator, Field};
+use ff::{BitIterator, Field, ScalarEngine};
 
 // The BLS parameter x for BLS12-381 is -0xd201000000010000
 const BLS_X: u64 = 0xd201000000010000;
@@ -29,8 +29,11 @@ const BLS_X_IS_NEGATIVE: bool = true;
 #[derive(Clone, Debug)]
 pub struct Bls12;
 
-impl Engine for Bls12 {
+impl ScalarEngine for Bls12 {
     type Fr = Fr;
+}
+
+impl Engine for Bls12 {
     type G1 = G1;
     type G1Affine = G1Affine;
     type G2 = G2;

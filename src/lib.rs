@@ -1,15 +1,14 @@
 // `clippy` is a code linting tool for improving code quality by catching
-// common mistakes or strange code patterns. If the `clippy` feature is
-// provided, it is enabled and all compiler warnings are prohibited.
-#![cfg_attr(feature = "clippy", deny(warnings))]
-#![cfg_attr(feature = "clippy", feature(plugin))]
-#![cfg_attr(feature = "clippy", plugin(clippy))]
-#![cfg_attr(feature = "clippy", allow(inline_always))]
-#![cfg_attr(feature = "clippy", allow(too_many_arguments))]
-#![cfg_attr(feature = "clippy", allow(unreadable_literal))]
-#![cfg_attr(feature = "clippy", allow(many_single_char_names))]
-#![cfg_attr(feature = "clippy", allow(new_without_default_derive))]
-#![cfg_attr(feature = "clippy", allow(write_literal))]
+// common mistakes or strange code patterns. If the `cargo-clippy` feature
+// is provided, all compiler warnings are prohibited.
+#![cfg_attr(feature = "cargo-clippy", deny(warnings))]
+#![cfg_attr(feature = "cargo-clippy", allow(inline_always))]
+#![cfg_attr(feature = "cargo-clippy", allow(too_many_arguments))]
+#![cfg_attr(feature = "cargo-clippy", allow(unreadable_literal))]
+#![cfg_attr(feature = "cargo-clippy", allow(many_single_char_names))]
+#![cfg_attr(feature = "cargo-clippy", allow(new_without_default_derive))]
+#![cfg_attr(feature = "cargo-clippy", allow(write_literal))]
+
 // Force public structures to implement Debug
 #![deny(missing_debug_implementations)]
 

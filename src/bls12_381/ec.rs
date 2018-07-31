@@ -260,6 +260,7 @@ macro_rules! curve_impl {
                     tmp.mul_assign(&g.z);
                     prod.push(tmp);
                 }
+                if prod.is_empty() { return; }
 
                 // Invert `tmp`.
                 tmp = tmp.inverse().unwrap(); // Guaranteed to be nonzero.

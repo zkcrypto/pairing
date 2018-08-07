@@ -45,9 +45,14 @@ macro_rules! curve_impl {
                 if self.is_zero() {
                     return other.is_zero();
                 }
-
                 if other.is_zero() {
                     return false;
+                }
+
+                if self.is_normalized() {
+                    if other.is_normalized() {
+                        return self.into_affine() == other.into_affine()
+                    }
                 }
 
                 // The points (X, Y, Z) and (X', Y', Z')

@@ -58,8 +58,8 @@ macro_rules! curve_impl {
                 }
 
                 // The points (X, Y, Z) and (X', Y', Z')
-                // are equal when (X * Z^2) = (X' * Z'^2)
-                // and (Y * Z^3) = (Y' * Z'^3).
+                // are equal when (X' * Z^2) = (X * Z'^2)
+                // and (Y' * Z^3) = (Y * Z'^3).
 
                 let mut z1 = self.z;
                 z1.square();

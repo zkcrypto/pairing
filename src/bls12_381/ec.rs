@@ -621,6 +621,33 @@ macro_rules! curve_impl {
     };
 }
 
+macro_rules! encoded_point_delegations {
+	($t:ident) => {
+	    impl PartialEq for $t {
+	        fn eq(&self, other: &$t) -> bool {
+				PartialEq::eq(&self.0[..], &other.0[..]) 
+			}
+        }
+	    impl Eq for $t { }
+        impl PartialOrd for $t {
+			fn partial_cmp(&self, other: &$t) -> Option<::std::cmp::Ordering> {
+				PartialOrd::partial_cmp(&self.0[..], &other.0[..])
+			}
+		}
+        impl Ord for $t {
+	        fn cmp(&self, other: &Self) -> ::std::cmp::Ordering {
+				Ord::cmp(&self.0[..], &other.0[..])
+	        }
+	    }
+
+		impl ::std::hash::Hash for $t {
+	        fn hash<H: ::std::hash::Hasher>(&self, state: &mut H) {
+	        	self.0[..].hash(state);
+	        }
+		}
+	}
+} // encoded_point_delegations
+
 pub mod g1 {
     use super::super::{Bls12, Fq, Fq12, FqRepr, Fr, FrRepr};
     use super::g2::G2Affine;
@@ -656,6 +683,8 @@ pub mod g1 {
             &mut self.0
         }
     }
+
+    encoded_point_delegations!(G1Uncompressed);
 
     impl fmt::Debug for G1Uncompressed {
         fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> Result<(), fmt::Error> {
@@ -766,6 +795,8 @@ pub mod g1 {
             &mut self.0
         }
     }
+
+    encoded_point_delegations!(G1Compressed);
 
     impl fmt::Debug for G1Compressed {
         fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> Result<(), fmt::Error> {
@@ -1326,6 +1357,8 @@ pub mod g2 {
         }
     }
 
+    encoded_point_delegations!(G2Uncompressed);
+
     impl fmt::Debug for G2Uncompressed {
         fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> Result<(), fmt::Error> {
             self.0[..].fmt(formatter)
@@ -1451,6 +1484,8 @@ pub mod g2 {
             &mut self.0
         }
     }
+
+    encoded_point_delegations!(G2Compressed);
 
     impl fmt::Debug for G2Compressed {
         fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> Result<(), fmt::Error> {

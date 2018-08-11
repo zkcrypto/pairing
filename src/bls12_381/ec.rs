@@ -627,6 +627,18 @@ macro_rules! curve_impl {
 
 macro_rules! encoded_point_delegations {
 	($t:ident) => {
+
+	    impl AsRef<[u8]> for $t {
+	        fn as_ref(&self) -> &[u8] {
+	            &self.0
+	        }
+	    }
+	    impl AsMut<[u8]> for $t {
+	        fn as_mut(&mut self) -> &mut [u8] {
+	            &mut self.0
+	        }
+	    }
+
 	    impl PartialEq for $t {
 	        fn eq(&self, other: &$t) -> bool {
 				PartialEq::eq(&self.0[..], &other.0[..]) 
@@ -674,18 +686,6 @@ pub mod g1 {
 
     #[derive(Copy, Clone)]
     pub struct G1Uncompressed([u8; 96]);
-
-    impl AsRef<[u8]> for G1Uncompressed {
-        fn as_ref(&self) -> &[u8] {
-            &self.0
-        }
-    }
-
-    impl AsMut<[u8]> for G1Uncompressed {
-        fn as_mut(&mut self) -> &mut [u8] {
-            &mut self.0
-        }
-    }
 
     encoded_point_delegations!(G1Uncompressed);
 
@@ -786,18 +786,6 @@ pub mod g1 {
 
     #[derive(Copy, Clone)]
     pub struct G1Compressed([u8; 48]);
-
-    impl AsRef<[u8]> for G1Compressed {
-        fn as_ref(&self) -> &[u8] {
-            &self.0
-        }
-    }
-
-    impl AsMut<[u8]> for G1Compressed {
-        fn as_mut(&mut self) -> &mut [u8] {
-            &mut self.0
-        }
-    }
 
     encoded_point_delegations!(G1Compressed);
 
@@ -1324,18 +1312,6 @@ pub mod g2 {
     #[derive(Copy, Clone)]
     pub struct G2Uncompressed([u8; 192]);
 
-    impl AsRef<[u8]> for G2Uncompressed {
-        fn as_ref(&self) -> &[u8] {
-            &self.0
-        }
-    }
-
-    impl AsMut<[u8]> for G2Uncompressed {
-        fn as_mut(&mut self) -> &mut [u8] {
-            &mut self.0
-        }
-    }
-
     encoded_point_delegations!(G2Uncompressed);
 
     impl fmt::Debug for G2Uncompressed {
@@ -1451,18 +1427,6 @@ pub mod g2 {
 
     #[derive(Copy, Clone)]
     pub struct G2Compressed([u8; 96]);
-
-    impl AsRef<[u8]> for G2Compressed {
-        fn as_ref(&self) -> &[u8] {
-            &self.0
-        }
-    }
-
-    impl AsMut<[u8]> for G2Compressed {
-        fn as_mut(&mut self) -> &mut [u8] {
-            &mut self.0
-        }
-    }
 
     encoded_point_delegations!(G2Compressed);
 

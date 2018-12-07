@@ -61,7 +61,6 @@ pub fn curve_tests<G: CurveProjective>() {
     random_multiplication_tests::<G>();
     random_doubling_tests::<G>();
     random_negation_tests::<G>();
-    random_transformation_tests::<G>();
     random_wnaf_tests::<G>();
     random_encoding_tests::<G::Affine>();
 }
@@ -345,7 +344,46 @@ fn random_addition_tests<G: CurveProjective>() {
     }
 }
 
-fn random_transformation_tests<G: CurveProjective>() {
+pub fn random_transformation_tests<G: CurveProjective>() {
+    let mut rng = XorShiftRng::from_seed([0x5dbe6259, 0x8d313d76, 0x3237db17, 0xe5bc0654]);
+
+    for _ in 0..1000 {
+        let g = G::rand(&mut rng);
+        let g_affine = g.into_affine();
+        let g_projective = g_affine.into_projective();
+        assert_eq!(g, g_projective);
+    }
+
+    // Batch normalization
+    for _ in 0..10 {
+        let mut v = (0..1000).map(|_| G::rand(&mut rng)).collect::<Vec<_>>();
+
+        use rand::distributions::{IndependentSample, Range};
+        let between = Range::new(0, 1000);
+        // Sprinkle in some normalized points
+        for _ in 0..5 {
+            v[between.ind_sample(&mut rng)] = G::zero();
+        }
+        for _ in 0..5 {
+            let s = between.ind_sample(&mut rng);
+            v[s] = v[s].into_affine().into_projective();
+        }
+
+        let expected_v = v
+            .iter()
+            .map(|v| v.into_affine().into_projective())
+            .collect::<Vec<_>>();
+        G::batch_normalization(&mut v);
+
+        for i in &v {
+            assert!(i.is_normalized());
+        }
+
+        assert_eq!(v, expected_v);
+    }
+}
+
+pub fn random_transformation_tests_with_cofactor<G: CurveProjective>() {
     let mut rng = XorShiftRng::from_seed([0x5dbe6259, 0x8d313d76, 0x3237db17, 0xe5bc0654]);
 
     for _ in 0..1000 {
@@ -360,6 +398,7 @@ fn random_transformation_tests<G: CurveProjective>() {
         let mut v = (0..1000).map(|_| G::rand(&mut rng)).collect::<Vec<_>>();
 
         for i in &v {
+
             assert!(!i.is_normalized());
         }
 

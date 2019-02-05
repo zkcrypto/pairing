@@ -885,6 +885,10 @@ pub mod g1 {
     }
 
     impl G1Affine {
+        // fn scale_by_cofactor(&self) -> G1 {
+        //     self.into_projective()
+        // }
+
         fn get_generator() -> Self {
             G1Affine {
                 x: super::super::fq::G1_GENERATOR_X,
@@ -1023,20 +1027,45 @@ pub mod g2 {
         G1Affine
     );
 
+    // impl Rand for G2 {
+    //     fn rand<R: Rng>(rng: &mut R) -> Self {
+            
+    //         let mut r = G2::one();
+    //         let k = Fr::rand(rng);
+    //         r.mul_assign(k);
+    //         return r;
+    //     }
+    // }
+
+    // impl Rand for G2Affine {
+    //     fn rand<R: Rng>(rng: &mut R) -> Self {
+    //         let mut r = G2::one();
+    //         let k = Fr::rand(rng);
+    //         r.mul_assign(k);
+    //         return r.into_affine();
+    //     }
+    // }
+
     impl Rand for G2 {
         fn rand<R: Rng>(rng: &mut R) -> Self {
-            let mut r = G2::one();
-            let k = Fr::rand(rng);
-            r.mul_assign(k);
-            return r;
+            loop {
+                let x = rng.gen();
+                let greatest = rng.gen();
+
+                if let Some(p) = G2Affine::get_point_from_x(x, greatest) {
+                    if !p.is_zero() {
+                        if p.is_on_curve() {
+                            return p.scale_by_cofactor();
+                        }
+                    }
+                }
+            }
         }
     }
 
     impl Rand for G2Affine {
         fn rand<R: Rng>(rng: &mut R) -> Self {
-            let mut r = G2::one();
-            let k = Fr::rand(rng);
-            r.mul_assign(k);
+            let r = G2::rand(rng);
             return r.into_affine();
         }
     }
@@ -1273,6 +1302,18 @@ pub mod g2 {
     }
 
     impl G2Affine {
+        fn scale_by_cofactor(&self) -> G2 {
+            // G2 cofactor = 2p - n = 2q - r
+            // 0x30644e72e131a029b85045b68181585e06ceecda572a2489345f2299c0f9fa8d
+            let cofactor = BitIterator::new([
+                0x345f2299c0f9fa8d,
+                0x06ceecda572a2489,
+                0xb85045b68181585e,
+                0x30644e72e131a029,
+            ]);
+            self.mul_bits(cofactor)
+        }
+
         fn get_generator() -> Self {
             G2Affine {
                 x: Fq2 {
@@ -1586,9 +1627,9 @@ pub mod g2 {
             r.mul_assign(order);
             assert!(r.is_zero());
 
-            // let mut t = G2::rand(&mut rng);
-            // t.mul_assign(order);
-            // assert!(t.is_zero());
+            let mut t = G2::rand(&mut rng);
+            t.mul_assign(order);
+            assert!(t.is_zero());
         }
     }
 

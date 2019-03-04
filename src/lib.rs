@@ -12,7 +12,6 @@
 #![deny(missing_debug_implementations)]
 
 extern crate byteorder;
-extern crate ff;
 extern crate rand;
 
 extern crate hex;
@@ -23,6 +22,7 @@ extern crate serde_derive;
 #[cfg(test)]
 pub mod tests;
 
+pub extern crate ff;
 pub use ff::*;
 
 pub mod bls12_381;

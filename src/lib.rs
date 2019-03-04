@@ -23,6 +23,8 @@ extern crate serde_derive;
 #[cfg(test)]
 pub mod tests;
 
+pub use ff::*;
+
 pub mod bls12_381;
 pub mod bn256;
 

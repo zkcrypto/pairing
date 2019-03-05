@@ -22,8 +22,11 @@ extern crate serde_derive;
 #[cfg(test)]
 pub mod tests;
 
-pub extern crate ff;
-pub use ff::*;
+extern crate ff as imported_ff;
+
+pub mod ff {
+    pub use imported_ff::*;
+}
 
 pub mod bls12_381;
 pub mod bn256;

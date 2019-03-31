@@ -22,7 +22,7 @@ extern crate serde_derive;
 #[cfg(test)]
 pub mod tests;
 
-extern crate ff as imported_ff;
+extern crate ff_ce as imported_ff;
 
 pub mod ff {
     pub use imported_ff::*;

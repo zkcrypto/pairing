@@ -1,5 +1,7 @@
 # pairing "community edition"
 
+Now published as `pairing_ce` to `crates.io` for users convenience.
+
 Originally developed by ZCash, with extensions from us to make it a little more pleasant. 
 
 This is a Rust crate for using pairing-friendly elliptic curves. Currently, only the [BLS12-381](https://z.cash/blog/new-snark-curve.html) and BN256 curves are implemented.

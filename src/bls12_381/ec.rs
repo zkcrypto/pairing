@@ -1557,20 +1557,70 @@ pub mod g2 {
             }
         }
 
-        fn scale_by_cofactor(&self) -> G2 {
-            // G2 cofactor = (x^8 - 4 x^7 + 5 x^6) - (4 x^4 + 6 x^3 - 4 x^2 - 4 x + 13) // 9
-            // 0x5d543a95414e7f1091d50792876a202cd91de4547085abaa68a205b2e5a7ddfa628f1cb4d9e82ef21537e293a6691ae1616ec6e786f0c70cf1c38e31c7238e5
-            let cofactor = BitIterator::new([
-                0xcf1c38e31c7238e5,
-                0x1616ec6e786f0c70,
-                0x21537e293a6691ae,
-                0xa628f1cb4d9e82ef,
-                0xa68a205b2e5a7ddf,
-                0xcd91de4547085aba,
-                0x91d50792876a202,
-                0x5d543a95414e7f1,
+
+        fn psi(&mut self) {
+            let u = Fq2 { c0: Fq::one(), c1: Fq::one() };
+
+            let wy = u.pow(&[
+                0xdcff7fffffffd555,
+                0x0f55ffff58a9ffff,
+                0xb39869507b587b12,
+                0xb23ba5c279c2895f,
+                0x258dd3db21a5d66b,
+                0x0d0088f51cbff34d,
             ]);
-            self.mul_bits(cofactor)
+            let wy = wy.inverse().unwrap();
+
+
+            let wx = u.pow(&[
+                0x9354ffffffffe38e,
+                0x0a395554e5c6aaaa,
+                0xcd104635a790520c,
+                0xcc27c3d6fbd7063f,
+                0x190937e76bc3e447,
+                0x08ab05f8bdd54cde,
+            ]);
+            let wx = wx.inverse().unwrap();
+
+            self.x.frobenius_map(1);
+            self.x.mul_assign(&wx);
+            self.y.frobenius_map(1);
+            self.y.mul_assign(&wy);
+        }
+
+        fn scale_by_cofactor(&self) -> G2 {
+            // (x^3 - x^2 - x + 4) = -0x8d51ccce760304d19848a4037604a4012e000000fffefffc
+            let mut p = self.clone();
+            p.negate();
+            let pp0 = p.mul_bits(BitIterator::new([
+                0x2e000000fffefffc,
+                0x9848a4037604a401,
+                0x8d51ccce760304d1,
+            ]));
+
+            // (x^3 - x^2 - x + 1) = -0x8d51ccce760304d19848a4037604a4012e000000fffeffff
+            let mut p = self.clone();
+            p.psi();
+            p.negate();
+            let pp1 = p.mul_bits(BitIterator::new([
+                0x2e000000fffeffff,
+                0x9848a4037604a401,
+                0x8d51ccce760304d1,
+            ]));
+
+            // (-x^2 + 2*x - 1) = -0xac45a4010001a403a402000100020001
+            let mut p = self.clone();
+            p.psi();
+            p.psi();
+            p.negate();
+            let mut pp2 = p.mul_bits(BitIterator::new([
+                0xa402000100020001,
+                0xac45a4010001a403,
+            ]));
+
+            pp2.add_assign(&pp1);
+            pp2.add_assign(&pp0);
+            pp2
         }
 
         fn perform_pairing(&self, other: &G1Affine) -> Fq12 {
@@ -2011,6 +2061,33 @@ pub mod g2 {
             }
         );
     }
+
+    #[test]
+    fn test_g2_scale_by_cofactor() {
+        use rand::{Rng, SeedableRng, XorShiftRng};
+
+        fn random_point<R: Rng>(rng: &mut R) -> G2Affine {
+            loop {
+                let x = rng.gen();
+                let greatest = rng.gen();
+
+                if let Some(p) = G2Affine::get_point_from_x(x, greatest) {
+                    if !p.is_zero() {
+                        return p;
+                    }
+                }
+            }
+        }
+
+        let mut rng = XorShiftRng::from_seed([0x5dbe6259, 0x8d313d76, 0x3237db17, 0xe5bc0654]);
+        for _i in 0 .. 20 {
+            let p = random_point(&mut rng);
+            let got = p.scale_by_cofactor().into_affine();
+            assert!(got.is_on_curve());
+            assert!(got.is_in_correct_subgroup_assuming_on_curve());
+        }
+    }
+
 
     #[test]
     fn g2_curve_tests() {

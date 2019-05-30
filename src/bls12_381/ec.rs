@@ -626,7 +626,7 @@ pub mod g1 {
     use ff::{BitIterator, Field, PrimeField, PrimeFieldRepr, SqrtField};
     use rand::{Rand, Rng};
     use std::fmt;
-    use {CurveAffine, CurveProjective, EncodedPoint, Engine, GroupDecodingError};
+    use crate::{RawEncodable, CurveAffine, CurveProjective, EncodedPoint, Engine, GroupDecodingError};
 
     curve_impl!(
         "G1",
@@ -745,6 +745,18 @@ pub mod g1 {
                 affine.x.into_repr().write_be(&mut writer).unwrap();
                 affine.y.into_repr().write_be(&mut writer).unwrap();
             }
+
+            res
+        }
+    }
+
+    impl RawEncodable for G1Affine {
+        fn into_raw_uncompressed_le(&self) -> Self::Uncompressed {
+            let mut res = Self::Uncompressed::empty();
+            let mut writer = &mut res.0[..];
+
+            self.x.into_raw_repr().write_le(&mut writer).unwrap();
+            self.y.into_raw_repr().write_le(&mut writer).unwrap();
 
             res
         }
@@ -1272,7 +1284,7 @@ pub mod g2 {
     use ff::{BitIterator, Field, PrimeField, PrimeFieldRepr, SqrtField};
     use rand::{Rand, Rng};
     use std::fmt;
-    use {CurveAffine, CurveProjective, EncodedPoint, Engine, GroupDecodingError};
+    use crate::{CurveAffine, CurveProjective, EncodedPoint, Engine, GroupDecodingError};
 
     curve_impl!(
         "G2",

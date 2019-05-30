@@ -22,11 +22,13 @@ extern crate serde_derive;
 #[cfg(test)]
 pub mod tests;
 
-extern crate ff_ce as imported_ff;
+pub extern crate ff_ce as ff;
 
-pub mod ff {
-    pub use imported_ff::*;
-}
+pub use ff::*;
+
+// pub mod ff {
+//     pub use ff::*;
+// }
 
 pub mod bls12_381;
 pub mod bn256;
@@ -60,7 +62,7 @@ pub trait Engine: ScalarEngine {
             Pair = Self::G2Affine,
             PairingResult = Self::Fqk,
         >
-        + From<Self::G1>;
+        + From<Self::G1> + RawEncodable;
 
     /// The projective representation of an element in G2.
     type G2: CurveProjective<
@@ -102,7 +104,7 @@ pub trait Engine: ScalarEngine {
         >;
 
     /// Perform final exponentiation of the result of a miller loop.
-    fn final_exponentiation(&Self::Fqk) -> Option<Self::Fqk>;
+    fn final_exponentiation(r: &Self::Fqk) -> Option<Self::Fqk>;
 
     /// Performs a complete pairing operation `(p, q)`.
     fn pairing<G1, G2>(p: G1, q: G2) -> Self::Fqk
@@ -238,6 +240,12 @@ pub trait CurveAffine:
     fn into_uncompressed(&self) -> Self::Uncompressed {
         <Self::Uncompressed as EncodedPoint>::from_affine(*self)
     }
+}
+
+pub trait RawEncodable: CurveAffine {
+    /// Converts this element into its uncompressed encoding, so long as it's not
+    /// the point at infinity. Leaves coordinates in Montgommery form
+    fn into_raw_uncompressed_le(&self) -> Self::Uncompressed;
 }
 
 /// An encoded elliptic curve point, which should essentially wrap a `[u8; N]`.

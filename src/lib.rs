@@ -246,6 +246,12 @@ pub trait RawEncodable: CurveAffine {
     /// Converts this element into its uncompressed encoding, so long as it's not
     /// the point at infinity. Leaves coordinates in Montgommery form
     fn into_raw_uncompressed_le(&self) -> Self::Uncompressed;
+
+    /// Creates a point from raw encoded coordinates without checking on curve
+    fn from_raw_uncompressed_le_unchecked(encoded: &Self::Uncompressed, infinity: bool) -> Result<Self, GroupDecodingError>;
+
+    /// Creates a point from raw encoded coordinates
+    fn from_raw_uncompressed_le(encoded: &Self::Uncompressed, infinity: bool) -> Result<Self, GroupDecodingError>;
 }
 
 /// An encoded elliptic curve point, which should essentially wrap a `[u8; N]`.

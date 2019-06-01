@@ -760,6 +760,45 @@ pub mod g1 {
 
             res
         }
+
+        fn from_raw_uncompressed_le_unchecked(
+            encoded: &Self::Uncompressed, 
+            _infinity: bool
+        ) -> Result<Self, GroupDecodingError> {
+            let copy = encoded.0;
+            if copy.iter().all(|b| *b == 0) {
+                return Ok(Self::zero());
+            }
+
+            let mut x = FqRepr([0; 6]);
+            let mut y = FqRepr([0; 6]);
+
+            {
+                let mut reader = &copy[..];
+                x.read_be(&mut reader).unwrap();
+                y.read_be(&mut reader).unwrap();
+            }
+
+            Ok(G1Affine {
+                x: Fq::from_raw_repr(x).map_err(|e| {
+                    GroupDecodingError::CoordinateDecodingError("x coordinate", e)
+                })?,
+                y: Fq::from_raw_repr(y).map_err(|e| {
+                    GroupDecodingError::CoordinateDecodingError("y coordinate", e)
+                })?,
+                infinity: false,
+            })
+        }
+
+        fn from_raw_uncompressed_le(encoded: &Self::Uncompressed, _infinity: bool) -> Result<Self, GroupDecodingError> {
+            let affine = Self::from_raw_uncompressed_le_unchecked(&encoded, _infinity)?;
+
+            if !affine.is_on_curve() {
+                Err(GroupDecodingError::NotOnCurve)
+            } else {
+                Ok(affine)
+            }
+        }
     }
 
     #[derive(Copy, Clone)]

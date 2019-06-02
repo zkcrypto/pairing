@@ -775,8 +775,8 @@ pub mod g1 {
 
             {
                 let mut reader = &copy[..];
-                x.read_be(&mut reader).unwrap();
-                y.read_be(&mut reader).unwrap();
+                x.read_le(&mut reader).unwrap();
+                y.read_le(&mut reader).unwrap();
             }
 
             Ok(G1Affine {

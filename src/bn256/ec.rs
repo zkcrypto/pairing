@@ -645,10 +645,12 @@ pub mod g1 {
     impl RawEncodable for G1Affine {
         fn into_raw_uncompressed_le(&self) -> Self::Uncompressed {
             let mut res = Self::Uncompressed::empty();
-            let mut writer = &mut res.0[..];
+            {
+                let mut writer = &mut res.0[..];
 
-            self.x.into_raw_repr().write_le(&mut writer).unwrap();
-            self.y.into_raw_repr().write_le(&mut writer).unwrap();
+                self.x.into_raw_repr().write_le(&mut writer).unwrap();
+                self.y.into_raw_repr().write_le(&mut writer).unwrap();
+            }
 
             res
         }
@@ -1078,25 +1080,6 @@ pub mod g2 {
         G1Affine
     );
 
-    // impl Rand for G2 {
-    //     fn rand<R: Rng>(rng: &mut R) -> Self {
-            
-    //         let mut r = G2::one();
-    //         let k = Fr::rand(rng);
-    //         r.mul_assign(k);
-    //         return r;
-    //     }
-    // }
-
-    // impl Rand for G2Affine {
-    //     fn rand<R: Rng>(rng: &mut R) -> Self {
-    //         let mut r = G2::one();
-    //         let k = Fr::rand(rng);
-    //         r.mul_assign(k);
-    //         return r.into_affine();
-    //     }
-    // }
-
     impl Rand for G2 {
         fn rand<R: Rng>(rng: &mut R) -> Self {
             loop {
@@ -1467,6 +1450,50 @@ pub mod g2 {
             }
 
             i += 1;
+            x.add_assign(&Fq2::one());
+        }
+    }
+
+    #[test]
+    fn test_generate_g2_in_subgroup() {
+        use SqrtField;
+
+        let mut x = Fq2::zero();
+        loop {
+            // y^2 = x^3 + b
+            let mut rhs = x;
+            rhs.square();
+            rhs.mul_assign(&x);
+            rhs.add_assign(&G2Affine::get_coeff_b());
+
+            if let Some(y) = rhs.sqrt() {
+                let mut negy = y;
+                negy.negate();
+
+                let p = G2Affine {
+                    x: x,
+                    y: if y < negy { y } else { negy },
+                    infinity: false,
+                };
+
+                let g2 = p.into_projective();
+                let mut minus_one = Fr::one();
+                minus_one.negate();
+
+                let mut expected_zero = p.mul(minus_one);
+                expected_zero.add_assign(&g2);
+
+                if !expected_zero.is_zero() {
+                    let p = expected_zero.into_affine();
+                    let scaled_by_cofactor = p.scale_by_cofactor();
+                    if scaled_by_cofactor.is_zero() {
+                        let g2 = G2Affine::from(expected_zero);
+                        println!("Invalid subgroup point = {}", g2);
+                        return;
+                    }
+                }
+            }
+
             x.add_assign(&Fq2::one());
         }
     }

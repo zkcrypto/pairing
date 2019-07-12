@@ -22,11 +22,7 @@ rand = "0.4"
 byteorder = "1"
 #ff_ce = {version = "0.6", features = ["derive"] }
 #ff_ce = { git = 'https://github.com/matter-labs/ff', features = ["derive"], branch = "gpu"}
-ff_ce = { path = '../ff', features = ["derive", "derive_serde"]}
-serde = "1.0.80"
-serde_derive = "1.0.80"
-serde_json = "1.0.33"
-hex = "0.3.2"
+ff = { path = '../ff', package = "ff_ce", features = ["derive"]}
 
 [features]
 unstable-features = ["expose-arith"]

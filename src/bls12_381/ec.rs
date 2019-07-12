@@ -753,10 +753,12 @@ pub mod g1 {
     impl RawEncodable for G1Affine {
         fn into_raw_uncompressed_le(&self) -> Self::Uncompressed {
             let mut res = Self::Uncompressed::empty();
-            let mut writer = &mut res.0[..];
+            {
+                let mut writer = &mut res.0[..];
 
-            self.x.into_raw_repr().write_le(&mut writer).unwrap();
-            self.y.into_raw_repr().write_le(&mut writer).unwrap();
+                self.x.into_raw_repr().write_le(&mut writer).unwrap();
+                self.y.into_raw_repr().write_le(&mut writer).unwrap();
+            }
 
             res
         }

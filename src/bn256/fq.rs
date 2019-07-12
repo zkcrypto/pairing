@@ -1,5 +1,5 @@
 use super::fq2::Fq2;
-use ff::{Field, PrimeField, PrimeFieldDecodingError, PrimeFieldRepr};
+use ff::{Field, PrimeField, PrimeFieldRepr};
 
 #[derive(PrimeField)]
 #[PrimeFieldModulus = "21888242871839275222246405745257275088696311157297823662689037894645226208583"]
@@ -572,8 +572,8 @@ fn test_fq_sqrt_2() {
 
 #[test]
 fn fq_field_tests() {
-    ::tests::field::random_field_tests::<Fq>();
-    ::tests::field::random_sqrt_tests::<Fq>();
-    ::tests::field::random_frobenius_tests::<Fq, _>(Fq::char(), 13);
-    ::tests::field::from_str_tests::<Fq>();
+    crate::tests::field::random_field_tests::<Fq>();
+    crate::tests::field::random_sqrt_tests::<Fq>();
+    crate::tests::field::random_frobenius_tests::<Fq, _>(Fq::char(), 13);
+    crate::tests::field::from_str_tests::<Fq>();
 }

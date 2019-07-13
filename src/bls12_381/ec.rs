@@ -626,7 +626,7 @@ pub mod g1 {
     use ff::{BitIterator, Field, PrimeField, PrimeFieldRepr, SqrtField};
     use rand::{Rand, Rng};
     use std::fmt;
-    use {CurveAffine, CurveProjective, EncodedPoint, Engine, GroupDecodingError};
+    use crate::{RawEncodable, CurveAffine, CurveProjective, EncodedPoint, Engine, GroupDecodingError};
 
     curve_impl!(
         "G1",
@@ -747,6 +747,59 @@ pub mod g1 {
             }
 
             res
+        }
+    }
+
+    impl RawEncodable for G1Affine {
+        fn into_raw_uncompressed_le(&self) -> Self::Uncompressed {
+            let mut res = Self::Uncompressed::empty();
+            {
+                let mut writer = &mut res.0[..];
+
+                self.x.into_raw_repr().write_le(&mut writer).unwrap();
+                self.y.into_raw_repr().write_le(&mut writer).unwrap();
+            }
+
+            res
+        }
+
+        fn from_raw_uncompressed_le_unchecked(
+            encoded: &Self::Uncompressed, 
+            _infinity: bool
+        ) -> Result<Self, GroupDecodingError> {
+            let copy = encoded.0;
+            if copy.iter().all(|b| *b == 0) {
+                return Ok(Self::zero());
+            }
+
+            let mut x = FqRepr([0; 6]);
+            let mut y = FqRepr([0; 6]);
+
+            {
+                let mut reader = &copy[..];
+                x.read_le(&mut reader).unwrap();
+                y.read_le(&mut reader).unwrap();
+            }
+
+            Ok(G1Affine {
+                x: Fq::from_raw_repr(x).map_err(|e| {
+                    GroupDecodingError::CoordinateDecodingError("x coordinate", e)
+                })?,
+                y: Fq::from_raw_repr(y).map_err(|e| {
+                    GroupDecodingError::CoordinateDecodingError("y coordinate", e)
+                })?,
+                infinity: false,
+            })
+        }
+
+        fn from_raw_uncompressed_le(encoded: &Self::Uncompressed, _infinity: bool) -> Result<Self, GroupDecodingError> {
+            let affine = Self::from_raw_uncompressed_le_unchecked(&encoded, _infinity)?;
+
+            if !affine.is_on_curve() {
+                Err(GroupDecodingError::NotOnCurve)
+            } else {
+                Ok(affine)
+            }
         }
     }
 
@@ -1261,8 +1314,8 @@ pub mod g1 {
 
     #[test]
     fn g1_curve_tests() {
-        ::tests::curve::curve_tests::<G1>();
-        ::tests::curve::random_transformation_tests_with_cofactor::<G1>();
+        crate::tests::curve::curve_tests::<G1>();
+        crate::tests::curve::random_transformation_tests_with_cofactor::<G1>();
     }
 }
 
@@ -1272,7 +1325,7 @@ pub mod g2 {
     use ff::{BitIterator, Field, PrimeField, PrimeFieldRepr, SqrtField};
     use rand::{Rand, Rng};
     use std::fmt;
-    use {CurveAffine, CurveProjective, EncodedPoint, Engine, GroupDecodingError};
+    use crate::{CurveAffine, CurveProjective, EncodedPoint, Engine, GroupDecodingError};
 
     curve_impl!(
         "G2",
@@ -2015,8 +2068,8 @@ pub mod g2 {
 
     #[test]
     fn g2_curve_tests() {
-        ::tests::curve::curve_tests::<G2>();
-        ::tests::curve::random_transformation_tests_with_cofactor::<G2>();
+        crate::tests::curve::curve_tests::<G2>();
+        crate::tests::curve::random_transformation_tests_with_cofactor::<G2>();
     }
 }
 

@@ -1,4 +1,4 @@
-use ff::{Field, PrimeField, PrimeFieldDecodingError, PrimeFieldRepr};
+use ff::{Field, PrimeField, PrimeFieldRepr};
 
 #[derive(PrimeField)]
 #[PrimeFieldModulus = "52435875175126190479447740508185965837690552500527637822603658699938581184513"]
@@ -974,13 +974,13 @@ fn test_fr_root_of_unity() {
 
 #[test]
 fn fr_field_tests() {
-    ::tests::field::random_field_tests::<Fr>();
-    ::tests::field::random_sqrt_tests::<Fr>();
-    ::tests::field::random_frobenius_tests::<Fr, _>(Fr::char(), 13);
-    ::tests::field::from_str_tests::<Fr>();
+    crate::tests::field::random_field_tests::<Fr>();
+    crate::tests::field::random_sqrt_tests::<Fr>();
+    crate::tests::field::random_frobenius_tests::<Fr, _>(Fr::char(), 13);
+    crate::tests::field::from_str_tests::<Fr>();
 }
 
 #[test]
 fn fr_repr_tests() {
-    ::tests::repr::random_repr_tests::<FrRepr>();
+    crate::tests::repr::random_repr_tests::<FrRepr>();
 }

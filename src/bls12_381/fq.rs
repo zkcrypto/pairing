@@ -1,5 +1,5 @@
 use super::fq2::Fq2;
-use ff::{Field, PrimeField, PrimeFieldDecodingError, PrimeFieldRepr};
+use ff::{Field, PrimeField, PrimeFieldRepr};
 
 // B coefficient of BLS12-381 curve, 4.
 pub const B_COEFF: Fq = Fq(FqRepr([
@@ -2186,10 +2186,10 @@ fn test_fq_root_of_unity() {
 
 #[test]
 fn fq_field_tests() {
-    ::tests::field::random_field_tests::<Fq>();
-    ::tests::field::random_sqrt_tests::<Fq>();
-    ::tests::field::random_frobenius_tests::<Fq, _>(Fq::char(), 13);
-    ::tests::field::from_str_tests::<Fq>();
+    crate::tests::field::random_field_tests::<Fq>();
+    crate::tests::field::random_sqrt_tests::<Fq>();
+    crate::tests::field::random_frobenius_tests::<Fq, _>(Fq::char(), 13);
+    crate::tests::field::from_str_tests::<Fq>();
 }
 
 #[test]
@@ -2205,7 +2205,7 @@ fn test_fq_ordering() {
 
 #[test]
 fn fq_repr_tests() {
-    ::tests::repr::random_repr_tests::<FqRepr>();
+    crate::tests::repr::random_repr_tests::<FqRepr>();
 }
 
 #[test]

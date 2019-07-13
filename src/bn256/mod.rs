@@ -473,7 +473,7 @@ use rand::{Rand, SeedableRng, XorShiftRng};
 
 #[test]
 fn test_pairing() {
-    use {CurveProjective};
+    use crate::{CurveProjective};
     let mut g1 = G1::one();
     
     let mut g2 = G2::one();
@@ -557,7 +557,7 @@ fn test_pairing() {
 
 #[test]
 fn random_bilinearity_tests() {
-    use {CurveProjective};
+    use crate::{CurveProjective};
     use ff::PrimeField;
 
     let mut rng = XorShiftRng::from_seed([0x5dbe6259, 0x8d313d76, 0x3237db17, 0xe5bc0654]);
@@ -600,5 +600,5 @@ fn random_bilinearity_tests() {
 
 #[test]
 fn bn256_engine_tests() {
-    ::tests::engine::engine_tests::<Bn256>();
+    crate::tests::engine::engine_tests::<Bn256>();
 }

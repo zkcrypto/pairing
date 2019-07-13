@@ -190,9 +190,7 @@ macro_rules! curve_impl {
             fn into_projective(&self) -> $projective {
                 (*self).into()
             }
-
         }
-
         // impl Rand for $projective {
         //     fn rand<R: Rng>(rng: &mut R) -> Self {
         //         loop {
@@ -630,7 +628,7 @@ pub mod g1 {
     use ff::{BitIterator, Field, PrimeField, PrimeFieldRepr, SqrtField};
     use rand::{Rand, Rng};
     use std::fmt;
-    use {CurveAffine, CurveProjective, EncodedPoint, Engine, GroupDecodingError};
+    use crate::{RawEncodable, CurveAffine, CurveProjective, EncodedPoint, Engine, GroupDecodingError};
 
     curve_impl!(
         "G1",
@@ -643,6 +641,61 @@ pub mod g1 {
         G1Compressed,
         G2Affine
     );
+
+    impl RawEncodable for G1Affine {
+        fn into_raw_uncompressed_le(&self) -> Self::Uncompressed {
+            let mut res = Self::Uncompressed::empty();
+            {
+                let mut writer = &mut res.0[..];
+
+                self.x.into_raw_repr().write_le(&mut writer).unwrap();
+                self.y.into_raw_repr().write_le(&mut writer).unwrap();
+            }
+
+            res
+        }
+
+        /// Creates a point from raw encoded coordinates without checking on curve
+        fn from_raw_uncompressed_le_unchecked(
+            encoded: &Self::Uncompressed, 
+            _infinity: bool
+        ) -> Result<Self, GroupDecodingError> {
+            let copy = encoded.0;
+
+            if copy.iter().all(|b| *b == 0) {
+                return Ok(Self::zero());
+            }
+
+            let mut x = FqRepr([0; 4]);
+            let mut y = FqRepr([0; 4]);
+
+            {
+                let mut reader = &copy[..];
+                x.read_le(&mut reader).unwrap();
+                y.read_le(&mut reader).unwrap();
+            }
+
+            Ok(G1Affine {
+                x: Fq::from_raw_repr(x).map_err(|e| {
+                    GroupDecodingError::CoordinateDecodingError("x coordinate", e)
+                })?,
+                y: Fq::from_raw_repr(y).map_err(|e| {
+                    GroupDecodingError::CoordinateDecodingError("y coordinate", e)
+                })?,
+                infinity: false,
+            })
+        }
+
+        fn from_raw_uncompressed_le(encoded: &Self::Uncompressed, _infinity: bool) -> Result<Self, GroupDecodingError> {
+            let affine = Self::from_raw_uncompressed_le_unchecked(&encoded, _infinity)?;
+
+            if !affine.is_on_curve() {
+                Err(GroupDecodingError::NotOnCurve)
+            } else {
+                Ok(affine)
+            }
+        }
+    }
 
     #[derive(Copy, Clone)]
     pub struct G1Uncompressed([u8; 64]);
@@ -1002,8 +1055,8 @@ pub mod g1 {
 
     #[test]
     fn g1_curve_tests() {
-        ::tests::curve::curve_tests::<G1>();
-        ::tests::curve::random_transformation_tests::<G1>();
+        crate::tests::curve::curve_tests::<G1>();
+        crate::tests::curve::random_transformation_tests::<G1>();
     }
 }
 
@@ -1013,7 +1066,7 @@ pub mod g2 {
     use ff::{BitIterator, Field, PrimeField, PrimeFieldRepr, SqrtField};
     use rand::{Rand, Rng};
     use std::fmt;
-    use {CurveAffine, CurveProjective, EncodedPoint, Engine, GroupDecodingError};
+    use crate::{CurveAffine, CurveProjective, EncodedPoint, Engine, GroupDecodingError};
 
     curve_impl!(
         "G2",
@@ -1026,25 +1079,6 @@ pub mod g2 {
         G2Compressed,
         G1Affine
     );
-
-    // impl Rand for G2 {
-    //     fn rand<R: Rng>(rng: &mut R) -> Self {
-            
-    //         let mut r = G2::one();
-    //         let k = Fr::rand(rng);
-    //         r.mul_assign(k);
-    //         return r;
-    //     }
-    // }
-
-    // impl Rand for G2Affine {
-    //     fn rand<R: Rng>(rng: &mut R) -> Self {
-    //         let mut r = G2::one();
-    //         let k = Fr::rand(rng);
-    //         r.mul_assign(k);
-    //         return r.into_affine();
-    //     }
-    // }
 
     impl Rand for G2 {
         fn rand<R: Rng>(rng: &mut R) -> Self {
@@ -1420,6 +1454,50 @@ pub mod g2 {
         }
     }
 
+    #[test]
+    fn test_generate_g2_in_subgroup() {
+        use SqrtField;
+
+        let mut x = Fq2::zero();
+        loop {
+            // y^2 = x^3 + b
+            let mut rhs = x;
+            rhs.square();
+            rhs.mul_assign(&x);
+            rhs.add_assign(&G2Affine::get_coeff_b());
+
+            if let Some(y) = rhs.sqrt() {
+                let mut negy = y;
+                negy.negate();
+
+                let p = G2Affine {
+                    x: x,
+                    y: if y < negy { y } else { negy },
+                    infinity: false,
+                };
+
+                let g2 = p.into_projective();
+                let mut minus_one = Fr::one();
+                minus_one.negate();
+
+                let mut expected_zero = p.mul(minus_one);
+                expected_zero.add_assign(&g2);
+
+                if !expected_zero.is_zero() {
+                    let p = expected_zero.into_affine();
+                    let scaled_by_cofactor = p.scale_by_cofactor();
+                    if scaled_by_cofactor.is_zero() {
+                        let g2 = G2Affine::from(expected_zero);
+                        println!("Invalid subgroup point = {}", g2);
+                        return;
+                    }
+                }
+            }
+
+            x.add_assign(&Fq2::one());
+        }
+    }
+
     #[cfg(test)]
     use rand::{SeedableRng, XorShiftRng};
 
@@ -1454,8 +1532,8 @@ pub mod g2 {
 
     #[test]
     fn g2_curve_tests() {
-        ::tests::curve::curve_tests::<G2>();
-        ::tests::curve::random_transformation_tests::<G2>();
+        crate::tests::curve::curve_tests::<G2>();
+        crate::tests::curve::random_transformation_tests::<G2>();
     }
 
     #[test]

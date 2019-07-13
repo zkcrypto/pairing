@@ -2,7 +2,7 @@
 name = "pairing_ce"
 
 # Remember to change version string in README.md.
-version = "0.17.0"
+version = "0.18.0"
 authors = [
     "Sean Bowe <ewillbefull@gmail.com>",
     "Jack Grigg <jack@z.cash>",
@@ -20,11 +20,9 @@ edition = "2018"
 [dependencies]
 rand = "0.4"
 byteorder = "1"
-#ff_ce = {version = "0.6", features = ["derive"] }
-#ff_ce = { git = 'https://github.com/matter-labs/ff', features = ["derive"], branch = "gpu"}
-ff = { path = '../ff', package = "ff_ce", features = ["derive"]}
+ff = {package = "ff_ce", version = "0.7", features = ["derive"]}
+#ff = { path = '../ff', package = "ff_ce", features = ["derive"]}
 
 [features]
-unstable-features = ["expose-arith"]
 expose-arith = []
 default = []

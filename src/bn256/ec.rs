@@ -191,25 +191,7 @@ macro_rules! curve_impl {
                 (*self).into()
             }
         }
-        // impl Rand for $projective {
-        //     fn rand<R: Rng>(rng: &mut R) -> Self {
-        //         loop {
-        //             let x = rng.gen();
-        //             let greatest = rng.gen();
-
-        //             if let Some(p) = $affine::get_point_from_x(x, greatest) {
-        //                 if !p.is_zero() {
-        //                     // let mut q = p.into_projective();
-        //                     // q.mul_assign($scalarfield::char()); && q.is_zero()
-        //                     if p.is_on_curve() {
-        //                         return p.into_projective();
-        //                     }
-        //                 }
-        //             }
-        //         }
-        //     }
-        // }
-
+       
         impl CurveProjective for $projective {
             type Engine = Bn256;
             type Scalar = $scalarfield;

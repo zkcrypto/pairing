@@ -190,6 +190,17 @@ macro_rules! curve_impl {
             fn into_projective(&self) -> $projective {
                 (*self).into()
             }
+            
+            fn into_xy_unchecked(&self) -> (Self::Base, Self::Base) {
+                (self.x, self.y)
+            }
+            fn from_xy_unchecked(x: Self::Base, y: Self::Base) -> Self {
+                Self {
+                    x: x,
+                    y: y,
+                    infinity: false
+                }
+            }
         }
        
         impl CurveProjective for $projective {

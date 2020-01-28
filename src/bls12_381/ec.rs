@@ -194,6 +194,16 @@ macro_rules! curve_impl {
                 (*self).into()
             }
 
+            fn into_xy_unchecked(&self) -> (Self::Base, Self::Base) {
+                (self.x, self.y)
+            }
+            fn from_xy_unchecked(x: Self::Base, y: Self::Base) -> Self {
+                Self {
+                    x: x,
+                    y: y,
+                    infinity: false
+                }
+            }
         }
 
         impl Rand for $projective {

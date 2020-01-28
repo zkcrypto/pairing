@@ -231,6 +231,9 @@ pub trait CurveAffine:
     fn into_uncompressed(&self) -> Self::Uncompressed {
         <Self::Uncompressed as EncodedPoint>::from_affine(*self)
     }
+
+    fn into_xy_unchecked(&self) -> (Self::Base, Self::Base);
+    fn from_xy_unchecked(x: Self::Base, y: Self::Base) -> Self;
 }
 
 pub trait RawEncodable: CurveAffine {

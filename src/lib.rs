@@ -23,6 +23,7 @@ pub use ff::*;
 
 pub mod bls12_381;
 pub mod bn256;
+pub mod compact_bn256;
 
 mod wnaf;
 pub use self::wnaf::Wnaf;

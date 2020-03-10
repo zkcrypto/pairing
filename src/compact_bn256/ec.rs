@@ -188,9 +188,12 @@ macro_rules! curve_impl {
                 (*self).into()
             }
             
+            #[inline(always)]
             fn into_xy_unchecked(&self) -> (Self::Base, Self::Base) {
                 (self.x, self.y)
             }
+
+            #[inline(always)]
             fn from_xy_unchecked(x: Self::Base, y: Self::Base) -> Self {
                 Self {
                     x: x,

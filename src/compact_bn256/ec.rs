@@ -187,6 +187,11 @@ macro_rules! curve_impl {
             fn into_projective(&self) -> $projective {
                 (*self).into()
             }
+
+            #[inline(always)]
+            fn as_xy(&self) -> (&Self::Base, &Self::Base) {
+                (&self.x, &self.y)
+            }
             
             #[inline(always)]
             fn into_xy_unchecked(&self) -> (Self::Base, Self::Base) {
@@ -198,6 +203,19 @@ macro_rules! curve_impl {
                 Self {
                     x: x,
                     y: y,
+                }
+            }
+
+            fn from_xy_checked(x: Self::Base, y: Self::Base) -> Result<Self, GroupDecodingError> {
+                let affine = Self {
+                    x: x,
+                    y: y,
+                };
+
+                if !affine.is_on_curve() {
+                    Err(GroupDecodingError::NotOnCurve)
+                } else {
+                    Ok(affine)
                 }
             }
         }

@@ -195,16 +195,37 @@ macro_rules! curve_impl {
             }
 
             #[inline(always)]
-            fn into_xy_unchecked(&self) -> (Self::Base, Self::Base) {
-                (self.x, self.y)
+            fn as_xy(&self) -> (&Self::Base, &Self::Base) {
+                (&self.x, &self.y)
             }
             
             #[inline(always)]
+            fn into_xy_unchecked(&self) -> (Self::Base, Self::Base) {
+                (self.x, self.y)
+            }
+
+            #[inline(always)]
             fn from_xy_unchecked(x: Self::Base, y: Self::Base) -> Self {
+                let infinity = x.is_zero() && y.is_zero();
                 Self {
                     x: x,
                     y: y,
-                    infinity: false
+                    infinity
+                }
+            }
+
+            fn from_xy_checked(x: Self::Base, y: Self::Base) -> Result<Self, GroupDecodingError> {
+                let infinity = x.is_zero() && y.is_zero();
+                let affine = Self {
+                    x: x,
+                    y: y,
+                    infinity
+                };
+
+                if !affine.is_on_curve() {
+                    Err(GroupDecodingError::NotOnCurve)
+                } else {
+                    Ok(affine)
                 }
             }
         }

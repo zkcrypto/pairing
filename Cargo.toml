@@ -20,10 +20,9 @@ edition = "2018"
 [dependencies]
 rand = "0.4"
 byteorder = "1"
-# ff = {package = "ff_ce", version = "0.8", features = ["derive"]}
+ff = {package = "ff_ce", version = "0.9", features = ["derive"]}
 # ff = { path = '../ff', package = "ff_ce", features = ["derive"]}
-ff = {package = "ff_ce", git = "https://github.com/matter-labs/ff.git", branch = "playground", features = ["derive"]}
+# ff = {package = "ff_ce", git = "https://github.com/matter-labs/ff.git", branch = "playground", features = ["derive"]}
 
 [features]
 default = []
-derive_serde = ["ff/derive_serde"]

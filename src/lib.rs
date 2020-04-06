@@ -105,7 +105,7 @@ pub trait Engine: ScalarEngine {
         G2: Into<Self::G2Affine>,
     {
         Self::final_exponentiation(&Self::miller_loop(
-            [(&(p.into().prepare()), &(q.into().prepare()))].into_iter(),
+            [(&(p.into().prepare()), &(q.into().prepare()))].iter(),
         )).unwrap()
     }
 }
@@ -233,8 +233,21 @@ pub trait CurveAffine:
         <Self::Uncompressed as EncodedPoint>::from_affine(*self)
     }
 
+    /// Returns references to underlying X and Y coordinates. Users should check for infinity
+    /// outside of this call
+    fn as_xy(&self) -> (&Self::Base, &Self::Base);
+    
+    /// Returns underlying X and Y coordinates. Users should check for infinity
+    /// outside of this call
     fn into_xy_unchecked(&self) -> (Self::Base, Self::Base);
+
+    /// Creates a point from raw X and Y coordinates. Point of infinity is encoded as (0,0) by default.
+    /// On-curve check is NOT performed
     fn from_xy_unchecked(x: Self::Base, y: Self::Base) -> Self;
+
+    /// Creates a point from raw X and Y coordinates. Point of infinity is encoded as (0,0) by default.
+    /// On-curve check is performed
+    fn from_xy_checked(x: Self::Base, y: Self::Base) -> Result<Self, GroupDecodingError>;
 }
 
 pub trait RawEncodable: CurveAffine {
@@ -314,7 +327,7 @@ impl fmt::Display for GroupDecodingError {
             GroupDecodingError::CoordinateDecodingError(description, ref err) => {
                 write!(f, "{} decoding error: {}", description, err)
             }
-            _ => write!(f, "{}", self.description()),
+            _ => write!(f, "{}", self.to_string()),
         }
     }
 }

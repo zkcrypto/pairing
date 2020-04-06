@@ -14,13 +14,12 @@ macro_rules! curve_impl {
         pub struct $affine {
             pub(crate) x: $basefield,
             pub(crate) y: $basefield,
-            pub(crate) infinity: bool
         }
 
         impl ::std::fmt::Display for $affine
         {
             fn fmt(&self, f: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
-                if self.infinity {
+                if self.x.is_zero() && self.y.is_zero() {
                     write!(f, "{}(Infinity)", $name)
                 } else {
                     write!(f, "{}(x={}, y={})", $name, self.x, self.y)
@@ -117,7 +116,6 @@ macro_rules! curve_impl {
                         } else {
                             negy
                         },
-                        infinity: false
                     }
                 })
             }
@@ -155,8 +153,7 @@ macro_rules! curve_impl {
             fn zero() -> Self {
                 $affine {
                     x: $basefield::zero(),
-                    y: $basefield::one(),
-                    infinity: true
+                    y: $basefield::zero(),
                 }
             }
 
@@ -165,7 +162,7 @@ macro_rules! curve_impl {
             }
 
             fn is_zero(&self) -> bool {
-                self.infinity
+                self.x.is_zero() && self.y.is_zero()
             }
 
             fn mul<S: Into<<Self::Scalar as PrimeField>::Repr>>(&self, by: S) -> $projective {
@@ -203,20 +200,16 @@ macro_rules! curve_impl {
 
             #[inline(always)]
             fn from_xy_unchecked(x: Self::Base, y: Self::Base) -> Self {
-                let infinity = x.is_zero() && y.is_zero();
                 Self {
                     x: x,
                     y: y,
-                    infinity
                 }
             }
 
             fn from_xy_checked(x: Self::Base, y: Self::Base) -> Result<Self, GroupDecodingError> {
-                let infinity = x.is_zero() && y.is_zero();
                 let affine = Self {
                     x: x,
                     y: y,
-                    infinity
                 };
 
                 if !affine.is_on_curve() {
@@ -611,7 +604,6 @@ macro_rules! curve_impl {
                     $affine {
                         x: p.x,
                         y: p.y,
-                        infinity: false
                     }
                 } else {
                     // Z is nonzero, so it must have an inverse in a field.
@@ -631,7 +623,6 @@ macro_rules! curve_impl {
                     $affine {
                         x: x,
                         y: y,
-                        infinity: false
                     }
                 }
             }
@@ -699,7 +690,6 @@ pub mod g1 {
                 y: Fq::from_raw_repr(y).map_err(|e| {
                     GroupDecodingError::CoordinateDecodingError("y coordinate", e)
                 })?,
-                infinity: false,
             })
         }
 
@@ -829,7 +819,6 @@ pub mod g1 {
                     y: Fq::from_repr(y).map_err(|e| {
                         GroupDecodingError::CoordinateDecodingError("y coordinate", e)
                     })?,
-                    infinity: false,
                 })
             }
         }
@@ -963,7 +952,6 @@ pub mod g1 {
             G1Affine {
                 x: super::super::fq::G1_GENERATOR_X,
                 y: super::super::fq::G1_GENERATOR_Y,
-                infinity: false,
             }
         }
 
@@ -1041,7 +1029,6 @@ pub mod g1 {
                 let p = G1Affine {
                     x: x,
                     y: if yrepr < negyrepr { y } else { negy },
-                    infinity: false,
                 };
 
                 let g1 = p.into_projective();
@@ -1216,7 +1203,6 @@ pub mod g2 {
                             GroupDecodingError::CoordinateDecodingError("y coordinate (c1)", e)
                         })?,
                     },
-                    infinity: false,
                 })
             }
         }
@@ -1375,7 +1361,6 @@ pub mod g2 {
                     c0: super::super::fq::G2_GENERATOR_Y_C0,
                     c1: super::super::fq::G2_GENERATOR_Y_C1,
                 },
-                infinity: false,
             }
         }
 
@@ -1452,7 +1437,6 @@ pub mod g2 {
                 let p = G2Affine {
                     x: x,
                     y: if y < negy { y } else { negy },
-                    infinity: false,
                 };
 
 
@@ -1490,7 +1474,6 @@ pub mod g2 {
                 let p = G2Affine {
                     x: x,
                     y: if y < negy { y } else { negy },
-                    infinity: false,
                 };
 
                 let g2 = p.into_projective();
@@ -1537,7 +1520,6 @@ pub mod g2 {
             let p = G2Affine {
                 x: x,
                 y: if y < negy { y } else { negy },
-                infinity: false,
             };
 
             assert_eq!(p.y, gen.y);

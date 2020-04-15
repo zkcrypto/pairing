@@ -5,7 +5,7 @@ use rand::{Rand, Rng};
 use std::cmp::Ordering;
 
 /// An element of Fq2, represented by c0 + c1 * u.
-#[derive(Copy, Clone, Debug, Eq, PartialEq)]
+#[derive(Copy, Clone, Debug, Eq, PartialEq, Hash)]
 pub struct Fq2 {
     pub c0: Fq,
     pub c1: Fq,

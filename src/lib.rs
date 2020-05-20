@@ -33,7 +33,7 @@ pub trait Engine: Sized + 'static + Clone {
     type Fr: PrimeField;
 
     /// The projective representation of an element in G1.
-    type G1: CurveProjective<Base = Self::Fq, Scalar = Self::Fr, Affine = Self::G1Affine>
+    type G1: CurveProjective<Scalar = Self::Fr, Affine = Self::G1Affine>
         + From<Self::G1Affine>
         + GroupOps<Self::G1Affine>
         + GroupOpsOwned<Self::G1Affine>
@@ -42,7 +42,6 @@ pub trait Engine: Sized + 'static + Clone {
 
     /// The affine representation of an element in G1.
     type G1Affine: PairingCurveAffine<
-            Base = Self::Fq,
             Scalar = Self::Fr,
             Projective = Self::G1,
             Pair = Self::G2Affine,
@@ -52,7 +51,7 @@ pub trait Engine: Sized + 'static + Clone {
         + for<'a> Mul<&'a Self::Fr, Output = Self::G1>;
 
     /// The projective representation of an element in G2.
-    type G2: CurveProjective<Base = Self::Fqe, Scalar = Self::Fr, Affine = Self::G2Affine>
+    type G2: CurveProjective<Scalar = Self::Fr, Affine = Self::G2Affine>
         + From<Self::G2Affine>
         + GroupOps<Self::G2Affine>
         + GroupOpsOwned<Self::G2Affine>
@@ -61,7 +60,6 @@ pub trait Engine: Sized + 'static + Clone {
 
     /// The affine representation of an element in G2.
     type G2Affine: PairingCurveAffine<
-            Base = Self::Fqe,
             Scalar = Self::Fr,
             Projective = Self::G2,
             Pair = Self::G1Affine,

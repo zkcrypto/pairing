@@ -179,6 +179,30 @@ pub trait CurveProjective:
     /// Recommends a wNAF window size given the number of scalars you intend to multiply
     /// a base by. Always returns a number between 2 and 22, inclusive.
     fn recommended_wnaf_for_num_scalars(num_scalars: usize) -> usize;
+
+    /// Returns references to underlying X, Y and Z coordinates. Users should check for infinity
+    /// outside of this call
+    fn as_xyz(&self) -> (&Self::Base, &Self::Base, &Self::Base) {
+        unimplemented!("default implementation does not exist for this function")
+    }
+    
+    /// Returns underlying X, Y and Z coordinates. Users should check for infinity
+    /// outside of this call
+    fn into_xyz_unchecked(self) -> (Self::Base, Self::Base, Self::Base) {
+        unimplemented!("default implementation does not exist for this function")
+    }
+
+    /// Creates a point from raw X, Y and Z coordinates. Point of infinity is encoded as (0,1,0) by default.
+    /// On-curve check is NOT performed
+    fn from_xyz_unchecked(_x: Self::Base, _y: Self::Base, _z: Self::Base) -> Self {
+        unimplemented!("default implementation does not exist for this function")
+    }
+
+    /// Creates a point from raw X, Y and Z coordinates. Point of infinity is encoded as (0,1,0) by default.
+    /// On-curve check is performed
+    fn from_xyz_checked(_x: Self::Base, _y: Self::Base, _z: Self::Base) -> Result<Self, GroupDecodingError> {
+        unimplemented!("default implementation does not exist for this function")
+    }
 }
 
 /// Affine representation of an elliptic curve point guaranteed to be
@@ -239,7 +263,7 @@ pub trait CurveAffine:
     
     /// Returns underlying X and Y coordinates. Users should check for infinity
     /// outside of this call
-    fn into_xy_unchecked(&self) -> (Self::Base, Self::Base);
+    fn into_xy_unchecked(self) -> (Self::Base, Self::Base);
 
     /// Creates a point from raw X and Y coordinates. Point of infinity is encoded as (0,0) by default.
     /// On-curve check is NOT performed

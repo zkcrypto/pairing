@@ -194,7 +194,7 @@ macro_rules! curve_impl {
             }
             
             #[inline(always)]
-            fn into_xy_unchecked(&self) -> (Self::Base, Self::Base) {
+            fn into_xy_unchecked(self) -> (Self::Base, Self::Base) {
                 (self.x, self.y)
             }
 

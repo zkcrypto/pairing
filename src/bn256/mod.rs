@@ -5,9 +5,6 @@ mod fq2;
 mod fq6;
 mod fr;
 
-// #[cfg(test)]
-// mod tests;
-
 pub use self::ec::{
     G1, G1Affine, G1Compressed, G1Prepared, G1Uncompressed,
     G2, G2Affine, G2Compressed, G2Prepared, G2Uncompressed,

@@ -1,0 +1,1 @@
+RUSTFLAGS="-C target-cpu=native -C target_feature=+bmi2,+adx -Z macro-backtrace" cargo +nightly test --release --features "asm"

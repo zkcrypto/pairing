@@ -1,8 +1,6 @@
 [package]
 name = "pairing_ce"
-
-# Remember to change version string in README.md.
-version = "0.23.0"
+version = "0.24.0"
 authors = [
     "Sean Bowe <ewillbefull@gmail.com>",
     "Jack Grigg <jack@z.cash>",
@@ -20,9 +18,10 @@ edition = "2018"
 [dependencies]
 rand = "0.4"
 byteorder = "1"
-ff = {package = "ff_ce", version = "0.11.*", features = ["derive"]}
+cfg-if = "*"
+ff = {package = "ff_ce", version = "0.12.*", features = ["derive"]}
 # ff = { path = '../ff', package = "ff_ce", features = ["derive"]}
-# ff = {package = "ff_ce", git = "https://github.com/matter-labs/ff.git", branch = "playground", features = ["derive"]}
 
 [features]
 default = []
+asm = ["ff/asm_derive"]

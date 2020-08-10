@@ -1,3 +1,5 @@
+#![cfg_attr(feature = "asm", feature(asm))]
+
 // `clippy` is a code linting tool for improving code quality by catching
 // common mistakes or strange code patterns. If the `cargo-clippy` feature
 // is provided, all compiler warnings are prohibited.

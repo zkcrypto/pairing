@@ -1,9 +1,21 @@
 use ff::{Field, PrimeField, PrimeFieldRepr};
 
-#[derive(PrimeField)]
-#[PrimeFieldModulus = "21888242871839275222246405745257275088548364400416034343698204186575808495617"]
-#[PrimeFieldGenerator = "7"]
-pub struct Fr(FrRepr);
+cfg_if::cfg_if! {
+    if #[cfg(feature = "asm")] {
+        use ff::PrimeFieldAsm;
+        
+        #[derive(PrimeFieldAsm)]
+        #[PrimeFieldModulus = "21888242871839275222246405745257275088548364400416034343698204186575808495617"]
+        #[PrimeFieldGenerator = "7"]
+        #[UseADX = "true"]
+        pub struct Fr(FrRepr);
+    } else {
+        #[derive(PrimeField)]
+        #[PrimeFieldModulus = "21888242871839275222246405745257275088548364400416034343698204186575808495617"]
+        #[PrimeFieldGenerator = "7"]
+        pub struct Fr(FrRepr);
+    }
+}
 
 #[test]
 fn test_to_hex() {

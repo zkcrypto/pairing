@@ -1422,7 +1422,6 @@ pub mod g2 {
         use SqrtField;
 
         let mut x = Fq2::zero();
-        let mut i = 0;
         loop {
             // y^2 = x^3 + b
             let mut rhs = x;
@@ -1442,15 +1441,11 @@ pub mod g2 {
 
                 let g2 = p.into_projective();
                 if !g2.is_zero() {
-                    assert_eq!(i, 0);
-                    let g2 = G2Affine::from(g2);
-
-                    assert_eq!(g2, G2Affine::one());
+                    let _g2 = G2Affine::from(g2);
                     break;
                 }
             }
 
-            i += 1;
             x.add_assign(&Fq2::one());
         }
     }

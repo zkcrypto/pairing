@@ -2,7 +2,7 @@
 name = "pairing"
 
 # Remember to change version string in README.md.
-version = "0.16.0"
+version = "0.17.0"
 authors = [
     "Sean Bowe <ewillbefull@gmail.com>",
     "Jack Grigg <jack@z.cash>",
@@ -18,11 +18,13 @@ edition ="2018"
 
 [dependencies]
 byteorder = "1"
-ff = { version = "0.6", path = "../ff", features = ["derive"] }
-group = { version = "0.6", path = "../group" }
+ff = { version = "0.7", features = ["derive"] }
+group = "0.7"
 rand_core = "0.5"
+subtle = "2.2.1"
 
 [dev-dependencies]
+criterion = "0.3"
 rand_xorshift = "0.2"
 
 [features]

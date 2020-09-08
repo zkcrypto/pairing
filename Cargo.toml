@@ -24,10 +24,5 @@ group = { version = "0.7", default-features = false }
 rand_core = "0.5"
 rand_xorshift = "0.2"
 
-[features]
-unstable-features = ["expose-arith"]
-expose-arith = []
-default = []
-
 [badges]
 maintenance = { status = "actively-developed" }

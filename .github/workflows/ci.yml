@@ -49,11 +49,6 @@ jobs:
         with:
           command: test
           args: --verbose --release
-      - name: Run --all-features tests
-        uses: actions-rs/cargo@v1
-        with:
-          command: test
-          args: --all-features --verbose --release
 
   no-std:
     name: Check no-std compatibility

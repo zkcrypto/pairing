@@ -1,5 +1,6 @@
 //! A library for working with pairing-friendly curves.
 
+#![no_std]
 // `clippy` is a code linting tool for improving code quality by catching
 // common mistakes or strange code patterns. If the `cargo-clippy` feature
 // is provided, all compiler warnings are prohibited.
@@ -14,6 +15,10 @@
 #![deny(intra_doc_link_resolution_failure)]
 // Force public structures to implement Debug
 #![deny(missing_debug_implementations)]
+
+#[cfg(test)]
+#[macro_use]
+extern crate std;
 
 #[cfg(test)]
 pub mod tests;

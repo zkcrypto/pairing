@@ -1,8 +1,8 @@
+use core::ops::Mul;
 use ff::Field;
 use group::{prime::PrimeCurveAffine, Curve, Group};
 use rand_core::SeedableRng;
 use rand_xorshift::XorShiftRng;
-use std::ops::Mul;
 
 use crate::{Engine, MillerLoopResult, MultiMillerLoop, PairingCurveAffine};
 

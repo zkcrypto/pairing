@@ -2,7 +2,7 @@
 name = "pairing"
 
 # Remember to change version string in README.md.
-version = "0.17.0"
+version = "0.18.0"
 authors = [
     "Sean Bowe <ewillbefull@gmail.com>",
     "Jack Grigg <jack@z.cash>",
@@ -12,8 +12,8 @@ license = "MIT/Apache-2.0"
 
 description = "Pairing-friendly elliptic curve library"
 documentation = "https://docs.rs/pairing/"
-homepage = "https://github.com/ebfull/pairing"
-repository = "https://github.com/ebfull/pairing"
+homepage = "https://github.com/zkcrypto/pairing"
+repository = "https://github.com/zkcrypto/pairing"
 edition ="2018"
 
 [dependencies]

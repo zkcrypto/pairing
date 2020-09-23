@@ -274,6 +274,12 @@ pub trait CurveAffine:
     /// Creates a point from raw X and Y coordinates. Point of infinity is encoded as (0,0) by default.
     /// On-curve check is performed
     fn from_xy_checked(x: Self::Base, y: Self::Base) -> Result<Self, GroupDecodingError>;
+
+    /// returns A coefficient for a short Weierstrass form
+    fn a_coeff() -> Self::Base;
+
+    /// returns B coefficient for a short Weierstrass form
+    fn b_coeff() -> Self::Base;
 }
 
 pub trait RawEncodable: CurveAffine {

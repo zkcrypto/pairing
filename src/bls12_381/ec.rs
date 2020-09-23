@@ -228,6 +228,14 @@ macro_rules! curve_impl {
                     Ok(affine)
                 }
             }
+
+            fn a_coeff() -> Self::Base {
+                Self::Base::zero()
+            }
+
+            fn b_coeff() -> Self::Base {
+                $affine::get_coeff_b()
+            }
         }
 
         impl Rand for $projective {

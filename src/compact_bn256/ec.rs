@@ -583,6 +583,26 @@ macro_rules! curve_impl {
             fn recommended_wnaf_for_num_scalars(num_scalars: usize) -> usize {
                 Self::empirical_recommended_wnaf_for_num_scalars(num_scalars)
             }
+
+            fn as_xyz(&self) -> (&Self::Base, &Self::Base, &Self::Base) {
+                (&self.x, &self.y, &self.z)
+            }
+            
+            fn into_xyz_unchecked(self) -> (Self::Base, Self::Base, Self::Base) {
+                (self.x, self.y, self.z)
+            }
+
+            fn from_xyz_unchecked(x: Self::Base, y: Self::Base, z: Self::Base) -> Self {
+                Self {
+                    x,
+                    y,
+                    z
+                }
+            }
+
+            fn from_xyz_checked(_x: Self::Base, _y: Self::Base, _z: Self::Base) -> Result<Self, GroupDecodingError> {
+                unimplemented!("on curve check is not implemented for BLS12-381 projective")
+            }
         }
 
         // The affine point X, Y is represented in the jacobian

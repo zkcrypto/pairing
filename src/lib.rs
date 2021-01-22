@@ -16,13 +16,6 @@
 // Force public structures to implement Debug
 #![deny(missing_debug_implementations)]
 
-#[cfg(test)]
-#[macro_use]
-extern crate std;
-
-#[cfg(test)]
-pub mod tests;
-
 use core::ops::Mul;
 use ff::PrimeField;
 use group::{

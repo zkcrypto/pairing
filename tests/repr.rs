@@ -2,6 +2,7 @@ use ff::PrimeField;
 use rand_core::SeedableRng;
 use rand_xorshift::XorShiftRng;
 
+#[test]
 pub fn random_repr_tests<P: PrimeField>() {
     random_encoding_tests::<P>();
 }

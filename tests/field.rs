@@ -2,6 +2,7 @@ use ff::{Field, PrimeField};
 use rand_core::{RngCore, SeedableRng};
 use rand_xorshift::XorShiftRng;
 
+#[test]
 pub fn random_sqrt_tests<F: Field>() {
     let mut rng = XorShiftRng::from_seed([
         0x59, 0x62, 0xbe, 0x5d, 0x76, 0x3d, 0x31, 0x8d, 0x17, 0xdb, 0x37, 0x32, 0x54, 0x06, 0xbc,
@@ -34,6 +35,7 @@ pub fn random_sqrt_tests<F: Field>() {
     }
 }
 
+#[test]
 pub fn random_field_tests<F: Field>() {
     let mut rng = XorShiftRng::from_seed([
         0x59, 0x62, 0xbe, 0x5d, 0x76, 0x3d, 0x31, 0x8d, 0x17, 0xdb, 0x37, 0x32, 0x54, 0x06, 0xbc,
@@ -73,7 +75,8 @@ pub fn random_field_tests<F: Field>() {
     }
 }
 
-pub fn from_str_tests<F: PrimeField>() {
+#[test]
+fn from_str_tests<F: PrimeField>() {
     {
         let a = "84395729384759238745923745892374598234705297301958723458712394587103249587213984572934750213947582345792304758273458972349582734958273495872304598234";
         let b = "38495729084572938457298347502349857029384609283450692834058293405982304598230458230495820394850293845098234059823049582309485203948502938452093482039";

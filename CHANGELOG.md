@@ -8,6 +8,7 @@ and this project adheres to Rust's notion of
 ## [Unreleased]
 ### Changed
 - Bumped dependencies to `ff 0.9` and `group 0.9`.
+- MSRV is now 1.47.0.
 
 ## [0.18.0] - 2020-09-08
 ### Added

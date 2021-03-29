@@ -30,8 +30,11 @@ pub mod compact_bn256;
 mod wnaf;
 pub use self::wnaf::Wnaf;
 
+mod base;
+pub use self::base::*;
+
 use ff::{Field, PrimeField, PrimeFieldDecodingError, PrimeFieldRepr, ScalarEngine, SqrtField};
-use std::error::Error;
+use std::{error::Error};
 use std::fmt;
 
 /// An "engine" is a collection of types (fields, elliptic curve groups, etc.)

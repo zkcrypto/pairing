@@ -20,8 +20,8 @@
 pub use group;
 
 use core::ops::Mul;
-use ff::PrimeField;
 use group::{
+    ff::PrimeField,
     prime::{PrimeCurve, PrimeCurveAffine},
     Group, GroupOps, GroupOpsOwned, ScalarMul, ScalarMulOwned, UncompressedEncoding,
 };

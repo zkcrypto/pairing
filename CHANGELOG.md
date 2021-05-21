@@ -11,7 +11,7 @@ and this project adheres to Rust's notion of
   easier. `ff` is transitively re-exported as `pairing::group::ff`.
 
 ### Changed
-- Bumped dependencies to `ff 0.10` and `group 0.10`.
+- Bumped `group` to 0.10.
 - MSRV is now 1.51.0.
 
 ## [0.19.0] - 2021-01-26

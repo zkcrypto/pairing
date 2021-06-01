@@ -6,6 +6,8 @@ and this project adheres to Rust's notion of
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [0.20.0] - 2021-06-01
 ### Added
 - `pairing::group`, which re-exports the `group` crate to make version-matching
   easier. `ff` is transitively re-exported as `pairing::group::ff`.

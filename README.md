@@ -16,6 +16,13 @@ Bring the `pairing` crate into your project just as you normally would.
 This library does not make any guarantees about constant-time operations, memory
 access patterns, or resistance to side-channel attacks.
 
+## Minimum Supported Rust Version
+
+Requires Rust **1.51** or higher.
+
+Minimum supported Rust version can be changed in the future, but it will be done with a
+minor version bump.
+
 ## License
 
 Licensed under either of

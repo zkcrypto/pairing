@@ -105,7 +105,7 @@ pub trait MultiMillerLoop: Engine {
 ///
 /// `MillerLoopResult`s cannot be compared with each other until
 /// [`MillerLoopResult::final_exponentiation`] is called, which is also expensive.
-pub trait MillerLoopResult {
+pub trait MillerLoopResult: Default {
     /// The extension field that hosts the target group of the pairing.
     type Gt: Group;
 

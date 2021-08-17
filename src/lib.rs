@@ -19,7 +19,7 @@
 // Re-export group to make version-matching easier.
 pub use group;
 
-use core::ops::Mul;
+use core::ops::{Add, AddAssign, Mul};
 use group::{
     ff::PrimeField,
     prime::{PrimeCurve, PrimeCurveAffine},
@@ -105,7 +105,18 @@ pub trait MultiMillerLoop: Engine {
 ///
 /// `MillerLoopResult`s cannot be compared with each other until
 /// [`MillerLoopResult::final_exponentiation`] is called, which is also expensive.
-pub trait MillerLoopResult: Default {
+pub trait MillerLoopResult:
+    Clone
+    + Copy
+    + Default
+    + core::fmt::Debug
+    + Send
+    + Sync
+    + Add<Output = Self>
+    + for<'a> Add<&'a Self, Output = Self>
+    + AddAssign
+    + for<'a> AddAssign<&'a Self>
+{
     /// The extension field that hosts the target group of the pairing.
     type Gt: Group;
 
@@ -113,4 +124,7 @@ pub trait MillerLoopResult: Default {
     /// loop into an element of [`MillerLoopResult::Gt`], so that it can be compared with
     /// other elements of `Gt`.
     fn final_exponentiation(&self) -> Self::Gt;
+
+    /// Check if this element is the identity.
+    fn is_identity(&self) -> bool;
 }

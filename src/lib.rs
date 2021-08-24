@@ -124,7 +124,4 @@ pub trait MillerLoopResult:
     /// loop into an element of [`MillerLoopResult::Gt`], so that it can be compared with
     /// other elements of `Gt`.
     fn final_exponentiation(&self) -> Self::Gt;
-
-    /// Check if this element is the identity.
-    fn is_identity(&self) -> bool;
 }

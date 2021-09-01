@@ -7,6 +7,16 @@ and this project adheres to Rust's notion of
 
 ## [Unreleased]
 
+## [0.21.0] - 2021-09-02
+### Added
+- `Debug + Send + Sync` bounds on `pairing::Engine`.
+- Various bounds on `pairing::MillerLoopResult`:
+  - `Copy + Default + Debug`
+  - `Send + Sync`
+  - `Add<Output = Self> + AddAssign`
+  - `for<'a> Add<&'a Self, Output = Self>`
+  - `for<'a> AddAssign<&'a Self>`
+
 ## [0.20.0] - 2021-06-01
 ### Added
 - `pairing::group`, which re-exports the `group` crate to make version-matching

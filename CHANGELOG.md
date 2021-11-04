@@ -6,6 +6,7 @@ and this project adheres to Rust's notion of
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+- Removed unused dev dependencies.
 
 ## [0.21.0] - 2021-09-02
 ### Added

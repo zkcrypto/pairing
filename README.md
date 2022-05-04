@@ -18,7 +18,7 @@ access patterns, or resistance to side-channel attacks.
 
 ## Minimum Supported Rust Version
 
-Requires Rust **1.51** or higher.
+Requires Rust **1.56** or higher.
 
 Minimum supported Rust version can be changed in the future, but it will be done with a
 minor version bump.

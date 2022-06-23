@@ -10,7 +10,7 @@ macro_rules! curve_impl {
         $compressed:ident,
         $pairing:ident
     ) => {
-        #[derive(Copy, Clone, PartialEq, Eq, Debug)]
+        #[derive(Copy, Clone, PartialEq, Eq, Debug, ::serde::Serialize, ::serde::Deserialize)]
         pub struct $affine {
             pub(crate) x: $basefield,
             pub(crate) y: $basefield,

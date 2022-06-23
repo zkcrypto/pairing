@@ -1,6 +1,6 @@
 [package]
 name = "pairing_ce"
-version = "0.26.0"
+version = "0.28.0"
 authors = [
     "Sean Bowe <ewillbefull@gmail.com>",
     "Jack Grigg <jack@z.cash>",
@@ -19,8 +19,9 @@ edition = "2018"
 rand = "0.4"
 byteorder = "1"
 cfg-if = "1.0"
-ff = {package = "ff_ce", version = "0.13.*", features = ["derive"]}
+ff = {package = "ff_ce", version = "0.14.*", features = ["derive"]}
 # ff = { path = '../ff', package = "ff_ce", features = ["derive"]}
+serde = {version = "1", features = ["derive"]}
 
 [features]
 default = []

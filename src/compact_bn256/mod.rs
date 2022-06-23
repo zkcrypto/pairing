@@ -22,7 +22,7 @@ use super::{CurveAffine, Engine};
 
 use ff::{Field, ScalarEngine};
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Copy, Debug)]
 pub struct Bn256;
 
 // U value that originates this particular curve

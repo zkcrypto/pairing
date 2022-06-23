@@ -20,7 +20,7 @@ fn test_pairing_result_against_relic() {
     0F41E58663BF08CF 068672CBD01A7EC7 3BACA4D72CA93544 DEFF686BFD6DF543 D48EAA24AFE47E1E FDE449383B676631
     */
 
-    assert_eq!(Bls12::pairing(G1::one(), G2::one()), Fq12 {
+    assert_eq!(Bls12::pairing(<G1 as CurveProjective>::one(), <G2 as CurveProjective>::one()), Fq12 {
         c0: Fq6 {
             c0: Fq2 {
                 c0: Fq::from_str("2819105605953691245277803056322684086884703000473961065716485506033588504203831029066448642358042597501014294104502").unwrap(),
@@ -99,7 +99,7 @@ fn test_g2_compressed_valid_vectors() {
 #[test]
 fn test_g1_uncompressed_invalid_vectors() {
     {
-        let z = G1Affine::zero().into_uncompressed();
+        let z = <G1Affine as CurveAffine>::zero().into_uncompressed();
 
         {
             let mut z = z;
@@ -132,7 +132,7 @@ fn test_g1_uncompressed_invalid_vectors() {
         }
     }
 
-    let o = G1Affine::one().into_uncompressed();
+    let o = <G1Affine as CurveAffine>::one().into_uncompressed();
 
     {
         let mut o = o;
@@ -213,7 +213,7 @@ fn test_g1_uncompressed_invalid_vectors() {
 #[test]
 fn test_g2_uncompressed_invalid_vectors() {
     {
-        let z = G2Affine::zero().into_uncompressed();
+        let z = <G2Affine as CurveAffine>::zero().into_uncompressed();
 
         {
             let mut z = z;
@@ -246,7 +246,7 @@ fn test_g2_uncompressed_invalid_vectors() {
         }
     }
 
-    let o = G2Affine::one().into_uncompressed();
+    let o = <G2Affine as CurveAffine>::one().into_uncompressed();
 
     {
         let mut o = o;
@@ -355,7 +355,7 @@ fn test_g2_uncompressed_invalid_vectors() {
 #[test]
 fn test_g1_compressed_invalid_vectors() {
     {
-        let z = G1Affine::zero().into_compressed();
+        let z = <G1Affine as CurveAffine>::zero().into_compressed();
 
         {
             let mut z = z;
@@ -388,7 +388,7 @@ fn test_g1_compressed_invalid_vectors() {
         }
     }
 
-    let o = G1Affine::one().into_compressed();
+    let o = <G1Affine as CurveAffine>::one().into_compressed();
 
     {
         let mut o = o;
@@ -471,7 +471,7 @@ fn test_g1_compressed_invalid_vectors() {
 #[test]
 fn test_g2_compressed_invalid_vectors() {
     {
-        let z = G2Affine::zero().into_compressed();
+        let z = <G2Affine as CurveAffine>::zero().into_compressed();
 
         {
             let mut z = z;
@@ -504,7 +504,7 @@ fn test_g2_compressed_invalid_vectors() {
         }
     }
 
-    let o = G2Affine::one().into_compressed();
+    let o = <G2Affine as CurveAffine>::one().into_compressed();
 
     {
         let mut o = o;

@@ -1,5 +1,3 @@
-#![cfg_attr(feature = "asm", feature(asm))]
-
 // `clippy` is a code linting tool for improving code quality by catching
 // common mistakes or strange code patterns. If the `cargo-clippy` feature
 // is provided, all compiler warnings are prohibited.
@@ -213,7 +211,18 @@ pub trait CurveProjective:
 /// Affine representation of an elliptic curve point guaranteed to be
 /// in the correct prime order subgroup.
 pub trait CurveAffine:
-    Copy + Clone + Sized + Send + Sync + fmt::Debug + fmt::Display + PartialEq + Eq + 'static
+    Copy 
+    + Clone 
+    + Sized 
+    + Send 
+    + Sync 
+    + fmt::Debug 
+    + fmt::Display 
+    + PartialEq 
+    + Eq 
+    + 'static
+    + serde::Serialize
+    + serde::de::DeserializeOwned
 {
     type Engine: Engine<Fr = Self::Scalar>;
     type Scalar: PrimeField + SqrtField;

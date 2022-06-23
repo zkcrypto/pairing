@@ -26,7 +26,7 @@ use ff::{BitIterator, Field, ScalarEngine};
 const BLS_X: u64 = 0xd201000000010000;
 const BLS_X_IS_NEGATIVE: bool = true;
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Copy, Debug)]
 pub struct Bls12;
 
 impl ScalarEngine for Bls12 {

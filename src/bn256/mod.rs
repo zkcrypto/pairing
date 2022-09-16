@@ -1,9 +1,9 @@
 mod ec;
-mod fq;
-mod fq12;
-mod fq2;
-mod fq6;
-mod fr;
+pub(crate) mod fq;
+pub(crate) mod fq12;
+pub(crate) mod fq2;
+pub(crate) mod fq6;
+pub(crate) mod fr;
 
 pub use self::ec::{
     G1, G1Affine, G1Compressed, G1Prepared, G1Uncompressed,

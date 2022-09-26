@@ -19,7 +19,7 @@ pub trait GenericCurveProjective:
 {
     type Scalar: PrimeField;
     type Base: SqrtField;
-    type Affine: GenericCurveAffine<Projective = Self, Scalar = Self::Scalar>;
+    type Affine: GenericCurveAffine<Projective = Self, Scalar = Self::Scalar, Base = Self::Base>;
 
     /// Returns the additive identity.
     fn zero() -> Self;
@@ -103,7 +103,7 @@ pub trait GenericCurveAffine:
 {
     type Scalar: PrimeField;
     type Base: SqrtField;
-    type Projective: GenericCurveProjective<Affine = Self, Scalar = Self::Scalar>;
+    type Projective: GenericCurveProjective<Affine = Self, Scalar = Self::Scalar, Base = Self::Base>;
 
     /// Returns the additive identity.
     fn zero() -> Self;

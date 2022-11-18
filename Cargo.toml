@@ -1,6 +1,6 @@
 [package]
 name = "pairing_ce"
-version = "0.28.2"
+version = "0.28.3"
 authors = [
     "Sean Bowe <ewillbefull@gmail.com>",
     "Jack Grigg <jack@z.cash>",

@@ -3,6 +3,7 @@ use ff::{Field, PrimeField, PrimeFieldRepr};
 
 cfg_if::cfg_if! {
     if #[cfg(feature = "asm")] {
+        use core::arch::asm;
         use ff::PrimeFieldAsm;
 
         #[derive(PrimeFieldAsm)]

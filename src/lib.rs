@@ -10,6 +10,8 @@
 // #![cfg_attr(feature = "cargo-clippy", allow(write_literal))]
 // Force public structures to implement Debug
 #![deny(missing_debug_implementations)]
+// Asm is only available on nightly, with this unstable feature
+#![cfg_attr(feature = "asm", feature(asm_const))]
 
 extern crate byteorder;
 extern crate rand;

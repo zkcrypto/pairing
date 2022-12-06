@@ -1,6 +1,6 @@
 [package]
 name = "pairing"
-version = "0.22.0"
+version = "0.23.0"
 authors = ["Sean Bowe <ewillbefull@gmail.com>", "Jack Grigg <jack@z.cash>"]
 readme = "README.md"
 license = "MIT/Apache-2.0"
@@ -12,7 +12,7 @@ repository = "https://github.com/zkcrypto/pairing"
 edition = "2021"
 
 [dependencies]
-group = { version = "0.12", default-features = false }
+group = { version = "0.13", default-features = false }
 
 [badges]
 maintenance = { status = "actively-developed" }

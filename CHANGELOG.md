@@ -7,6 +7,10 @@ and this project adheres to Rust's notion of
 
 ## [Unreleased]
 
+## [0.23.0] - 2022-12-06
+### Changed
+- Bumped dependencies to `group 0.13`.
+
 ## [0.22.0] - 2021-05-04
 ### Changed
 - MSRV bumped to `1.56.0`

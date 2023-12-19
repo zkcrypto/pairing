@@ -7,6 +7,13 @@ Specific curves are implemented in separate crates:
 
 - [`bls12_381`](https://crates.io/crates/bls12_381) - the BLS12-381 curve.
 
+## RFC process
+
+This crate follows the [zkcrypto RFC process](https://zkcrypto.github.io/rfcs/).
+If you want to propose "substantial" changes to this crate (in particular to the
+`pairing` traits), please [create an RFC](https://github.com/zkcrypto/rfcs) for
+wider discussion.
+
 ## [Documentation](https://docs.rs/pairing/)
 
 Bring the `pairing` crate into your project just as you normally would.

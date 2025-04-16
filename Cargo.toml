@@ -2,6 +2,8 @@
 name = "pairing"
 version = "0.23.0"
 authors = ["Sean Bowe <ewillbefull@gmail.com>", "Jack Grigg <jack@z.cash>"]
+edition = "2021"
+rust-version = "1.56"
 readme = "README.md"
 license = "MIT/Apache-2.0"
 
@@ -9,7 +11,6 @@ description = "Pairing-friendly elliptic curve library"
 documentation = "https://docs.rs/pairing/"
 homepage = "https://github.com/zkcrypto/pairing"
 repository = "https://github.com/zkcrypto/pairing"
-edition = "2021"
 
 [dependencies]
 group = { version = "0.13", default-features = false }

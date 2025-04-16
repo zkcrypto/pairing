@@ -17,3 +17,7 @@ group = { version = "0.13", default-features = false }
 
 [badges]
 maintenance = { status = "actively-developed" }
+
+[patch.crates-io]
+ff = { git = "https://github.com/zkcrypto/ff.git", rev = "241caff9bcedafbe279b5a4d875461f66b3f9701" }
+group = { git = "https://github.com/zkcrypto/group.git", rev = "94b7e7420b410d301162a8aa4d7a0a6d88564e69" }

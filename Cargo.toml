@@ -1,6 +1,6 @@
 [package]
 name = "pairing"
-version = "0.23.0"
+version = "0.24.0-pre.0"
 authors = ["Sean Bowe <ewillbefull@gmail.com>", "Jack Grigg <jack@z.cash>"]
 edition = "2021"
 rust-version = "1.63"
@@ -13,11 +13,7 @@ homepage = "https://github.com/zkcrypto/pairing"
 repository = "https://github.com/zkcrypto/pairing"
 
 [dependencies]
-group = { version = "0.13", default-features = false }
+group = { version = "=0.14.0-pre.0", default-features = false }
 
 [badges]
 maintenance = { status = "actively-developed" }
-
-[patch.crates-io]
-ff = { git = "https://github.com/zkcrypto/ff.git", rev = "241caff9bcedafbe279b5a4d875461f66b3f9701" }
-group = { git = "https://github.com/zkcrypto/group.git", rev = "94b7e7420b410d301162a8aa4d7a0a6d88564e69" }

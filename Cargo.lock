@@ -4,8 +4,9 @@ version = 3
 
 [[package]]
 name = "ff"
-version = "0.13.1"
-source = "git+https://github.com/zkcrypto/ff.git?rev=241caff9bcedafbe279b5a4d875461f66b3f9701#241caff9bcedafbe279b5a4d875461f66b3f9701"
+version = "0.14.0-pre.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d42dd26f5790eda47c1a2158ea4120e32c35ddc9a7743c98a292accc01b54ef3"
 dependencies = [
  "rand_core",
  "subtle",
@@ -13,8 +14,9 @@ dependencies = [
 
 [[package]]
 name = "group"
-version = "0.13.0"
-source = "git+https://github.com/zkcrypto/group.git?rev=94b7e7420b410d301162a8aa4d7a0a6d88564e69#94b7e7420b410d301162a8aa4d7a0a6d88564e69"
+version = "0.14.0-pre.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1ff6a0b2dd4b981b1ae9e3e6830ab146771f3660d31d57bafd9018805a91b0f1"
 dependencies = [
  "ff",
  "rand_core",
@@ -23,7 +25,7 @@ dependencies = [
 
 [[package]]
 name = "pairing"
-version = "0.23.0"
+version = "0.24.0-pre.0"
 dependencies = [
  "group",
 ]

@@ -2,15 +2,15 @@
 
 #![no_std]
 // `clippy` is a code linting tool for improving code quality by catching
-// common mistakes or strange code patterns. If the `cargo-clippy` feature
-// is provided, all compiler warnings are prohibited.
-#![cfg_attr(feature = "cargo-clippy", deny(warnings))]
-#![cfg_attr(feature = "cargo-clippy", allow(clippy::inline_always))]
-#![cfg_attr(feature = "cargo-clippy", allow(clippy::too_many_arguments))]
-#![cfg_attr(feature = "cargo-clippy", allow(clippy::unreadable_literal))]
-#![cfg_attr(feature = "cargo-clippy", allow(clippy::many_single_char_names))]
-#![cfg_attr(feature = "cargo-clippy", allow(clippy::new_without_default))]
-#![cfg_attr(feature = "cargo-clippy", allow(clippy::write_literal))]
+// common mistakes or strange code patterns. When compiling under `clippy`,
+// all compiler warnings are prohibited.
+#![cfg_attr(clippy, deny(warnings))]
+#![allow(clippy::inline_always)]
+#![allow(clippy::too_many_arguments)]
+#![allow(clippy::unreadable_literal)]
+#![allow(clippy::many_single_char_names)]
+#![allow(clippy::new_without_default)]
+#![allow(clippy::write_literal)]
 // Catch documentation errors caused by code changes.
 #![deny(rustdoc::broken_intra_doc_links)]
 // Force public structures to implement Debug

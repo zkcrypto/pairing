@@ -13,7 +13,7 @@ homepage = "https://github.com/zkcrypto/pairing"
 repository = "https://github.com/zkcrypto/pairing"
 
 [dependencies]
-group = { version = "=0.14.0-pre.0", default-features = false }
+group = { version = "0.14", default-features = false }
 
 [badges]
 maintenance = { status = "actively-developed" }

@@ -43,7 +43,7 @@ jobs:
     strategy:
       matrix:
         target:
-          - wasm32-wasi
+          - wasm32-wasip1
           - thumbv6m-none-eabi
           - thumbv7em-none-eabihf
     steps:

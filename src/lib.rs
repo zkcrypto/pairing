@@ -21,9 +21,9 @@ pub use group;
 
 use core::ops::{Add, AddAssign, Mul};
 use group::{
+    Group, GroupOps, GroupOpsOwned, ScalarMul, ScalarMulOwned, UncompressedEncoding,
     ff::PrimeField,
     prime::{PrimeCurve, PrimeCurveAffine},
-    Group, GroupOps, GroupOpsOwned, ScalarMul, ScalarMulOwned, UncompressedEncoding,
 };
 
 /// An "engine" is a collection of types (fields, elliptic curve groups, etc.)

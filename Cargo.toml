@@ -1,6 +1,6 @@
 [package]
 name = "pairing"
-version = "0.24.0-pre.0"
+version = "0.24.0"
 authors = ["Sean Bowe <ewillbefull@gmail.com>", "Jack Grigg <thestr4d@gmail.com>"]
 edition = "2024"
 rust-version = "1.85"

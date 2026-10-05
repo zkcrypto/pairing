@@ -95,6 +95,17 @@ pub trait MultiMillerLoop: Engine {
     /// The type returned by `Engine::miller_loop`.
     type Result: MillerLoopResult<Gt = Self::Gt>;
 
+    /// Prepare a G2 point for repeated use across Miller loops.
+    ///
+    /// Implementations may spend more time here to speed up each later loop.
+    /// The default uses ordinary G2 preparation. The raw Miller loop result
+    /// may differ from ordinary preparation, but final exponentiation must
+    /// produce the same pairing result. Implementations may be variable time
+    /// in `q`; use this for public points.
+    fn prepare_reusable_g2(q: Self::G2Affine) -> Self::G2Prepared {
+        q.into()
+    }
+
     /// Computes $$\sum_{i=1}^n \textbf{ML}(a_i, b_i)$$ given a series of terms
     /// $$(a_1, b_1), (a_2, b_2), ..., (a_n, b_n).$$
     fn multi_miller_loop(terms: &[(&Self::G1Affine, &Self::G2Prepared)]) -> Self::Result;

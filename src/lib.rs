@@ -90,6 +90,9 @@ pub trait PairingCurveAffine: PrimeCurveAffine + UncompressedEncoding {
 /// An engine that can compute sums of pairings in an efficient way.
 pub trait MultiMillerLoop: Engine {
     /// The prepared form of `Self::G2Affine`.
+    ///
+    /// The `From<Self::G2Affine>` implementation is assumed to be implemented in constant
+    /// time relative to the point.
     type G2Prepared: Clone + Send + Sync + From<Self::G2Affine>;
 
     /// The type returned by `Engine::miller_loop`.
@@ -97,11 +100,17 @@ pub trait MultiMillerLoop: Engine {
 
     /// Prepare a G2 point for repeated use across Miller loops.
     ///
-    /// Implementations may spend more time here to speed up each later loop.
-    /// The default uses ordinary G2 preparation. The raw Miller loop result
-    /// may differ from ordinary preparation, but final exponentiation must
-    /// produce the same pairing result. Implementations may be variable time
-    /// in `q`; use this for public points.
+    /// The default implementation calls `Self::G2Prepared::from(q)`. Implementations may
+    /// spend more time here to speed up each later loop.
+    ///
+    /// # Guarantees
+    ///
+    /// The raw Miller loop result may differ from ordinary preparation, but final
+    /// exponentiation **MUST** produce the same pairing result.
+    ///
+    /// Implementations may be variable time in `q`. This API should only be used with
+    /// public points, such as those in Groth16 verifying keys. For all other points,
+    /// use `Self::G2Prepared::from(q)` instead.
     fn prepare_reusable_g2(q: Self::G2Affine) -> Self::G2Prepared {
         q.into()
     }

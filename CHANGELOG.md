@@ -6,6 +6,8 @@ and this project adheres to Rust's notion of
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [0.24.1] - 2026-11-04
 ### Added
 - `pairing::MultiMillerLoop::prepare_reusable_g2` trait method, for speeding up
   `MultiMillerLoop::multi_miller_loop` applied to public points.

@@ -144,4 +144,18 @@ pub trait MillerLoopResult:
     /// loop into an element of [`MillerLoopResult::Gt`], so that it can be compared with
     /// other elements of `Gt`.
     fn final_exponentiation(&self) -> Self::Gt;
+
+    /// Final exponentiation for verification inputs whose representation may
+    /// be exposed through timing, including fresh verifier randomizers.
+    ///
+    /// # Guarantees
+    ///
+    /// This must produce the same result as [`Self::final_exponentiation`].
+    /// Implementations may be variable time in the Miller loop result.
+    ///
+    /// Do not use this with secret pairing inputs. The default preserves the
+    /// ordinary final-exponentiation implementation.
+    fn final_exponentiation_vartime(&self) -> Self::Gt {
+        self.final_exponentiation()
+    }
 }

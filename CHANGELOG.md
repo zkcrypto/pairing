@@ -7,6 +7,7 @@ and this project adheres to Rust's notion of
 
 ## [Unreleased]
 
+## [0.24.2] - 2026-11-11
 ### Added
 - `pairing::MillerLoopResult::final_exponentiation_vartime`, with a default
   implementation using ordinary final exponentiation. Overrides may expose
